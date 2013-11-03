@@ -1,29 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <EditTextPreference
-        android:defaultValue="@string/site"
-        android:enabled="false"
-        android:key="url"
-        android:summary="Адрес сайта ГШИС"
-        android:title="URL" >
-    </EditTextPreference>
-    <EditTextPreference
-        android:key="login"
-        android:summary="Имя пользователя"
-        android:title="Login" >
-    </EditTextPreference>
-    <EditTextPreference
-        android:key="password"
-        android:summary="Пароль пользователя"
-        android:title="Password" >
-    </EditTextPreference>
-
-    <CheckBoxPreference
-        android:key="storepwd"
-        android:defaultValue="true"
-        android:summary="Keep password"
-        android:title="Keep password" android:enabled="false">
-    </CheckBoxPreference>
+    <PreferenceCategory android:title="Информация о пользователе" >
+        <EditTextPreference
+            android:key="login"
+            android:summary="Пожалуйста, введите ваш логин"
+            android:title="Логин" >
+        </EditTextPreference>
+        <EditTextPreference
+            android:key="password"
+            android:summary="Пожалуйста, введите ваш пароль"
+            android:title="Пароль" >
+        </EditTextPreference>
+    </PreferenceCategory>
 
 </PreferenceScreen>

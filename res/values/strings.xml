@@ -4,9 +4,13 @@
     <string name="app_name">Школьный Дневник</string>
 	<string name="pref_name">Настройки</string>
     <string name="action_settings">Настройки</string>
-    <string name="title_section1">Секция 1</string>
-    <string name="title_section2">Секция 2</string>
-    <string name="title_section3">Секция 3</string>
+    <string name="title_section1">Понедельник</string>
+    <string name="title_section2">Вторник</string>
+    <string name="title_section3">Среда</string>
+    <string name="title_section4">Четверг</string>
+    <string name="title_section5">Пятница</string>
+    <string name="title_section6">Суббота</string>
+    <string name="title_section7">Воскресенье</string>
     <string name="site">http://schoolinfo.educom.ru/</string>
 
 </resources>

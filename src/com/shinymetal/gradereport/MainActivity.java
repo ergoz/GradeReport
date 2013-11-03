@@ -1,24 +1,30 @@
 package com.shinymetal.gradereport;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import com.shinymetal.gradereport.R;
+import com.shinymetal.utils.GshisLoader;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 public class MainActivity extends FragmentActivity {
 
@@ -42,8 +48,6 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
 				getSupportFragmentManager());
 
@@ -64,6 +68,13 @@ public class MainActivity extends FragmentActivity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	@Override
+	public void onPause () {
+		
+		GshisLoader.getInstance().reset();
+		super.onPause();
 	}
 
 	/**
@@ -90,8 +101,8 @@ public class MainActivity extends FragmentActivity {
 
 		@Override
 		public int getCount() {
-			// Show 3 total pages.
-			return 3;
+			// Show 7 total pages.
+			return 7;
 		}
 
 		@Override
@@ -104,6 +115,14 @@ public class MainActivity extends FragmentActivity {
 				return getString(R.string.title_section2).toUpperCase(l);
 			case 2:
 				return getString(R.string.title_section3).toUpperCase(l);
+			case 3:
+				return getString(R.string.title_section4).toUpperCase(l);
+			case 4:
+				return getString(R.string.title_section5).toUpperCase(l);
+			case 5:
+				return getString(R.string.title_section6).toUpperCase(l);
+			case 6:
+				return getString(R.string.title_section7).toUpperCase(l);
 			}
 			return null;
 		}
@@ -120,7 +139,86 @@ public class MainActivity extends FragmentActivity {
 		 */
 		public static final String ARG_SECTION_NUMBER = "section_number";
 
+		public ArrayList<String> values;
+		
 		public DummySectionFragment() {
+			
+//			values = new ArrayList<String> ();
+			
+//			values.add("a");
+//			values.add("b");
+//			values.add("c");
+			
+		}
+		
+		private class UpdateListView extends AsyncTask<Integer, Void, ArrayList<String>> {
+			
+			protected Context context;
+			protected ListView view;
+			
+			public void setUpdateTarget (Context context, ListView view) {
+				
+				this.context = context;
+				this.view = view;				
+			}
+			
+
+			@Override
+			protected ArrayList<String> doInBackground(Integer... dow) {
+			
+				ArrayList<String> values = new ArrayList<String> ();
+				
+	//			int count = dow.length;
+	//			if (count != 1) return values;
+				
+				Log.w("com.shinymetal.gradereport",
+						"doInBackground() called with arg="
+								+ dow[0]);
+		        
+
+				Date day = new Date ();
+				int wantDoW = dow [0];
+				Calendar cal = Calendar.getInstance();				
+				
+				
+		        cal.setTime(day);
+		        
+		        // TODO: remove this
+		        cal.add(Calendar.DATE, -7);
+		        
+		        if (wantDoW < cal.get(Calendar.DAY_OF_WEEK)) {
+		        	while (cal.get(Calendar.DAY_OF_WEEK) != wantDoW) {
+		        		cal.add(Calendar.DATE, -1);
+		        	}
+		        } else if (wantDoW > cal.get(Calendar.DAY_OF_WEEK))
+		        	while (cal.get(Calendar.DAY_OF_WEEK) != wantDoW) {
+		        		cal.add(Calendar.DATE, 1);
+		        	}
+		        
+		        day = cal.getTime();
+		        Log.w("com.shinymetal.gradereport",
+						"cal.get(Calendar.DAY_OF_WEEK)="
+								+ cal.get(Calendar.DAY_OF_WEEK) + " date: " + day);
+		        
+				values = GshisLoader.getInstance().killMeIAmTest(day);
+
+				Log.w("com.shinymetal.gradereport",
+						"values: " + values);		        
+
+				return values;
+			}
+			
+		     protected void onPostExecute(ArrayList<String> values) {
+					
+					ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
+			                R.layout.fragment_item_textview, R.id.itemName, values);
+
+					Log.w("com.shinymetal.gradereport",
+							"onPostExecute: " + values);
+					
+			        view.setAdapter(adapter);
+			        view.invalidateViews();
+		     }			
 		}
 
 		@Override
@@ -128,10 +226,19 @@ public class MainActivity extends FragmentActivity {
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_main_dummy,
 					container, false);
-			TextView dummyTextView = (TextView) rootView
+			ListView listView = (ListView) rootView
 					.findViewById(R.id.section_label);
-			dummyTextView.setText(Integer.toString(getArguments().getInt(
-					ARG_SECTION_NUMBER)));
+//			dummyListView.setText(Integer.toString(getArguments().getInt(
+//					ARG_SECTION_NUMBER)));
+			
+			UpdateListView update = new UpdateListView ();
+			update.setUpdateTarget(getActivity(), listView);
+			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));
+			
+			Log.w("com.shinymetal.gradereport",
+					"update.execute() called with arg="
+							+ getArguments().getInt(ARG_SECTION_NUMBER));
+	        
 			return rootView;
 		}
 	}
