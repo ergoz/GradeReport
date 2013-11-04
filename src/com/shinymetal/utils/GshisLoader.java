@@ -10,8 +10,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 import org.jsoup.Jsoup;
@@ -411,7 +411,6 @@ public class GshisLoader {
 
 		user = new User();
 		isLoggedIn = false;
-		killMeIAmTestLoaded = false;
 	}
 	
 	public static GshisLoader getInstance() {
@@ -457,78 +456,96 @@ public class GshisLoader {
 		isLoggedIn = false;
 	}
 	
-	protected boolean killMeIAmTestLoaded;
-	
-	protected void killMeIAmTest() {
+	protected void parseLessonsByDate(Date day) {
 
 		try {
 			String page;
 
-			if ((page = getPageByURL(lessonsUrl))== null) {
-				Log.e("parse", "getPageByURL () [1] failed!");
+			if ((page = getPageByURL(lessonsUrl)) == null) {
+				Log.e("getLessonsByDate()", "getPageByURL () [1] failed!");
 				return;
 			}
 
 			parseLessonsPage(page);
-			
-			
+
 			Pupil p = user.getCurrentPupil();
 			Schedule s = p.getCurrentSchedule();
-			Date day = new Date ();
-			Calendar cal = Calendar.getInstance();		
-			cal.add(Calendar.DATE, -7);
-			day = cal.getTime();
-			
-			page = getLessons(p, s, s.getWeek(day));
-			if ( page == null) {
-				Log.e("parse", "getLessons () [1] failed!");
-				return;
-			}
-			parseLessonsPage(page);
-			
-			if ((page = getPageByURL(diaryUrl))== null) {
-				Log.e("parse", "getPageByURL () [2] failed!");
-				return;
-			}
-			
-			parseDiaryPage(page);
-			
-			page = getLessonDetails(p, s, s.getWeek(day));
-			if ( page == null) {
-				Log.e("parse", "getLessons () [1] failed!");
-				return;
-			}
-			parseDiaryPage(page);
+			boolean weekLoaded = s.getWeek(day).getLoadedState();
 
+			if (!weekLoaded) {
+
+				page = getLessons(p, s, s.getWeek(day));
+				if (page == null) {
+					Log.e("getLessonsByDate()", "getLessons () [1] failed!");
+					return;
+				}
+				parseLessonsPage(page);
+			}
+
+			if ((page = getPageByURL(diaryUrl))== null) {
+				Log.e("getLessonsByDate()", "getPageByURL () [2] failed!");
+				return;
+			}
+			
+			parseDiaryPage(page);
+			
+			if (!weekLoaded) {
+				page = getLessonDetails(p, s, s.getWeek(day));
+				if ( page == null) {
+					Log.e("getLessonsByDate()", "getLessonDetails () [1] failed!");
+					return;
+				}
+				parseDiaryPage(page);
+			}
 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		killMeIAmTestLoaded = true;
-		Log.w("parse", "complete!");
 	}
 
-	public ArrayList<String> killMeIAmTest(Date day) {
+	public ArrayList<String> getLessonsByDate(Date day) {
 		
 		ArrayList<String> res = new ArrayList<String> (); 
+		Schedule s;
+		boolean requestNeeded = false;
 		
-		if (!isLoggedIn) login();
+		if (!isLoggedIn) {
+			
+			login();
+			requestNeeded = true;
+		}
+		
 		if (!isLoggedIn) return null;
-		
-		if (!killMeIAmTestLoaded)
-			killMeIAmTest();
-		
-		Schedule s = user.getCurrentPupil().getCurrentSchedule();
-		int l = 1;
-		
-		Log.w("killMeIAmTest", "looking for lessons day: " + day);
+
 		try {
+			
+			s = user.getCurrentPupil().getCurrentSchedule();
+			
+			if ( !s.getWeek(day).getLoadedState() ) {
+				requestNeeded = true;
+			}
+			
+		} catch (NullPointerException e) {
+			
+			requestNeeded = true;
+		}
+
+		try {
+			if (requestNeeded)
+				parseLessonsByDate(day);
+	
+			s = user.getCurrentPupil().getCurrentSchedule();
+			int l = 1;
+			
+			Log.w("zzzdebug", "looking for lessons day: " + day);
+
 			while (true) {
 				Lesson lesson = s.getLessonByNumber(day, l++);
-				res.add(lesson.getTimeframe() + " " + lesson.getName() + "/" + lesson.getTeacher());
-				Log.w("killMeIAmTest", "added: " + lesson.getTimeframe() + " "
+				res.add(new SimpleDateFormat("dd.MM ").format(lesson.getStart()) +
+						lesson.getTimeframe() + " " + lesson.getName() + "/" + lesson.getTeacher());
+
+				Log.w("zzzdebug", "added: " + lesson.getTimeframe() + " "
 						+ lesson.getName() + "/" + lesson.getTeacher());
 			}
 		} catch (NullPointerException e) {
@@ -537,4 +554,5 @@ public class GshisLoader {
 		
 		return res;
 	}
+	
 }

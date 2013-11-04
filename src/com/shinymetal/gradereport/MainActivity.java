@@ -6,9 +6,11 @@ import java.util.Date;
 import java.util.Locale;
 
 import com.shinymetal.gradereport.R;
+import com.shinymetal.objects.Week;
 import com.shinymetal.utils.GshisLoader;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -36,16 +39,29 @@ public class MainActivity extends FragmentActivity {
 	 * intensive, it may be best to switch to a
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
-	SectionsPagerAdapter mSectionsPagerAdapter;
+	private SectionsPagerAdapter mSectionsPagerAdapter;
 
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
-	ViewPager mViewPager;
+	private ViewPager mViewPager;
+	private Menu menu = null;
+	private boolean naviMenuDisable = true;
+	private Date weekStart = Week.getWeekStart(new Date ());
+	
+	private void enableNaviMenu () { naviMenuDisable = false; }
+	private Date getWeekStart () { return weekStart; }
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
+//		This won't work :(
+//		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+//		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.string.diary_name); 
+
 		setContentView(R.layout.activity_main);
 
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
@@ -63,12 +79,129 @@ public class MainActivity extends FragmentActivity {
         return true;
 	}
 	
+	public boolean selectPupil (MenuItem item) {
+		
+		AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create(); //Read Update
+        alertDialog.setTitle(getString(R.string.action_select_pupil));
+        alertDialog.setMessage(getString(R.string.action_pupil_detail));
+
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(final DialogInterface dialog,
+							final int which) {
+						// here you can add functions
+					}
+				});
+
+        alertDialog.show();  //<-- See This!
+        
+		return true;
+	}
+	
+	public boolean previousWeek (MenuItem item) {
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(weekStart);
+		cal.add(Calendar.DATE, -7);
+		weekStart = cal.getTime();
+
+//		LessonSectionFragment page = (LessonSectionFragment) getSupportFragmentManager().findFragmentByTag(
+//				"android:switcher:" + R.id.pager + ":"
+//						+ mViewPager.getCurrentItem());
+//		page.refresh();
+
+		for (Fragment f : getSupportFragmentManager().getFragments()) {
+			((LessonSectionFragment) f).refresh();
+		}
+		return true;
+	}
+	
+	public boolean nextWeek (MenuItem item) {
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(weekStart);
+		cal.add(Calendar.DATE, 7);
+		weekStart = cal.getTime();
+
+//		LessonSectionFragment page = (LessonSectionFragment) getSupportFragmentManager().findFragmentByTag(
+//				"android:switcher:" + R.id.pager + ":"
+//						+ mViewPager.getCurrentItem());
+//		page.refresh();
+		
+		for (Fragment f : getSupportFragmentManager().getFragments()) {
+			((LessonSectionFragment) f).refresh();
+		}
+
+		return true;
+	}
+	
+	public boolean selectWeek (MenuItem item) {
+		
+		AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create(); //Read Update
+        alertDialog.setTitle(getString(R.string.action_select_week));
+        alertDialog.setMessage(getString(R.string.action_week_detail));
+
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(final DialogInterface dialog,
+							final int which) {
+						// here you can add functions
+					}
+				});
+
+        alertDialog.show();  //<-- See This!
+
+		return true;
+	}
+
+	public boolean refresh (MenuItem item) {
+		
+		GshisLoader.getInstance().reset();
+		
+		naviMenuDisable = true; 
+		invalidateOptionsMenu();
+
+//		LessonSectionFragment page = (LessonSectionFragment) getSupportFragmentManager().findFragmentByTag(
+//				"android:switcher:" + R.id.pager + ":"
+//						+ mViewPager.getCurrentItem());
+//		page.refresh();
+		
+		for (Fragment f : getSupportFragmentManager().getFragments()) {
+			((LessonSectionFragment) f).refresh();
+		}
+
+		return true;
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+		this.menu = menu;
 		return true;
 	}
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+
+		getMenu().findItem(R.id.action_select_pupil).setEnabled(
+				!naviMenuDisable);
+		getMenu().findItem(R.id.action_select_week)
+				.setEnabled(!naviMenuDisable);
+		getMenu().findItem(R.id.action_previous_week).setEnabled(
+				!naviMenuDisable);
+		getMenu().findItem(R.id.action_next_week).setEnabled(!naviMenuDisable);
+
+		return true;
+	}
+	
+    private Menu getMenu()
+    {
+        //use it like this
+        return menu;
+    }
 	
 	@Override
 	public void onPause () {
@@ -92,17 +225,17 @@ public class MainActivity extends FragmentActivity {
 			// getItem is called to instantiate the fragment for the given page.
 			// Return a DummySectionFragment (defined as a static inner class
 			// below) with the page number as its lone argument.
-			Fragment fragment = new DummySectionFragment();
+			Fragment fragment = new LessonSectionFragment();
 			Bundle args = new Bundle();
-			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
+			args.putInt(LessonSectionFragment.ARG_SECTION_NUMBER, position + 1);
 			fragment.setArguments(args);
 			return fragment;
 		}
 
 		@Override
 		public int getCount() {
-			// Show 7 total pages.
-			return 7;
+			// Show 6 total pages.
+			return 6;
 		}
 
 		@Override
@@ -121,8 +254,6 @@ public class MainActivity extends FragmentActivity {
 				return getString(R.string.title_section5).toUpperCase(l);
 			case 5:
 				return getString(R.string.title_section6).toUpperCase(l);
-			case 6:
-				return getString(R.string.title_section7).toUpperCase(l);
 			}
 			return null;
 		}
@@ -132,59 +263,63 @@ public class MainActivity extends FragmentActivity {
 	 * A dummy fragment representing a section of the app, but that simply
 	 * displays dummy text.
 	 */
-	public static class DummySectionFragment extends Fragment {
+	public static class LessonSectionFragment extends Fragment {
 		/**
 		 * The fragment argument representing the section number for this
 		 * fragment.
 		 */
 		public static final String ARG_SECTION_NUMBER = "section_number";
-
 		public ArrayList<String> values;
+		ListView listView;
 		
-		public DummySectionFragment() {
-			
-//			values = new ArrayList<String> ();
-			
-//			values.add("a");
-//			values.add("b");
-//			values.add("c");
+		public LessonSectionFragment() {
 			
 		}
 		
 		private class UpdateListView extends AsyncTask<Integer, Void, ArrayList<String>> {
 			
-			protected Context context;
+			protected MainActivity activity;
 			protected ListView view;
-			
-			public void setUpdateTarget (Context context, ListView view) {
+						
+			public void setUpdateTarget (MainActivity activity, ListView view) {
 				
-				this.context = context;
+				this.activity = activity;
 				this.view = view;				
-			}
-			
+			}			
 
 			@Override
 			protected ArrayList<String> doInBackground(Integer... dow) {
 			
 				ArrayList<String> values = new ArrayList<String> ();
-				
-	//			int count = dow.length;
-	//			if (count != 1) return values;
-				
-				Log.w("com.shinymetal.gradereport",
-						"doInBackground() called with arg="
-								+ dow[0]);
-		        
-
-				Date day = new Date ();
 				int wantDoW = dow [0];
+				Date day = activity.getWeekStart ();
+				
+				switch (wantDoW) {
+				case 1:
+					wantDoW = Calendar.MONDAY;
+					break;
+				case 2:
+					wantDoW = Calendar.TUESDAY;
+					break;
+				case 3:
+					wantDoW = Calendar.WEDNESDAY;
+					break;
+				case 4:
+					wantDoW = Calendar.THURSDAY;
+					break;
+				case 5:
+					wantDoW = Calendar.FRIDAY;
+					break;
+				case 6:
+					wantDoW = Calendar.SATURDAY;
+					break;
+				default:
+					wantDoW = Calendar.SUNDAY;
+					break;
+				}
+
 				Calendar cal = Calendar.getInstance();				
-				
-				
 		        cal.setTime(day);
-		        
-		        // TODO: remove this
-		        cal.add(Calendar.DATE, -7);
 		        
 		        if (wantDoW < cal.get(Calendar.DAY_OF_WEEK)) {
 		        	while (cal.get(Calendar.DAY_OF_WEEK) != wantDoW) {
@@ -196,51 +331,51 @@ public class MainActivity extends FragmentActivity {
 		        	}
 		        
 		        day = cal.getTime();
-		        Log.w("com.shinymetal.gradereport",
-						"cal.get(Calendar.DAY_OF_WEEK)="
-								+ cal.get(Calendar.DAY_OF_WEEK) + " date: " + day);
-		        
-				values = GshisLoader.getInstance().killMeIAmTest(day);
-
-				Log.w("com.shinymetal.gradereport",
-						"values: " + values);		        
-
+				values = GshisLoader.getInstance().getLessonsByDate(day);
 				return values;
 			}
-			
-		     protected void onPostExecute(ArrayList<String> values) {
-					
-					ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-			                R.layout.fragment_item_textview, R.id.itemName, values);
 
-					Log.w("com.shinymetal.gradereport",
-							"onPostExecute: " + values);
-					
-			        view.setAdapter(adapter);
-			        view.invalidateViews();
-		     }			
+			protected void onPreExecute() {
+				
+				activity.setProgressBarIndeterminateVisibility(true);
+			}
+			protected void onPostExecute(ArrayList<String> values) {
+
+				ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+						activity, R.layout.fragment_item_textview,
+						R.id.itemName, values);
+
+				Log.w("zzzdebug", "onPostExecute: " + values);
+
+				view.setAdapter(adapter);
+				view.invalidateViews();
+			    
+				activity.enableNaviMenu ();
+				activity.invalidateOptionsMenu();
+
+				activity.setProgressBarIndeterminateVisibility(false);
+			}
+		}
+		
+		public void refresh () {
+
+			UpdateListView update = new UpdateListView ();
+			update.setUpdateTarget((MainActivity) getActivity(), listView);
+			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));
+			
 		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
+			
 			View rootView = inflater.inflate(R.layout.fragment_main_dummy,
 					container, false);
-			ListView listView = (ListView) rootView
+			listView = (ListView) rootView
 					.findViewById(R.id.section_label);
-//			dummyListView.setText(Integer.toString(getArguments().getInt(
-//					ARG_SECTION_NUMBER)));
 			
-			UpdateListView update = new UpdateListView ();
-			update.setUpdateTarget(getActivity(), listView);
-			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));
-			
-			Log.w("com.shinymetal.gradereport",
-					"update.execute() called with arg="
-							+ getArguments().getInt(ARG_SECTION_NUMBER));
-	        
+			refresh ();
 			return rootView;
 		}
 	}
-
 }
