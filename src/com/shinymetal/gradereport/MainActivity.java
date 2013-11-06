@@ -1,15 +1,17 @@
 package com.shinymetal.gradereport;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 import com.shinymetal.gradereport.R;
-import com.shinymetal.objects.Week;
+import com.shinymetal.objects.Lesson;
 import com.shinymetal.utils.GshisLoader;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -19,7 +21,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +29,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity {
 
@@ -47,21 +49,14 @@ public class MainActivity extends FragmentActivity {
 	private ViewPager mViewPager;
 	private Menu menu = null;
 	private boolean naviMenuDisable = true;
-	private Date weekStart = Week.getWeekStart(new Date ());
 	
 	private void enableNaviMenu () { naviMenuDisable = false; }
-	private Date getWeekStart () { return weekStart; }
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
-//		This won't work :(
-//		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-//		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.string.diary_name); 
-
 		setContentView(R.layout.activity_main);
 
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
@@ -102,14 +97,9 @@ public class MainActivity extends FragmentActivity {
 	public boolean previousWeek (MenuItem item) {
 
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(weekStart);
+		cal.setTime(GshisLoader.getInstance().getCurrWeekStart());
 		cal.add(Calendar.DATE, -7);
-		weekStart = cal.getTime();
-
-//		LessonSectionFragment page = (LessonSectionFragment) getSupportFragmentManager().findFragmentByTag(
-//				"android:switcher:" + R.id.pager + ":"
-//						+ mViewPager.getCurrentItem());
-//		page.refresh();
+		GshisLoader.getInstance().setCurrWeekStart(cal.getTime());
 
 		for (Fragment f : getSupportFragmentManager().getFragments()) {
 			((LessonSectionFragment) f).refresh();
@@ -120,14 +110,9 @@ public class MainActivity extends FragmentActivity {
 	public boolean nextWeek (MenuItem item) {
 
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(weekStart);
+		cal.setTime(GshisLoader.getInstance().getCurrWeekStart());
 		cal.add(Calendar.DATE, 7);
-		weekStart = cal.getTime();
-
-//		LessonSectionFragment page = (LessonSectionFragment) getSupportFragmentManager().findFragmentByTag(
-//				"android:switcher:" + R.id.pager + ":"
-//						+ mViewPager.getCurrentItem());
-//		page.refresh();
+		GshisLoader.getInstance().setCurrWeekStart(cal.getTime());
 		
 		for (Fragment f : getSupportFragmentManager().getFragments()) {
 			((LessonSectionFragment) f).refresh();
@@ -162,11 +147,6 @@ public class MainActivity extends FragmentActivity {
 		
 		naviMenuDisable = true; 
 		invalidateOptionsMenu();
-
-//		LessonSectionFragment page = (LessonSectionFragment) getSupportFragmentManager().findFragmentByTag(
-//				"android:switcher:" + R.id.pager + ":"
-//						+ mViewPager.getCurrentItem());
-//		page.refresh();
 		
 		for (Fragment f : getSupportFragmentManager().getFragments()) {
 			((LessonSectionFragment) f).refresh();
@@ -268,31 +248,72 @@ public class MainActivity extends FragmentActivity {
 		 * The fragment argument representing the section number for this
 		 * fragment.
 		 */
-		public static final String ARG_SECTION_NUMBER = "section_number";
-		public ArrayList<String> values;
-		ListView listView;
+		protected static final String ARG_SECTION_NUMBER = "section_number";
+		protected ArrayList<Lesson> values;
+		protected ListView listView;
+		protected TextView textView;
 		
 		public LessonSectionFragment() {
 			
 		}
 		
-		private class UpdateListView extends AsyncTask<Integer, Void, ArrayList<String>> {
+		private class LessonsArrayAdapter extends ArrayAdapter<Lesson> {
+			
+		    private final Context context;
+		    private final ArrayList<Lesson> values;
+		    private final SimpleDateFormat format;
+		    
+		    public LessonsArrayAdapter(Context context, ArrayList<Lesson> values) {
+
+		    	super(context, R.layout.lessons_list, values);
+		    	
+		    	this.context = context;
+		    	this.values = values;
+		    	this.format = new SimpleDateFormat("HH:mm ", Locale.ENGLISH);
+		    }
+		    
+		    @Override
+		    public View getView(int position, View convertView, ViewGroup parent) {
+		    	
+		        LayoutInflater inflater = (LayoutInflater) context
+		                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		        
+		        View rowView = inflater.inflate(R.layout.lessons_list, parent, false);
+		        TextView itemNameView = (TextView) rowView.findViewById(R.id.itemName);
+		        TextView itemDetailView = (TextView) rowView.findViewById(R.id.itemDetail);
+		        
+		        Lesson l = values.get(position);
+		        
+		        itemNameView.setText("" + l.getNumber() + ". " + l.getFormText());
+		        itemDetailView.setText(format.format(l.getStart()) + l.getTeacher());
+		        
+		        return rowView;
+		    }
+		}
+		
+		private class UpdateListView extends AsyncTask<Integer, Void, ArrayList<Lesson>> {
 			
 			protected MainActivity activity;
 			protected ListView view;
+			protected TextView header;
+			
+			protected final SimpleDateFormat format = new SimpleDateFormat(
+					"dd.MM.yyyy", Locale.ENGLISH);
+			protected Date day;
 						
-			public void setUpdateTarget (MainActivity activity, ListView view) {
+			public void setUpdateTarget (MainActivity activity, ListView view, TextView header) {
 				
 				this.activity = activity;
-				this.view = view;				
+				this.view = view;
+				this.header = header;
 			}			
 
 			@Override
-			protected ArrayList<String> doInBackground(Integer... dow) {
+			protected ArrayList<Lesson> doInBackground(Integer... dow) {
 			
-				ArrayList<String> values = new ArrayList<String> ();
+				ArrayList<Lesson> values = new ArrayList<Lesson> ();
 				int wantDoW = dow [0];
-				Date day = activity.getWeekStart ();
+				day = GshisLoader.getInstance().getCurrWeekStart();
 				
 				switch (wantDoW) {
 				case 1:
@@ -339,28 +360,33 @@ public class MainActivity extends FragmentActivity {
 				
 				activity.setProgressBarIndeterminateVisibility(true);
 			}
-			protected void onPostExecute(ArrayList<String> values) {
 
-				ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-						activity, R.layout.fragment_item_textview,
-						R.id.itemName, values);
+			protected void onPostExecute(ArrayList<Lesson> values) {
 
-				Log.w("zzzdebug", "onPostExecute: " + values);
+				LessonsArrayAdapter adapter = new LessonsArrayAdapter (activity, values);
 
-				view.setAdapter(adapter);
-				view.invalidateViews();
+				if (view != null) {
+					
+					view.setAdapter(adapter);
+					header.setText(format.format(day));
+					view.invalidateViews();
+				}
 			    
-				activity.enableNaviMenu ();
-				activity.invalidateOptionsMenu();
+				if (activity != null) {
+					
+					activity.enableNaviMenu ();
+					activity.invalidateOptionsMenu();
 
-				activity.setProgressBarIndeterminateVisibility(false);
+					activity.setProgressBarIndeterminateVisibility(false);
+				}
 			}
 		}
 		
 		public void refresh () {
 
 			UpdateListView update = new UpdateListView ();
-			update.setUpdateTarget((MainActivity) getActivity(), listView);
+
+			update.setUpdateTarget((MainActivity) getActivity(), listView, textView);
 			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));
 			
 		}
@@ -369,10 +395,15 @@ public class MainActivity extends FragmentActivity {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			
-			View rootView = inflater.inflate(R.layout.fragment_main_dummy,
+			View rootView = inflater.inflate(R.layout.fragment_lessons,
 					container, false);
 			listView = (ListView) rootView
 					.findViewById(R.id.section_label);
+			
+			View header = getLayoutInflater(savedInstanceState).inflate(R.layout.lessons_header, null);
+			listView.addHeaderView(header);
+			
+			textView = (TextView) header.findViewById(R.id.itemHeader);
 			
 			refresh ();
 			return rootView;

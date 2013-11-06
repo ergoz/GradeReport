@@ -10,7 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -36,7 +35,7 @@ public class GshisLoader {
 	protected final String gradesUrl = "/Pupil/Grades.aspx";
 //	protected final String perfUrl = "/Pupil/Performance.aspx";
 
-	public User user;
+	protected User user;
 
 	protected String cookieARRAffinity;
 	protected String cookieASPXAUTH;
@@ -45,8 +44,18 @@ public class GshisLoader {
 	protected String authVIEWSTATE;
 	protected String lessonsVIEWSTATE;
 	protected String diaryVIEWSTATE;
-	protected String gradesVIEWSTATE;	
+	protected String gradesVIEWSTATE;
 	
+	protected Date currWeekStart = Week.getWeekStart(new Date ());
+	
+	public Date getCurrWeekStart() {
+		return currWeekStart;
+	}
+
+	public void setCurrWeekStart(Date currWeekStart) {
+		this.currWeekStart = currWeekStart;
+	}
+
 	public void parseLessonsPage(String page) throws ParseException {
 
 		Document doc = Jsoup.parse(page);
@@ -536,9 +545,9 @@ public class GshisLoader {
 		return false;
 	}
 
-	public ArrayList<String> getLessonsByDate(Date day) {
+	public ArrayList<Lesson> getLessonsByDate(Date day) {
 		
-		ArrayList<String> res = new ArrayList<String> (); 
+		ArrayList<Lesson> res = new ArrayList<Lesson> (); 
 		Schedule s;
 		boolean requestNeeded = false;
 		
@@ -575,16 +584,11 @@ public class GshisLoader {
 			s = user.getCurrentPupil().getCurrentSchedule();
 			int l = 1;
 			
-//			Log.w("zzzdebug", "looking for lessons day: " + day);
-
 			while (true) {
-				Lesson lesson = s.getLessonByNumber(day, l++);
-				SimpleDateFormat fmt = new SimpleDateFormat("HH:mm");
-				String timeframe = fmt.format(lesson.getStart()) + " - " + fmt.format(lesson.getStop());
 
-				res.add(new SimpleDateFormat("dd.MM ").format(lesson.getStart()) +
-						timeframe + " " + lesson.getFormText() + "/" + lesson.getTeacher());
+				res.add(s.getLessonByNumber(day, l++));
 			}
+			
 		} catch (NullPointerException e) {
 			
 		}
