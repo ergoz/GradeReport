@@ -6,10 +6,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class Pupil {
-
-	protected String name;
-	protected String formId;
+public class Pupil extends FormSelectableField {
 
 	protected SortedMap<String, Schedule> schedules;
 	protected String currentScheduleId;
@@ -21,13 +18,13 @@ public class Pupil {
 	public Pupil(String n) {
 
 		this();
-		name = n;
+		setFormText(n);
 	}
 
 	public Pupil(String n, String fId) {
 
 		this(n);
-		formId = fId;
+		setFormId(fId);
 	}
 
 	public final Set<Entry<String, Schedule>> getScheduleSet() {
@@ -54,7 +51,7 @@ public class Pupil {
 
 		for (Map.Entry<String, Schedule> entry : schedules.entrySet()) {
 
-			if (entry.getValue().getSchoolYear().equals(schoolYear))
+			if (entry.getValue().getFormText().equals(schoolYear))
 				return entry.getValue();
 		}
 
@@ -77,15 +74,7 @@ public class Pupil {
 		return getScheduleByFormId(currentScheduleId);
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public String getFormId() {
-		return formId;
-	}
-
 	public String toString() {
-		return name + " f: " + formId;
+		return getFormText() + " f: " + getFormId ();
 	}
 }

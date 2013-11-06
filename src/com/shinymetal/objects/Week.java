@@ -1,79 +1,35 @@
 package com.shinymetal.objects;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
-public class Week {
+public class Week extends FormTimeInterval {
 	
 	protected boolean loaded;
-	protected String formId;
-	
-	protected Date start;
-	protected Date stop;
 	
 	public Week () {
 		
 		loaded = false;
 	}
 
-	public void setStartStop(String weekStartStop, String schoolYear)
-			throws ParseException {
-
-		start = getWeekStart(weekStartStop, schoolYear);
-		stop = getWeekStop(weekStartStop, schoolYear);
+	@Override
+	public void setStart (Date day) {
+		
+		super.setStart(getWeekStart(day));
+		super.setStop(getWeekStop(day));		
 	}
 	
-	public void setFormValue(String formId) { this.formId = formId; }
-	public String getFormId () { return formId; }
+	@Override
+	public void setStop (Date day) {
+		
+		super.setStart(getWeekStart(day));
+		super.setStop(getWeekStop(day));		
+	}
 	
 	public void setLoaded () { loaded = true; }	
-	public boolean getLoadedState () { return loaded; }
-	
-	public Date getStart () { return start; }
-	public Date getStop () { return stop; }
+	public boolean getLoaded () { return loaded; }
 
-	public static Date getWeekStart(String week, String schoolYear)
-			throws ParseException {
-
-		String begin = week.substring(0, week.indexOf("-") - 1);
-		String month = begin.substring(begin.indexOf(".") + 1, begin.length());
-
-		String year;
-		if (Integer.parseInt(month) > 7) {
-			year = schoolYear.substring(0, schoolYear.indexOf("-") - 1);
-		} else {
-			year = schoolYear.substring(schoolYear.indexOf("-") + 2,
-					schoolYear.length());
-		}
-
-		return new SimpleDateFormat("yyyy dd.MM", Locale.ENGLISH).parse(year
-				+ " " + begin);
-	}
-
-	public static Date getWeekStop(String week, String schoolYear)
-			throws ParseException {
-
-		String timeB = week.substring(0, week.indexOf("-") - 1);
-		String timeE = week.substring(week.indexOf("-") + 2,
-				week.length());
-		String month = timeB.substring(timeB.indexOf(".") + 1, timeB.length());
-
-		String year;
-		if (Integer.parseInt(month) > 7) {
-			year = schoolYear.substring(0, schoolYear.indexOf("-") - 1);
-		} else {
-			year = schoolYear.substring(schoolYear.indexOf("-") + 2,
-					schoolYear.length());
-		}
-
-		return new SimpleDateFormat("yyyy dd.MM", Locale.ENGLISH).parse(year
-				+ " " + timeE);
-	}
-	
-	public static Date getWeekStart (Date day) {
+		public static Date getWeekStart (Date day) {
 		Calendar cal = Calendar.getInstance();				
 		
         cal.setTime(day);
@@ -106,6 +62,6 @@ public class Week {
 	}
 	
 	public String toString() {
-		return start.toString() + " - "	+ stop.toString() + " l: " + loaded + " f: " + formId;
+		return getStart().toString() + " - " + getStop().toString() + " l: " + loaded + " f: " + getFormId();
 	}
 }

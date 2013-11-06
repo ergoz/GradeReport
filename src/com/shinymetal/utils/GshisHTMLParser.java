@@ -11,6 +11,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.shinymetal.objects.GradeRec;
+import com.shinymetal.objects.GradeSemester;
 import com.shinymetal.objects.Lesson;
 import com.shinymetal.objects.Pupil;
 import com.shinymetal.objects.Schedule;
@@ -177,8 +179,23 @@ public class GshisHTMLParser {
 					} catch (NullPointerException e) {
 
 						w = new Week();
-						w.setStartStop(value, schedule.getSchoolYear());
-						w.setFormValue(week.attr("value"));
+						
+						String wBegin = value.substring(0, value.indexOf("-") - 1);
+						String wMonth = wBegin.substring(wBegin.indexOf(".") + 1, wBegin.length());
+
+						String year;
+						if (Integer.parseInt(wMonth) > 7) {
+							year = schedule.getFormText().substring(0, schedule.getFormText().indexOf("-") - 1);
+						} else {
+							year = schedule.getFormText().substring(schedule.getFormText().indexOf("-") + 2,
+									schedule.getFormText().length());
+						}
+
+						w.setStart(new SimpleDateFormat("yyyy dd.MM", Locale.ENGLISH).parse(year
+								+ " " + wBegin));
+
+						w.setFormText(week.text());
+						w.setFormId(week.attr("value"));
 
 						schedule.addWeek(w);
 					}
@@ -218,11 +235,13 @@ public class GshisHTMLParser {
 				String date = lessonCellDetail.attr("jsdate");
 				String subjectName = "";
 				String teacherName = "";
+				String formId = "";
 
 				Elements subjects = lessonCellDetail
 						.getElementsByAttributeValue("class", "lesson-subject");
 				for (Element subject : subjects) {
 					subjectName = subject.text();
+					formId = subject.attr("id");
 				}
 
 				Elements teachers = lessonCellDetail
@@ -237,21 +256,33 @@ public class GshisHTMLParser {
 				}
 
 				Schedule schedule = u.getCurrentPupil().getCurrentSchedule();
+				SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.ENGLISH);
+
 				Lesson l;
+				
+				String timeB = time.substring(0, time.indexOf("-") - 1);
+				Date start = format.parse(date + " " + timeB);
 
-				if ((l = schedule.getLesson(Lesson.getStart(date, time))) == null) {
+				if ((l = schedule.getLesson(start)) == null) {
 
-					l = new Lesson(number, subjectName, teacherName);
+					l = new Lesson();
+					
+					String timeE = time.substring(time.indexOf("-") + 2, time.length());
+					Date stop = format.parse(date + " " + timeE);
 
-					l.setTimeframe(date, time);
+					l.setStart(start);
+					l.setStop(stop);
+					l.setFormId(formId);
+					l.setFormText(subjectName);
+					l.setTeacher(teacherName);
+					l.setNumber(Integer.parseInt(number));
+
 					schedule.addLesson(l);
 				}
 			}
 		}
 
 		// Lessons may not be found, this is okay
-		// if (!found)
-		// throw new ParseException("Lessons not found", 0);
 	}
 
 	public static String fetchLongCellString(Element e) {
@@ -266,6 +297,20 @@ public class GshisHTMLParser {
 		return e.text();
 	}
 
+	public static boolean containsPrintableChars (String str) {
+
+		if (str == null || str.length() <= 0)
+			return false;
+
+		String s = str.replaceAll("&nbsp;", " ");
+		Matcher matcher = whitespaces_only.matcher(s);
+
+		if (matcher.find())
+			return false;
+		
+		return true;
+	}
+	
 	public static String fetchLongCellStringNoWhitespaces(Element e) {
 
 		String s = fetchLongCellString(e).replaceAll("&nbsp;", " ");
@@ -275,6 +320,148 @@ public class GshisHTMLParser {
 			return null;
 
 		return s;
+	}
+
+	public static void fetchGradeSemesters(Document doc, User u)
+			throws ParseException {
+		
+		boolean found = false;
+		
+		Elements semesterSelectors = doc.getElementsByAttributeValue("id",
+				"ctl00_body_drdTerms");
+		for (Element semesterSelector : semesterSelectors) {
+
+			Elements semesters = semesterSelector.getAllElements();
+			for (Element semester : semesters) {
+				if (semester.tagName().equals("option")) {
+
+					String value = semester.text();
+					GradeSemester sem;
+					found = true;
+
+					Schedule schedule = u.getCurrentPupil()
+							.getCurrentSchedule();
+
+					try {
+
+						sem = schedule.getSemester(semester.attr("value"));
+					} catch (NullPointerException e) {
+						
+						String sBegin = value.substring(12, value.indexOf("-") - 1);
+						String sEnd = value.substring(value.indexOf("-") + 2, value.length() - 2);
+						SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
+						sem = new GradeSemester ();
+
+						sem.setStart(fmt.parse(sBegin));
+						sem.setStart(fmt.parse(sEnd));
+						sem.setFormText(semester.text());
+						sem.setFormId(semester.attr("value"));
+
+						schedule.addSemester(sem);
+					}
+
+					if (semester.hasAttr("selected")
+							&& semester.attr("selected").equals("selected")) {
+
+						schedule.getSemester(semester.attr("value")).setLoaded();
+						schedule.setCurrentSemesterId(semester.attr("value"));
+					}
+				}
+			}
+		}
+
+		if (!found)
+			throw new ParseException("Semesters not found", 0);
+	}
+
+	public static void fetchGrades(Document doc, User u)
+			throws ParseException {
+		
+		Schedule sch = u.getCurrentPupil().getCurrentSchedule();
+		GradeSemester s = sch.getCurrentSemester();
+
+		Elements tableCells = doc.getElementsByAttributeValue("class",
+				"table rating");
+		for (Element tableCell : tableCells) {
+
+			Elements trs = tableCell.getElementsByTag("tr");
+			for (Element tr : trs) {
+
+				if (tr.hasAttr("class")
+						&& tr.attr("class").equals("table-header"))
+					continue;
+				
+				GradeRec rec = new GradeRec();
+				int thCount = 0;
+
+				Elements ths = tr.getElementsByTag("th");
+				for (Element th : ths) {
+
+					if (th.hasAttr("class")
+							&& th.attr("class").equals("table-header3")) {
+						
+						rec.setFormText(th.text());
+						thCount = 2;
+
+					} else if (th.hasAttr("class")
+							&& th.attr("class").equals("cell-header2")) {
+						
+						switch (thCount) {
+						case 2:
+							if (containsPrintableChars(th.text()))
+								rec.setAbsent(Integer.parseInt(th.text()));
+							break;
+						case 3:
+							if (containsPrintableChars(th.text()))
+								rec.setReleased(Integer.parseInt(th.text()));
+							break;
+						case 4:
+							if (containsPrintableChars(th.text()))
+								rec.setSick(Integer.parseInt(th.text()));
+							break;
+						case 5:
+							if (containsPrintableChars(th.text()))
+								rec.setAverage(Float.parseFloat(th.text().replace(',', '.')));
+							break;
+						case 6:
+							
+							Elements tds = th.getElementsByTag("td");
+							for (Element td : tds) {
+								if (containsPrintableChars(td.text()))
+									rec.setTotal(Integer.parseInt(td.text()));
+							}							
+							break;
+						}
+
+						thCount++;
+					}
+				}
+				
+				Elements tds = tr.getElementsByTag("td");
+				for (Element td : tds) {
+					
+					if (td.hasAttr("class")
+							&& td.attr("class").equals(
+									"grade-with-type")) {
+
+						Elements spans = td.getElementsByTag("span");
+						for (Element span : spans) {
+							
+							if (containsPrintableChars(span.text()) && containsPrintableChars(span.attr("title")))							
+								rec.addMarcRec(rec.new MarkRec (span.text(), span.attr("title")));
+						}
+					}
+				}
+				
+				rec.setStart(s.getStart());
+				rec.setStop(s.getStop());
+				
+				if (containsPrintableChars(rec.getFormText()))
+					sch.addGradeRec(rec);
+
+//				System.out.println("GradeRec: " + rec.toString());
+			}
+		}
 	}
 
 	public static void fetchLessonsDetails(Document doc, User u)
@@ -289,7 +476,6 @@ public class GshisHTMLParser {
 			Lesson l;
 
 			Elements trs = tableCell.getElementsByTag("tr");
-
 			for (Element tr : trs) {
 
 				if (tr.hasAttr("class")
@@ -306,7 +492,6 @@ public class GshisHTMLParser {
 						Elements divs = td.getElementsByTag("div");
 						for (Element div : divs) {
 
-							// System.out.println("Date: " + div.text());
 							date = new SimpleDateFormat("dd.MM.yyyy",
 									Locale.ENGLISH).parse(div.text());
 						}
@@ -317,7 +502,6 @@ public class GshisHTMLParser {
 							&& td.attr("class").equals("diary-mark")) {
 
 						String marks = fetchLongCellStringNoWhitespaces(td);
-						// System.out.println("Mark: " + marks);
 						if (l != null && marks != null) {
 							l.setMarks(marks);
 						}
@@ -327,20 +511,15 @@ public class GshisHTMLParser {
 							&& td.attr("class").equals("diary-comment")) {
 
 						String comment = fetchLongCellStringNoWhitespaces(td);
-						// System.out.println("Comment: " + comment);
 						if (l != null && comment != null) {
 							l.setComment(comment);							
 						}
-						
-//						if (l != null)
-//							System.out.println("Parsed l: " + l.toString() );
 						
 						tdCount++;
 
 					} else if (tdCount == 2) {
 
 						String theme = fetchLongCellStringNoWhitespaces(td);
-						// System.out.println("Theme: " + theme);
 						if (l != null && theme != null) {
 							l.setTheme(theme);
 						}
@@ -349,7 +528,6 @@ public class GshisHTMLParser {
 					} else if (tdCount == 3) {
 
 						String homework = fetchLongCellStringNoWhitespaces(td);
-						// System.out.println("Homework: " + homework);
 						if (l != null && homework != null) {
 							l.setHomework(homework);
 						}
@@ -373,17 +551,12 @@ public class GshisHTMLParser {
 
 							e.printStackTrace();
 						} catch (NumberFormatException e) {
-							// e.getCause();
 							e.printStackTrace();
 						}						
 
 					} else {
-
-						// System.out.println("Text: " +
-						// fetchLongCellString(td));
 						tdCount++;
 					}
-
 				}
 			}
 		}

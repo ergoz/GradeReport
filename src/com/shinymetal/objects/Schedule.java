@@ -9,13 +9,15 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-public class Schedule {
+public class Schedule extends FormSelectableField {
 
 	protected SortedMap<Date, Lesson> lessons;
 	protected SortedMap<Date, Week> weeks;
-
-	protected String formId;
-	protected String schoolYear;
+	
+	protected SortedMap<String, GradeRec> gradeRecs;
+	protected SortedMap<Date, GradeSemester> semesters;
+	
+	protected String currentSemesterId;
 
 	public Schedule() {
 
@@ -31,14 +33,17 @@ public class Schedule {
 		};
 
 		lessons = new TreeMap<Date, Lesson>(comp);
+		gradeRecs = new TreeMap<String, GradeRec> ();
 		weeks = new TreeMap<Date, Week>(comp);
+		semesters = new TreeMap<Date, GradeSemester> (comp);
 	}
 
 	public Schedule(String formId, String schoolYear) {
 
 		this();
-		this.formId = formId;
-		this.schoolYear = schoolYear;
+
+		setFormId(formId);
+		setFormText(schoolYear);
 	}
 
 	public void addLesson(Lesson l) throws IllegalStateException {
@@ -52,6 +57,51 @@ public class Schedule {
 
 		w.setLoaded();
 		lessons.put(l.getStart(), l);
+	}
+	
+	public void addSemester(GradeSemester s) {
+		semesters.put(s.getStart(), s);
+	}
+	
+	public String getCurrentSemesterId() {
+		return currentSemesterId;
+	}
+
+	public void setCurrentSemesterId(String currentSemesterId) {
+		this.currentSemesterId = currentSemesterId;
+	}
+	
+	public GradeSemester getSemester(Date day) throws NullPointerException {
+
+		SortedMap<Date, GradeSemester> subMapElements = semesters.subMap(day, day);
+		for (Map.Entry<Date, GradeSemester> entry : subMapElements.entrySet()) {
+			return entry.getValue();
+		}
+		
+		throw new NullPointerException();
+	}
+	
+	public GradeSemester getSemester(String formId) throws NullPointerException {
+
+		for (Map.Entry<Date, GradeSemester> entry : semesters.entrySet()) {
+			
+			if (entry.getValue().getFormId().equals(formId))
+				return entry.getValue();
+		}
+		
+		throw new NullPointerException();
+	}
+	
+	public GradeSemester getCurrentSemester () {
+
+		return getSemester(currentSemesterId);
+	}
+
+	public void addGradeRec(GradeRec gr) throws IllegalStateException {
+
+		// TODO: mark semester as loaded
+		// TODO: fix graderec time range
+		gradeRecs.put(gr.getFormText(), gr);
 	}
 
 	public Lesson getLesson(Date start) {
@@ -86,22 +136,6 @@ public class Schedule {
 		throw new NullPointerException();
 	}
 
-	public void setFormId(String formId) {
-		this.formId = formId;
-	}
-
-	public void setSchoolYear(String formYear) {
-		this.schoolYear = formYear;
-	}
-
-	public String getFormId() {
-		return formId;
-	}
-
-	public String getSchoolYear() {
-		return schoolYear;
-	}
-
 	public void addWeek(Week w) {
 		weeks.put(w.getStart(), w);
 	}
@@ -132,6 +166,10 @@ public class Schedule {
 		return weeks.entrySet();
 	}
 
+	public final Set<Entry<String, GradeRec>> getGradeRecSet() {
+		return gradeRecs.entrySet();
+	}
+
 	public String toString() {
 
 		String res = "Weeks:\n";
@@ -143,6 +181,12 @@ public class Schedule {
 		res += "\nLessons:\n";
 
 		for (Map.Entry<Date, Lesson> entry : lessons.entrySet()) {
+			res += entry.getValue().toString() + "\n";
+		}
+		
+		res += "\nGrade Records:\n";
+
+		for (Map.Entry<String, GradeRec> entry : gradeRecs.entrySet()) {
 			res += entry.getValue().toString() + "\n";
 		}
 

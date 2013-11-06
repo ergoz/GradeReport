@@ -28,20 +28,24 @@ import com.shinymetal.objects.Week;
 
 public class GshisLoader {
 	
-	public final String siteUrl = "http://schoolinfo.educom.ru";
-	public final String loginstep1 = "/Login.aspx?ReturnUrl=%2fdefault.aspx";
-	public final String loginstep2 = "/default.aspx?action=login";
-	public final String lessonsUrl = "/Pupil/Lessons.aspx";
-	public final String diaryUrl = "/Pupil/Diary.aspx";
-	public final String gradesUrl = "/Pupil/Grades.aspx";
-	public final String perfUrl = "/Pupil/Performance.aspx";
+	protected final String siteUrl = "http://schoolinfo.educom.ru";
+	protected final String loginstep1 = "/Login.aspx?ReturnUrl=%2fdefault.aspx";
+	protected final String loginstep2 = "/default.aspx?action=login";
+	protected final String lessonsUrl = "/Pupil/Lessons.aspx";
+	protected final String diaryUrl = "/Pupil/Diary.aspx";
+	protected final String gradesUrl = "/Pupil/Grades.aspx";
+//	protected final String perfUrl = "/Pupil/Performance.aspx";
 
 	public User user;
 
-	public String cookieARRAffinity;
-	public String cookieASPXAUTH;
-	public String cookieASPNET_SessionId;
-	public String fieldVIEWSTATE;
+	protected String cookieARRAffinity;
+	protected String cookieASPXAUTH;
+	protected String cookieASPNET_SessionId;
+
+	protected String authVIEWSTATE;
+	protected String lessonsVIEWSTATE;
+	protected String diaryVIEWSTATE;
+	protected String gradesVIEWSTATE;	
 	
 	public void parseLessonsPage(String page) throws ParseException {
 
@@ -53,7 +57,7 @@ public class GshisLoader {
 		GshisHTMLParser.fetchWeeks(doc, user);
 		GshisHTMLParser.fetchLessons(doc, user);
 		
-		fieldVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+		lessonsVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
 	
 	public void parseDiaryPage(String page) throws ParseException {
@@ -65,7 +69,20 @@ public class GshisLoader {
 		GshisHTMLParser.fetchYears(doc, user);
 		GshisHTMLParser.fetchLessonsDetails(doc, user);
 		
-		fieldVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+		diaryVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+	}
+
+	public void parseGradesPage(String page) throws ParseException {
+
+		Document doc = Jsoup.parse(page);
+
+		GshisHTMLParser.fetchUserName(doc, user);
+		GshisHTMLParser.fetchPupils(doc, user);
+		GshisHTMLParser.fetchYears(doc, user);
+		GshisHTMLParser.fetchGradeSemesters(doc, user);
+		GshisHTMLParser.fetchGrades(doc, user);
+		
+		gradesVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
 
 	protected String getCookieByName(HttpURLConnection uc, String cookieName) {
@@ -121,8 +138,8 @@ public class GshisLoader {
 			}
 
 			Document doc = Jsoup.parse(String.valueOf(tmp));
-			fieldVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
-			if (fieldVIEWSTATE != null) 
+			authVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+			if (authVIEWSTATE != null) 
 				return true;
 
 		} catch (MalformedURLException e) {
@@ -138,7 +155,7 @@ public class GshisLoader {
 
 	protected boolean loginGetCookiesStep2() {
 
-		if (fieldVIEWSTATE.length() <= 0) {
+		if (authVIEWSTATE.length() <= 0) {
 			return false;
 		}
 
@@ -149,7 +166,7 @@ public class GshisLoader {
 			String urlParameters = "";
 
 			urlParameters += encodePOSTVar("__EVENTTARGET", "ctl00$btnLogin");
-			urlParameters += encodePOSTVar("__VIEWSTATE", fieldVIEWSTATE);
+			urlParameters += encodePOSTVar("__VIEWSTATE", authVIEWSTATE);
 			urlParameters += encodePOSTVar("ctl00$txtLogin", user.getLogin());
 			urlParameters += encodePOSTVar("ctl00$txtPassword", user.getPassword());
 			
@@ -282,7 +299,7 @@ public class GshisLoader {
 			 * Do NOT add ctl00$sm, __EVENTTARGET, __EVENTARGUMENT, __LASTFOCUS,
 			 * __ASYNCPOST, this will break everything for unknown reason!
 			 */
-			urlParameters += encodePOSTVar("__VIEWSTATE", fieldVIEWSTATE);
+			urlParameters += encodePOSTVar("__VIEWSTATE", lessonsVIEWSTATE);
 			urlParameters += encodePOSTVar("ctl00$learnYear$drdLearnYears", s.getFormId());
 			urlParameters += encodePOSTVar("ctl00$topMenu$pupil$drdPupils", p.getFormId());
 			urlParameters += encodePOSTVar("ctl00$topMenu$tbUserId", p.getFormId());
@@ -350,7 +367,7 @@ public class GshisLoader {
 			 * Do NOT add ctl00$sm, __EVENTTARGET, __EVENTARGUMENT, __LASTFOCUS,
 			 * __ASYNCPOST, this will break everything for unknown reason!
 			 */
-			urlParameters += encodePOSTVar("__VIEWSTATE", fieldVIEWSTATE);
+			urlParameters += encodePOSTVar("__VIEWSTATE", diaryVIEWSTATE);
 			urlParameters += encodePOSTVar("ctl00$learnYear$drdLearnYears", s.getFormId());
 			urlParameters += encodePOSTVar("ctl00$topMenu$pupil$drdPupils", p.getFormId());
 			urlParameters += encodePOSTVar("ctl00$topMenu$tbUserId", p.getFormId());
@@ -453,55 +470,70 @@ public class GshisLoader {
 	}
 	
 	public void reset () {
+
 		isLoggedIn = false;
+		
+		authVIEWSTATE = null;
+		lessonsVIEWSTATE = null;
+		diaryVIEWSTATE = null;
+		gradesVIEWSTATE = null;
 	}
 	
-	protected void parseLessonsByDate(Date day) {
+	protected boolean parseLessonsByDate(Date day) {
 
 		try {
 			String page;
-
-			if ((page = getPageByURL(lessonsUrl)) == null) {
-				Log.e("getLessonsByDate()", "getPageByURL () [1] failed!");
-				return;
+			
+			if (lessonsVIEWSTATE == null || lessonsVIEWSTATE.length() <= 0
+					|| user.getCurrentPupilId() == null) {
+	
+				if ((page = getPageByURL(lessonsUrl)) == null) {
+					Log.e("getLessonsByDate()", "getPageByURL () [1] failed!");
+					return false;
+				}
+	
+				parseLessonsPage(page);
 			}
-
-			parseLessonsPage(page);
 
 			Pupil p = user.getCurrentPupil();
 			Schedule s = p.getCurrentSchedule();
-			boolean weekLoaded = s.getWeek(day).getLoadedState();
+			boolean weekLoaded = s.getWeek(day).getLoaded();
 
 			if (!weekLoaded) {
 
 				page = getLessons(p, s, s.getWeek(day));
 				if (page == null) {
 					Log.e("getLessonsByDate()", "getLessons () [1] failed!");
-					return;
+					return false;
 				}
 				parseLessonsPage(page);
 			}
 
-			if ((page = getPageByURL(diaryUrl))== null) {
-				Log.e("getLessonsByDate()", "getPageByURL () [2] failed!");
-				return;
+			if (diaryVIEWSTATE == null || diaryVIEWSTATE.length() <= 0) {
+				if ((page = getPageByURL(diaryUrl))== null) {
+					Log.e("getLessonsByDate()", "getPageByURL () [2] failed!");
+					return false;
+				}
+				
+				parseDiaryPage(page);
 			}
-			
-			parseDiaryPage(page);
 			
 			if (!weekLoaded) {
 				page = getLessonDetails(p, s, s.getWeek(day));
 				if ( page == null) {
 					Log.e("getLessonsByDate()", "getLessonDetails () [1] failed!");
-					return;
+					return false;
 				}
 				parseDiaryPage(page);
 			}
+			
+			return s.getWeek(day).getLoaded();
 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return false;
 	}
 
 	public ArrayList<String> getLessonsByDate(Date day) {
@@ -512,7 +544,9 @@ public class GshisLoader {
 		
 		if (!isLoggedIn) {
 			
-			login();
+			for (int i=0; i<2; i++)
+				if (login()) break;
+
 			requestNeeded = true;
 		}
 		
@@ -522,7 +556,7 @@ public class GshisLoader {
 			
 			s = user.getCurrentPupil().getCurrentSchedule();
 			
-			if ( !s.getWeek(day).getLoadedState() ) {
+			if ( !s.getWeek(day).getLoaded() ) {
 				requestNeeded = true;
 			}
 			
@@ -532,27 +566,29 @@ public class GshisLoader {
 		}
 
 		try {
-			if (requestNeeded)
-				parseLessonsByDate(day);
+			if (requestNeeded) {
+				
+				for (int i=0; i<2; i++)
+					if (parseLessonsByDate(day)) break;
+			}
 	
 			s = user.getCurrentPupil().getCurrentSchedule();
 			int l = 1;
 			
-			Log.w("zzzdebug", "looking for lessons day: " + day);
+//			Log.w("zzzdebug", "looking for lessons day: " + day);
 
 			while (true) {
 				Lesson lesson = s.getLessonByNumber(day, l++);
-				res.add(new SimpleDateFormat("dd.MM ").format(lesson.getStart()) +
-						lesson.getTimeframe() + " " + lesson.getName() + "/" + lesson.getTeacher());
+				SimpleDateFormat fmt = new SimpleDateFormat("HH:mm");
+				String timeframe = fmt.format(lesson.getStart()) + " - " + fmt.format(lesson.getStop());
 
-				Log.w("zzzdebug", "added: " + lesson.getTimeframe() + " "
-						+ lesson.getName() + "/" + lesson.getTeacher());
+				res.add(new SimpleDateFormat("dd.MM ").format(lesson.getStart()) +
+						timeframe + " " + lesson.getFormText() + "/" + lesson.getTeacher());
 			}
 		} catch (NullPointerException e) {
 			
 		}
 		
 		return res;
-	}
-	
+	}	
 }
