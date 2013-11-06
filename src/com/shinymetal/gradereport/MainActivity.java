@@ -27,8 +27,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity {
@@ -250,14 +250,47 @@ public class MainActivity extends FragmentActivity {
 		 */
 		protected static final String ARG_SECTION_NUMBER = "section_number";
 		protected ArrayList<Lesson> values;
-		protected ListView listView;
+		protected ExpandableListView expListView;
 		protected TextView textView;
 		
 		public LessonSectionFragment() {
 			
 		}
 		
-		private class LessonsArrayAdapter extends ArrayAdapter<Lesson> {
+		private class LessonsArrayAdapter extends BaseExpandableListAdapter {
+			
+//			private class LessonDetail {
+//				
+//				protected String theme;
+//				protected String homework;
+//				protected String marks;
+//				protected String comment;
+//
+//				public String getTheme() {
+//					return theme;
+//				}
+//				public String getHomework() {
+//					return homework;
+//				}
+//				public String getMarks() {
+//					return marks;
+//				}
+//				public String getComment() {
+//					return comment;
+//				}
+//				public void setTheme(String theme) {
+//					this.theme = theme;
+//				}
+//				public void setHomework(String homework) {
+//					this.homework = homework;
+//				}
+//				public void setMarks(String marks) {
+//					this.marks = marks;
+//				}
+//				public void setComment(String comment) {
+//					this.comment = comment;
+//				}
+//			}
 			
 		    private final Context context;
 		    private final ArrayList<Lesson> values;
@@ -265,43 +298,134 @@ public class MainActivity extends FragmentActivity {
 		    
 		    public LessonsArrayAdapter(Context context, ArrayList<Lesson> values) {
 
-		    	super(context, R.layout.lessons_list, values);
-		    	
 		    	this.context = context;
 		    	this.values = values;
 		    	this.format = new SimpleDateFormat("HH:mm ", Locale.ENGLISH);
 		    }
 		    
 		    @Override
-		    public View getView(int position, View convertView, ViewGroup parent) {
+		    public int getGroupCount() {
 		    	
-		        LayoutInflater inflater = (LayoutInflater) context
-		                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		        return values.size();
+		    }
+		    
+		    @Override
+		    public int getChildrenCount(int groupPosition) {
+		    	
+		        return 1;
+		    }
+		    
+		    @Override
+		    public Object getGroup(int groupPosition) {
+		        return values.get(groupPosition);
+		    }
+		    
+		    @Override
+		    public Object getChild(int groupPosition, int childPosition) {
+		    	
+		    	Lesson l = values.get(groupPosition);
+//		    	LessonDetail d = new LessonDetail ();
+//		    	
+//		    	d.setComment(l.getComment());
+//		    	d.setHomework(l.getHomework());
+//		    	d.setMarks(l.getMarks());
+//		    	d.setTheme(l.getTheme());
+		    	
+		        return l;
+		    }
+		    
+		    @Override
+		    public long getGroupId(int groupPosition) {
+		        return groupPosition;
+		    }
+		    
+		    @Override
+		    public long getChildId(int groupPosition, int childPosition) {
+		        return childPosition;
+		    }
+
+		    @Override
+		    public boolean hasStableIds() {
+		        return true;
+		    }
+		    
+		    @Override
+		    public View getGroupView(int groupPosition, boolean isExpanded, View convertView,
+		                             ViewGroup parent) {
+
+		        if (convertView == null) {
+		            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		            convertView = inflater.inflate(R.layout.lessons_list, null);
+		        }
+
+		        if (isExpanded) {
+		           //Изменяем что-нибудь, если текущая Group раскрыта
+		        }
+		        else {
+		            //Изменяем что-нибудь, если текущая Group скрыта
+		        }
+
+		        TextView itemNameView = (TextView) convertView.findViewById(R.id.itemName);
+		        TextView itemDetailView = (TextView) convertView.findViewById(R.id.itemDetail);
 		        
-		        View rowView = inflater.inflate(R.layout.lessons_list, parent, false);
-		        TextView itemNameView = (TextView) rowView.findViewById(R.id.itemName);
-		        TextView itemDetailView = (TextView) rowView.findViewById(R.id.itemDetail);
-		        
-		        Lesson l = values.get(position);
+		        Lesson l = values.get(groupPosition);
 		        
 		        itemNameView.setText("" + l.getNumber() + ". " + l.getFormText());
 		        itemDetailView.setText(format.format(l.getStart()) + l.getTeacher());
-		        
-		        return rowView;
+
+		        return convertView;
+
+		    }
+		    
+		    @Override
+		    public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
+		                             View convertView, ViewGroup parent) {
+		    	
+		        if (convertView == null) {
+		            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		            convertView = inflater.inflate(R.layout.lessons_detail, null);
+		        }
+
+		        TextView textTheme = (TextView) convertView.findViewById(R.id.itemTheme);
+		        String theme = values.get(groupPosition).getTheme();
+		        if (theme == null) theme = "";
+		        textTheme.setText(getString(R.string.label_theme) + ": " + theme);
+
+		        TextView textHomework = (TextView) convertView.findViewById(R.id.itemHomework);
+		        String homework = values.get(groupPosition).getHomework();
+		        if (homework == null) homework = "";
+		        textHomework.setText(getString(R.string.label_homework) + ": " + homework);
+
+		        TextView textMarks = (TextView) convertView.findViewById(R.id.itemMarks);
+		        String marks = values.get(groupPosition).getMarks();
+		        if (marks == null) marks = "";
+		        textMarks.setText(getString(R.string.label_marks) + ": " + marks);
+
+		        TextView textComment = (TextView) convertView.findViewById(R.id.itemComment);
+		        String comment = values.get(groupPosition).getComment();
+		        if (comment == null) comment = "";
+		        textComment.setText(getString(R.string.label_comment) + ": " + comment);
+
+		        return convertView;
+		    }
+		    
+		    @Override
+		    public boolean isChildSelectable(int groupPosition, int childPosition) {
+		        return true;
 		    }
 		}
 		
 		private class UpdateListView extends AsyncTask<Integer, Void, ArrayList<Lesson>> {
 			
 			protected MainActivity activity;
-			protected ListView view;
+			protected ExpandableListView view;
 			protected TextView header;
 			
 			protected final SimpleDateFormat format = new SimpleDateFormat(
 					"dd.MM.yyyy", Locale.ENGLISH);
 			protected Date day;
 						
-			public void setUpdateTarget (MainActivity activity, ListView view, TextView header) {
+			public void setUpdateTarget (MainActivity activity, ExpandableListView view, TextView header) {
 				
 				this.activity = activity;
 				this.view = view;
@@ -366,7 +490,7 @@ public class MainActivity extends FragmentActivity {
 				LessonsArrayAdapter adapter = new LessonsArrayAdapter (activity, values);
 
 				if (view != null) {
-					
+
 					view.setAdapter(adapter);
 					header.setText(format.format(day));
 					view.invalidateViews();
@@ -386,7 +510,7 @@ public class MainActivity extends FragmentActivity {
 
 			UpdateListView update = new UpdateListView ();
 
-			update.setUpdateTarget((MainActivity) getActivity(), listView, textView);
+			update.setUpdateTarget((MainActivity) getActivity(), expListView, textView);
 			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));
 			
 		}
@@ -397,11 +521,11 @@ public class MainActivity extends FragmentActivity {
 			
 			View rootView = inflater.inflate(R.layout.fragment_lessons,
 					container, false);
-			listView = (ListView) rootView
+			expListView = (ExpandableListView) rootView
 					.findViewById(R.id.section_label);
 			
 			View header = getLayoutInflater(savedInstanceState).inflate(R.layout.lessons_header, null);
-			listView.addHeaderView(header);
+			expListView.addHeaderView(header);
 			
 			textView = (TextView) header.findViewById(R.id.itemHeader);
 			
