@@ -8,15 +8,15 @@
     <string name="action_settings">Настройки</string>
     <string name="action_select_pupil">Ученик</string>
     <string name="action_pupil_detail">Выберите, какой ученик будет отображаться в списке</string>
-    <string name="action_select_week">Выбор недели</string>
+    <string name="action_select_date">Выбор даты</string>
     <string name="action_previous_week">Пред. неделя</string>
     <string name="action_next_week">След. неделя</string>
-    <string name="action_week_detail">Выберите, какая неделя будет отображаться в списке</string>
     <string name="action_refresh">Обновить</string>
     <string name="label_theme">Тема</string>
     <string name="label_homework">Дом. задание</string>
     <string name="label_marks">Оценки</string>
     <string name="label_comment">Комментарий</string>
+    <string name="label_loading_data">Загрузка данных</string>
     <string name="title_section1">Понедельник</string>
     <string name="title_section2">Вторник</string>
     <string name="title_section3">Среда</string>

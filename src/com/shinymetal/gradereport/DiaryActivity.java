@@ -12,15 +12,20 @@ import com.google.android.vending.licensing.LicenseCheckerCallback;
 import com.google.android.vending.licensing.ServerManagedPolicy;
 import com.shinymetal.gradereport.R;
 import com.shinymetal.objects.Lesson;
+import com.shinymetal.objects.Week;
 import com.shinymetal.utils.GshisLoader;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -31,8 +36,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.DatePicker;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
@@ -54,6 +59,10 @@ public class DiaryActivity extends FragmentActivity {
 	private ViewPager mViewPager;
 	private Menu menu = null;
 	private boolean naviMenuDisable = true;
+	
+	DatePickerFragment dateSetFragment;
+	
+	private static final GshisLoader gshisLoader = GshisLoader.getInstance();
 	
 	private static final String BASE64_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmGmVMb5v06NsnxMAt4iOaJGXuU9Tj3XR9/QMmE1lE4VMjUzMrYT96FX6obkOrukZrN3cgw+oduv4mgLQjmaavd5U8EdFXKjdGD753k01DN/YYaG96WNFUd1ES4sZlq0R/rRR8B+l+uRaEaVIAQdEvGMd1nH1s6lRkkzQHf34plpH0O4DxAJn+OWhyDxWVsyC8hY3uPTrpKpr6g0iTQJOS+77+LhdIHmrd0oNm3R7galW4qVC6V+6BTqUz0YgzdF383H+7dP7GE2RRld7AeFlYjo4JFU5LQJzmPhrz/w788hO/dGKe5U5CYkw2HV1iJlmdboz+lKzYDnYzJyXT3s9cwIDAQAB";
 	private static final byte[] SALT = new byte[] { 34, 87, 35, -23, -34, -12,
@@ -116,7 +125,6 @@ public class DiaryActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_diary);
 		
 //		mHandler = new Handler();
@@ -183,12 +191,14 @@ public class DiaryActivity extends FragmentActivity {
 	public boolean previousWeek (MenuItem item) {
 
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(GshisLoader.getInstance().getCurrWeekStart());
+		cal.setTime(gshisLoader.getCurrWeekStart());
 		cal.add(Calendar.DATE, -7);
 		GshisLoader.getInstance().setCurrWeekStart(cal.getTime());
 
 		for (Fragment f : getSupportFragmentManager().getFragments()) {
-			((LessonSectionFragment) f).refresh();
+			
+			if (f != null && f instanceof LessonSectionFragment)
+				((LessonSectionFragment) f).refresh();
 		}
 		return true;
 	}
@@ -196,46 +206,86 @@ public class DiaryActivity extends FragmentActivity {
 	public boolean nextWeek (MenuItem item) {
 
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(GshisLoader.getInstance().getCurrWeekStart());
+		cal.setTime(gshisLoader.getCurrWeekStart());
 		cal.add(Calendar.DATE, 7);
 		GshisLoader.getInstance().setCurrWeekStart(cal.getTime());
 		
 		for (Fragment f : getSupportFragmentManager().getFragments()) {
-			((LessonSectionFragment) f).refresh();
+			
+			if (f != null && f instanceof LessonSectionFragment)
+				((LessonSectionFragment) f).refresh();
 		}
 
 		return true;
 	}
 	
-	public boolean selectWeek (MenuItem item) {
+	public static class DatePickerFragment extends DialogFragment implements
+			DatePickerDialog.OnDateSetListener {
 		
-		AlertDialog alertDialog = new AlertDialog.Builder(DiaryActivity.this).create(); //Read Update
-        alertDialog.setTitle(getString(R.string.action_select_week));
-        alertDialog.setMessage(getString(R.string.action_week_detail));
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			// Use the current date as the default date in the picker
+			Calendar c = Calendar.getInstance();
+			c.setTime(gshisLoader.getCurrWeekStart());
+			
+			int year = c.get(Calendar.YEAR);
+			int month = c.get(Calendar.MONTH);
+			int day = c.get(Calendar.DAY_OF_MONTH) + ((DiaryActivity) getActivity()).mViewPager.getCurrentItem();
 
-		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-				new DialogInterface.OnClickListener() {
+			// Create a new instance of DatePickerDialog and return it
+			return new DatePickerDialog(getActivity(), this, year, month, day);
+		}		
 
-					public void onClick(final DialogInterface dialog,
-							final int which) {
-						// here you can add functions
-					}
-				});
+		public void onDateSet(DatePicker view, int year, int month, int day) {
+			// Do something with the date chosen by the user
+			Calendar c = Calendar.getInstance();
+			c.set(Calendar.YEAR, year);
+			c.set(Calendar.MONTH, month);
+			c.set(Calendar.DAY_OF_MONTH, day);
+			
+			Date weekStart = Week.getWeekStart(c.getTime());
+			c.setTime(weekStart);
+			
+			int item = 0;
+			
+			while (c.get(Calendar.DAY_OF_MONTH) != day) {
+				
+				c.add(Calendar.DATE, 1);
+				item++;
+			}
 
-        alertDialog.show();  //<-- See This!
-
+			GshisLoader.getInstance().setCurrWeekStart(weekStart);
+			
+			DiaryActivity activity = (DiaryActivity) getActivity(); 
+			activity.mViewPager.setCurrentItem(item, true);
+			
+			for (Fragment f : activity.getSupportFragmentManager().getFragments()) {
+				
+				if (f != null && f instanceof LessonSectionFragment)
+					((LessonSectionFragment) f).refresh();
+			}
+		}
+	}
+	
+	public boolean selectDate (MenuItem item) {
+        
+		dateSetFragment = new DatePickerFragment();
+		dateSetFragment.show(getSupportFragmentManager(), "dateDialog");
+        
 		return true;
 	}
 
 	public boolean refresh (MenuItem item) {
 		
-		GshisLoader.getInstance().reset();
+		gshisLoader.reset();
 		
 		naviMenuDisable = true; 
 		invalidateOptionsMenu();
 		
 		for (Fragment f : getSupportFragmentManager().getFragments()) {
-			((LessonSectionFragment) f).refresh();
+			
+			if (f != null && f instanceof LessonSectionFragment)
+				((LessonSectionFragment) f).refresh();
 		}
 
 		return true;
@@ -254,7 +304,7 @@ public class DiaryActivity extends FragmentActivity {
 
 		getMenu().findItem(R.id.action_select_pupil).setEnabled(
 				!naviMenuDisable);
-		getMenu().findItem(R.id.action_select_week)
+		getMenu().findItem(R.id.action_select_date)
 				.setEnabled(!naviMenuDisable);
 		getMenu().findItem(R.id.action_previous_week).setEnabled(
 				!naviMenuDisable);
@@ -268,13 +318,6 @@ public class DiaryActivity extends FragmentActivity {
         //use it like this
         return menu;
     }
-	
-	@Override
-	public void onPause () {
-		
-		GshisLoader.getInstance().reset();
-		super.onPause();
-	}
 
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -288,13 +331,13 @@ public class DiaryActivity extends FragmentActivity {
 
 		@Override
 		public Fragment getItem(int position) {
-			// getItem is called to instantiate the fragment for the given page.
-			// Return a DummySectionFragment (defined as a static inner class
-			// below) with the page number as its lone argument.
+
 			Fragment fragment = new LessonSectionFragment();
 			Bundle args = new Bundle();
 			args.putInt(LessonSectionFragment.ARG_SECTION_NUMBER, position + 1);
+			
 			fragment.setArguments(args);
+			fragment.setRetainInstance(true);
 			return fragment;
 		}
 
@@ -335,48 +378,19 @@ public class DiaryActivity extends FragmentActivity {
 		 * fragment.
 		 */
 		protected static final String ARG_SECTION_NUMBER = "section_number";
+		
 		protected ArrayList<Lesson> values;
 		protected ExpandableListView expListView;
-		protected TextView textView;
+		protected TextView headerView;
+		
+		protected UpdateListView update;
+		protected ProgressDialog dialog;
 		
 		public LessonSectionFragment() {
 			
 		}
 		
 		private class LessonsArrayAdapter extends BaseExpandableListAdapter {
-			
-//			private class LessonDetail {
-//				
-//				protected String theme;
-//				protected String homework;
-//				protected String marks;
-//				protected String comment;
-//
-//				public String getTheme() {
-//					return theme;
-//				}
-//				public String getHomework() {
-//					return homework;
-//				}
-//				public String getMarks() {
-//					return marks;
-//				}
-//				public String getComment() {
-//					return comment;
-//				}
-//				public void setTheme(String theme) {
-//					this.theme = theme;
-//				}
-//				public void setHomework(String homework) {
-//					this.homework = homework;
-//				}
-//				public void setMarks(String marks) {
-//					this.marks = marks;
-//				}
-//				public void setComment(String comment) {
-//					this.comment = comment;
-//				}
-//			}
 			
 		    private final Context context;
 		    private final ArrayList<Lesson> values;
@@ -409,15 +423,7 @@ public class DiaryActivity extends FragmentActivity {
 		    @Override
 		    public Object getChild(int groupPosition, int childPosition) {
 		    	
-		    	Lesson l = values.get(groupPosition);
-//		    	LessonDetail d = new LessonDetail ();
-//		    	
-//		    	d.setComment(l.getComment());
-//		    	d.setHomework(l.getHomework());
-//		    	d.setMarks(l.getMarks());
-//		    	d.setTheme(l.getTheme());
-		    	
-		        return l;
+		        return values.get(groupPosition);
 		    }
 		    
 		    @Override
@@ -445,10 +451,10 @@ public class DiaryActivity extends FragmentActivity {
 		        }
 
 		        if (isExpanded) {
-		           //Изменяем что-нибудь, если текущая Group раскрыта
+		           // Изменяем что-нибудь, если текущая Group раскрыта
 		        }
 		        else {
-		            //Изменяем что-нибудь, если текущая Group скрыта
+		            // Изменяем что-нибудь, если текущая Group скрыта
 		        }
 
 		        TextView itemNameView = (TextView) convertView.findViewById(R.id.itemName);
@@ -460,7 +466,6 @@ public class DiaryActivity extends FragmentActivity {
 		        itemDetailView.setText(format.format(l.getStart()) + l.getTeacher());
 
 		        return convertView;
-
 		    }
 		    
 		    @Override
@@ -503,19 +508,18 @@ public class DiaryActivity extends FragmentActivity {
 		
 		private class UpdateListView extends AsyncTask<Integer, Void, ArrayList<Lesson>> {
 			
-			protected DiaryActivity activity;
-			protected ExpandableListView view;
-			protected TextView header;
+			protected DiaryActivity activity;			
+			protected boolean isCancelled = false;
+			
+			public void cancel() { isCancelled = true; }
 			
 			protected final SimpleDateFormat format = new SimpleDateFormat(
 					"dd.MM.yyyy", Locale.ENGLISH);
 			protected Date day;
 						
-			public void setUpdateTarget (DiaryActivity activity, ExpandableListView view, TextView header) {
+			public void setUpdateTarget (DiaryActivity activity) {
 				
 				this.activity = activity;
-				this.view = view;
-				this.header = header;
 			}			
 
 			@Override
@@ -523,7 +527,7 @@ public class DiaryActivity extends FragmentActivity {
 			
 				ArrayList<Lesson> values = new ArrayList<Lesson> ();
 				int wantDoW = dow [0];
-				day = GshisLoader.getInstance().getCurrWeekStart();
+				day = gshisLoader.getCurrWeekStart();
 				
 				switch (wantDoW) {
 				case 1:
@@ -568,37 +572,41 @@ public class DiaryActivity extends FragmentActivity {
 
 			protected void onPreExecute() {
 				
-				activity.setProgressBarIndeterminateVisibility(true);
+			    dialog = new ProgressDialog(activity);
+			    
+			    dialog.setMessage(getString(R.string.label_loading_data));
+			    dialog.setIndeterminate(true);
+			    dialog.setCancelable(true);
+			    dialog.show();
 			}
 
 			protected void onPostExecute(ArrayList<Lesson> values) {
+				
+				if (!isCancelled) {
 
-				LessonsArrayAdapter adapter = new LessonsArrayAdapter (activity, values);
-
-				if (view != null) {
-
-					view.setAdapter(adapter);
-					header.setText(format.format(day));
-					view.invalidateViews();
-				}
-			    
-				if (activity != null) {
+					dialog.dismiss();
 					
-					activity.enableNaviMenu ();
-					activity.invalidateOptionsMenu();
-
-					activity.setProgressBarIndeterminateVisibility(false);
+					if (values != null) {
+						LessonsArrayAdapter adapter = new LessonsArrayAdapter (activity, values);
+	
+						headerView.setText(format.format(day));
+						
+						expListView.setAdapter(adapter);						
+						expListView.invalidateViews();
+	
+						activity.enableNaviMenu();
+						activity.invalidateOptionsMenu();
+					}					
 				}
 			}
 		}
 		
 		public void refresh () {
 
-			UpdateListView update = new UpdateListView ();
+			update = new UpdateListView ();
 
-			update.setUpdateTarget((DiaryActivity) getActivity(), expListView, textView);
-			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));
-			
+			update.setUpdateTarget((DiaryActivity) getActivity());
+			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));			
 		}
 
 		@Override
@@ -613,10 +621,19 @@ public class DiaryActivity extends FragmentActivity {
 			View header = getLayoutInflater(savedInstanceState).inflate(R.layout.lessons_header, null);
 			expListView.addHeaderView(header);
 			
-			textView = (TextView) header.findViewById(R.id.itemHeader);
+			headerView = (TextView) header.findViewById(R.id.itemHeader);
 			
 			refresh ();
 			return rootView;
+		}
+		
+		@Override
+		public void onDetach() {
+			
+			if (update != null)
+				update.cancel();
+			
+			super.onDetach();
 		}
 	}
 }
