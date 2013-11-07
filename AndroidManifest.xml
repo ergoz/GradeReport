@@ -11,19 +11,25 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="com.android.vending.CHECK_LICENSE" />    
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <activity
-            android:name="com.shinymetal.gradereport.MainActivity"
-            android:label="@string/app_name" >
+            android:name="com.shinymetal.gradereport.SplashActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.shinymetal.gradereport.DiaryActivity"
+            android:label="@string/diary_name" >
         </activity>
         <activity
             android:name="com.shinymetal.gradereport.PreferencesActivity"

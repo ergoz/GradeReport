@@ -6,6 +6,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import com.google.android.vending.licensing.AESObfuscator;
+import com.google.android.vending.licensing.LicenseChecker;
+import com.google.android.vending.licensing.LicenseCheckerCallback;
+import com.google.android.vending.licensing.ServerManagedPolicy;
 import com.shinymetal.gradereport.R;
 import com.shinymetal.objects.Lesson;
 import com.shinymetal.utils.GshisLoader;
@@ -16,6 +20,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings.Secure;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -31,7 +36,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
-public class MainActivity extends FragmentActivity {
+public class DiaryActivity extends FragmentActivity {
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -50,14 +55,84 @@ public class MainActivity extends FragmentActivity {
 	private Menu menu = null;
 	private boolean naviMenuDisable = true;
 	
-	private void enableNaviMenu () { naviMenuDisable = false; }
+	private static final String BASE64_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmGmVMb5v06NsnxMAt4iOaJGXuU9Tj3XR9/QMmE1lE4VMjUzMrYT96FX6obkOrukZrN3cgw+oduv4mgLQjmaavd5U8EdFXKjdGD753k01DN/YYaG96WNFUd1ES4sZlq0R/rRR8B+l+uRaEaVIAQdEvGMd1nH1s6lRkkzQHf34plpH0O4DxAJn+OWhyDxWVsyC8hY3uPTrpKpr6g0iTQJOS+77+LhdIHmrd0oNm3R7galW4qVC6V+6BTqUz0YgzdF383H+7dP7GE2RRld7AeFlYjo4JFU5LQJzmPhrz/w788hO/dGKe5U5CYkw2HV1iJlmdboz+lKzYDnYzJyXT3s9cwIDAQAB";
+	private static final byte[] SALT = new byte[] { 34, 87, 35, -23, -34, -12,
+			43, -87, 34, 18, -12, -65, 76, -98, -121, -32, -12, 76, -43, 43 };
+	
+	private LicenseCheckerCallback mLicenseCheckerCallback;
+    private LicenseChecker mChecker;
+    
+    // A handler on the UI thread.
+//    private Handler mHandler;
+    
+    private void enableNaviMenu () { naviMenuDisable = false; }
+    
+    private class MyLicenseCheckerCallback implements LicenseCheckerCallback {
+        public void allow(int policyReason) {
+            if (isFinishing()) {
+                // Don't update UI if Activity is finishing.
+                return;
+            }
+            // Should allow user access.
+            // displayResult(getString(R.string.allow));
+        }
+
+        public void dontAllow(int policyReason) {
+            if (isFinishing()) {
+                // Don't update UI if Activity is finishing.
+                return;
+            }
+            // displayResult(getString(R.string.dont_allow));
+            
+            // Should not allow access. In most cases, the app should assume
+            // the user has access unless it encounters this. If it does,
+            // the app should inform the user of their unlicensed ways
+            // and then either shut down the app or limit the user to a
+            // restricted set of features.
+            // In this example, we show a dialog that takes the user to Market.
+            // If the reason for the lack of license is that the service is
+            // unavailable or there is another problem, we display a
+            // retry button on the dialog and a different message.
+            
+            // displayDialog(policyReason == Policy.RETRY);
+        }
+
+        public void applicationError(int errorCode) {
+            if (isFinishing()) {
+                // Don't update UI if Activity is finishing.
+                return;
+            }
+            // This is a polite way of saying the developer made a mistake
+            // while setting up or calling the license checker library.
+            // Please examine the error code and fix the error.
+            
+            // String result = String.format(getString(R.string.application_error), errorCode);
+            // displayResult(result);
+        }
+    }
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_diary);
+		
+//		mHandler = new Handler();
+
+	    // Try to use more data here. ANDROID_ID is a single point of attack.
+	    String deviceId = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+	    
+        // Library calls this when it's done.
+        mLicenseCheckerCallback = new MyLicenseCheckerCallback();
+        // Construct the LicenseChecker with a policy.
+        mChecker = new LicenseChecker(
+            this, new ServerManagedPolicy(this,
+                new AESObfuscator(SALT, getPackageName(), deviceId)),
+            BASE64_PUBLIC_KEY);
+
+        doCheck();
 
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
 				getSupportFragmentManager());
@@ -65,6 +140,17 @@ public class MainActivity extends FragmentActivity {
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);	
+	}
+	
+    private void doCheck() {
+        setProgressBarIndeterminateVisibility(true);
+        mChecker.checkAccess(mLicenseCheckerCallback);
+    }
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		mChecker.onDestroy();
 	}
 	
 	public boolean openPreferences (MenuItem item) {
@@ -76,7 +162,7 @@ public class MainActivity extends FragmentActivity {
 	
 	public boolean selectPupil (MenuItem item) {
 		
-		AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create(); //Read Update
+		AlertDialog alertDialog = new AlertDialog.Builder(DiaryActivity.this).create(); //Read Update
         alertDialog.setTitle(getString(R.string.action_select_pupil));
         alertDialog.setMessage(getString(R.string.action_pupil_detail));
 
@@ -123,7 +209,7 @@ public class MainActivity extends FragmentActivity {
 	
 	public boolean selectWeek (MenuItem item) {
 		
-		AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create(); //Read Update
+		AlertDialog alertDialog = new AlertDialog.Builder(DiaryActivity.this).create(); //Read Update
         alertDialog.setTitle(getString(R.string.action_select_week));
         alertDialog.setMessage(getString(R.string.action_week_detail));
 
@@ -417,7 +503,7 @@ public class MainActivity extends FragmentActivity {
 		
 		private class UpdateListView extends AsyncTask<Integer, Void, ArrayList<Lesson>> {
 			
-			protected MainActivity activity;
+			protected DiaryActivity activity;
 			protected ExpandableListView view;
 			protected TextView header;
 			
@@ -425,7 +511,7 @@ public class MainActivity extends FragmentActivity {
 					"dd.MM.yyyy", Locale.ENGLISH);
 			protected Date day;
 						
-			public void setUpdateTarget (MainActivity activity, ExpandableListView view, TextView header) {
+			public void setUpdateTarget (DiaryActivity activity, ExpandableListView view, TextView header) {
 				
 				this.activity = activity;
 				this.view = view;
@@ -510,7 +596,7 @@ public class MainActivity extends FragmentActivity {
 
 			UpdateListView update = new UpdateListView ();
 
-			update.setUpdateTarget((MainActivity) getActivity(), expListView, textView);
+			update.setUpdateTarget((DiaryActivity) getActivity(), expListView, textView);
 			update.execute(getArguments().getInt(ARG_SECTION_NUMBER));
 			
 		}
