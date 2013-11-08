@@ -10,6 +10,7 @@
         <EditTextPreference
             android:key="password"
             android:summary="Пожалуйста, введите ваш пароль"
+            android:inputType="textPassword"
             android:title="Пароль" >
         </EditTextPreference>
     </PreferenceCategory>

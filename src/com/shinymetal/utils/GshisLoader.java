@@ -12,6 +12,7 @@ import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map.Entry;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,6 +22,7 @@ import android.util.Log;
 import com.shinymetal.objects.Lesson;
 import com.shinymetal.objects.Pupil;
 import com.shinymetal.objects.Schedule;
+import com.shinymetal.objects.TS;
 import com.shinymetal.objects.User;
 import com.shinymetal.objects.Week;
 
@@ -45,6 +47,9 @@ public class GshisLoader {
 	protected String diaryVIEWSTATE;
 	protected String gradesVIEWSTATE;
 	
+	protected String login;
+	protected String password;
+	
 	protected Date currWeekStart = Week.getWeekStart(new Date ());
 	
 	public Date getCurrWeekStart() {
@@ -53,6 +58,15 @@ public class GshisLoader {
 
 	public void setCurrWeekStart(Date currWeekStart) {
 		this.currWeekStart = currWeekStart;
+	}
+
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public void parseLessonsPage(String page) throws ParseException {
@@ -172,11 +186,13 @@ public class GshisLoader {
 			uc.setInstanceFollowRedirects(false);
 
 			String urlParameters = "";
+			
+			
 
 			urlParameters += encodePOSTVar("__EVENTTARGET", "ctl00$btnLogin");
 			urlParameters += encodePOSTVar("__VIEWSTATE", authVIEWSTATE);
-			urlParameters += encodePOSTVar("ctl00$txtLogin", user.getLogin());
-			urlParameters += encodePOSTVar("ctl00$txtPassword", user.getPassword());
+			urlParameters += encodePOSTVar("ctl00$txtLogin", login);
+			urlParameters += encodePOSTVar("ctl00$txtPassword", password);
 			
 			uc.setRequestMethod("POST");
 			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity);
@@ -577,6 +593,7 @@ public class GshisLoader {
 		if (requestNeeded && !canLoad)
 			return null;
 
+		int l = 1;
 		try {
 			if (requestNeeded) {
 				
@@ -585,17 +602,45 @@ public class GshisLoader {
 			}
 	
 			s = user.getCurrentPupil().getCurrentSchedule();
-			int l = 1;
 			
 			while (true) {
 
-				res.add(s.getLessonByNumber(day, l++));
+				res.add(s.getLessonByNumber(day, l));
+				l++;
 			}
 			
 		} catch (NullPointerException e) {
 			
 		}
 		
+		Log.i (this.toString(), TS.get() + "getLessonsByDate (), added " + l + " lessons for date " + day.toString());		
 		return res;
-	}	
+	}
+	
+	public String getPupilIdByName(String name) {
+		
+		for (Entry<String, Pupil> p : user.getPupilSet()) {
+			
+			if (p.getValue().getFormText().equals(name)) {
+				return p.getKey();
+			}			
+		}
+		return null;
+	}
+	
+	public ArrayList<String> getPupilNames () {
+		
+		ArrayList<String> res = new ArrayList<String> (); 
+
+		for (Entry<String, Pupil> p : user.getPupilSet()) {
+			res.add(p.getValue().getFormText());
+		}
+			
+		return res;
+	}
+	
+	public void selectPupilByName (String name) {
+
+		user.setCurrentPupilId(getPupilIdByName(name));
+	}
 }

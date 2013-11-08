@@ -458,8 +458,6 @@ public class GshisHTMLParser {
 				
 				if (containsPrintableChars(rec.getFormText()))
 					sch.addGradeRec(rec);
-
-//				System.out.println("GradeRec: " + rec.toString());
 			}
 		}
 	}
@@ -535,9 +533,6 @@ public class GshisHTMLParser {
 					// TODO: use subjects_name pattern
 					} else if (td.text().matches("^[0-9]{1}\\." + whitespace_charclass + "{1}.*")) {
 
-
-						System.out.println("Name: " + td.text() + ", d: "
-								+ date);
 						tdCount = 2;
 
 						try {

@@ -5,16 +5,17 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.shinymetal.objects.Lesson;
+import com.shinymetal.objects.TS;
 import com.shinymetal.utils.GshisLoader;
 
-public class UpdateLessonsViewTask extends
+public class UpdateLessonsTask extends
 		AsyncTask<Date, Void, ArrayList<Lesson>> {
 
 	protected WeakReference<DiaryActivity> mActivity;
-
-	protected Date day;
+	protected Date mDay;
 
 	public void setUpdateTarget(DiaryActivity activity) {
 
@@ -23,7 +24,8 @@ public class UpdateLessonsViewTask extends
 
 	@Override
 	protected ArrayList<Lesson> doInBackground(Date... dow) {
-
+		
+		Log.i (this.toString(), TS.get() + "doInBackground ()");
 		return GshisLoader.getInstance().getLessonsByDate(dow[0], true);
 	}
 
@@ -37,13 +39,26 @@ public class UpdateLessonsViewTask extends
 	}
 
 	protected void onPostExecute(ArrayList<Lesson> values) {
+		
+		Log.i (this.toString(), TS.get() + this.toString() + " onPostExecute() started");
+		
+		if (isCancelled()) {
+			
+			Log.i (this.toString(), TS.get() + this.toString() + " cancelled!");
+			return;
+		}
 
 		DiaryActivity activity = mActivity.get();
 
-		if (activity != null && values != null ) {
+		if (activity != null ) {
+			
+			activity.getHandler().postDelayed(new Runnable() {
+				public void run() {
 
-			activity.setIdle();
-			activity.refreshFragments();
+					mActivity.get().refreshFragments();
+					mActivity.get().setIdle();
+				}
+			}, 100);
 		}
 	}
 }

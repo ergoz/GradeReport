@@ -99,8 +99,6 @@ public class Schedule extends FormSelectableField {
 
 	public void addGradeRec(GradeRec gr) throws IllegalStateException {
 
-		// TODO: mark semester as loaded
-		// TODO: fix graderec time range
 		gradeRecs.put(gr.getFormText(), gr);
 	}
 

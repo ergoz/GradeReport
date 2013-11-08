@@ -9,10 +9,6 @@ public class User {
 
 	protected String name;
 
-	// TODO: get login and password from preferences
-	protected final static String loginName = "900-1181";
-	protected final static String loginPwd = "Bl00dyR@ge";
-
 	protected SortedMap<String, Pupil> pupils;
 	protected String currentPupilId;
 
@@ -39,7 +35,7 @@ public class User {
 	public void setCurrentPupilId(String fId) {
 		currentPupilId = fId;
 	}
-
+	
 	public String getCurrentPupilId() {
 		return currentPupilId;
 	}
@@ -68,14 +64,6 @@ public class User {
 
 	public String getName() {
 		return name;
-	}
-
-	public String getLogin() {
-		return loginName;
-	}
-
-	public String getPassword() {
-		return loginPwd;
 	}
 
 	public String toString() {
