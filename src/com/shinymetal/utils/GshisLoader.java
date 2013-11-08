@@ -24,7 +24,6 @@ import com.shinymetal.objects.Schedule;
 import com.shinymetal.objects.User;
 import com.shinymetal.objects.Week;
 
-
 public class GshisLoader {
 	
 	protected final String siteUrl = "http://schoolinfo.educom.ru";
@@ -179,8 +178,6 @@ public class GshisLoader {
 			urlParameters += encodePOSTVar("ctl00$txtLogin", user.getLogin());
 			urlParameters += encodePOSTVar("ctl00$txtPassword", user.getPassword());
 			
-			System.out.println("urlParameters: " + urlParameters);
-
 			uc.setRequestMethod("POST");
 			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity);
 			uc.setRequestProperty("Origin", siteUrl);
@@ -262,7 +259,7 @@ public class GshisLoader {
 
 		try {
 			HttpURLConnection uc = getHttpURLConnection(siteUrl + pageUrl);
-//			uc.setInstanceFollowRedirects(false);
+
 			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity
 					+ "; .ASPXAUTH=" + cookieASPXAUTH + "; ASP.NET_SessionId="
 					+ cookieASPNET_SessionId);
@@ -545,13 +542,16 @@ public class GshisLoader {
 		return false;
 	}
 
-	public ArrayList<Lesson> getLessonsByDate(Date day) {
+	public ArrayList<Lesson> getLessonsByDate(Date day, boolean canLoad) {
 		
 		ArrayList<Lesson> res = new ArrayList<Lesson> (); 
 		Schedule s;
 		boolean requestNeeded = false;
 		
 		if (!isLoggedIn) {
+			
+			if (!canLoad)
+				return null;
 			
 			for (int i=0; i<2; i++)
 				if (login()) break;
@@ -573,6 +573,9 @@ public class GshisLoader {
 			
 			requestNeeded = true;
 		}
+		
+		if (requestNeeded && !canLoad)
+			return null;
 
 		try {
 			if (requestNeeded) {

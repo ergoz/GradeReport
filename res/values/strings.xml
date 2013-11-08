@@ -11,7 +11,7 @@
     <string name="action_select_date">Выбор даты</string>
     <string name="action_previous_week">Пред. неделя</string>
     <string name="action_next_week">След. неделя</string>
-    <string name="action_refresh">Обновить</string>
+    <string name="action_reload">Обновить</string>
     <string name="label_theme">Тема</string>
     <string name="label_homework">Дом. задание</string>
     <string name="label_marks">Оценки</string>
