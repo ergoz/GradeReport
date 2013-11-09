@@ -15,6 +15,7 @@ public class UpdateLessonsTask extends
 		AsyncTask<Date, Void, ArrayList<Lesson>> {
 
 	protected WeakReference<DiaryActivity> mActivity;
+	protected boolean mSuccess = false;
 	protected Date mDay;
 
 	public void setUpdateTarget(DiaryActivity activity) {
@@ -55,8 +56,8 @@ public class UpdateLessonsTask extends
 			activity.getHandler().postDelayed(new Runnable() {
 				public void run() {
 
-					mActivity.get().refreshFragments();
 					mActivity.get().setIdle();
+					mActivity.get().onUpdateLessonsTaskComplete();
 				}
 			}, 100);
 		}

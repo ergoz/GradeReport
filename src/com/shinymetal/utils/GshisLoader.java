@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map.Entry;
 
+import org.apache.http.auth.InvalidCredentialsException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -28,83 +29,91 @@ import com.shinymetal.objects.Week;
 
 public class GshisLoader {
 	
-	protected final String siteUrl = "http://schoolinfo.educom.ru";
-	protected final String loginstep1 = "/Login.aspx?ReturnUrl=%2fdefault.aspx";
-	protected final String loginstep2 = "/default.aspx?action=login";
-	protected final String lessonsUrl = "/Pupil/Lessons.aspx";
-	protected final String diaryUrl = "/Pupil/Diary.aspx";
-	protected final String gradesUrl = "/Pupil/Grades.aspx";
-//	protected final String perfUrl = "/Pupil/Performance.aspx";
-
-	protected User user;
-
-	protected String cookieARRAffinity;
-	protected String cookieASPXAUTH;
-	protected String cookieASPNET_SessionId;
-
-	protected String authVIEWSTATE;
-	protected String lessonsVIEWSTATE;
-	protected String diaryVIEWSTATE;
-	protected String gradesVIEWSTATE;
+	protected final static String SITE_NAME = "http://schoolinfo.educom.ru";
+	protected final static String LOGIN_STEP_1 = "/Login.aspx?ReturnUrl=%2fdefault.aspx";
+	protected final static String LOGIN_STEP_2 = "/default.aspx?action=login";
+	protected final static String LESSONS_PAGE = "/Pupil/Lessons.aspx";
+	protected final static String DIARY_PAGE = "/Pupil/Diary.aspx";
+	protected final static String GRADES_PAGE = "/Pupil/Grades.aspx";
 	
-	protected String login;
-	protected String password;
+	protected final static String ERROR_CANNOT_LOAD_DATA = "Невозможно получить данные с сервера";
+	protected final static String ERROR_INV_CREDENTIALS = "Неверный логин или пароль";
+
+	protected User mUser;
+
+	protected String mCookieARRAffinity;
+	protected String mCookieASPXAUTH;
+	protected String mCookieASPNET_SessionId;
+
+	protected String mAuthVIEWSTATE;
+	protected String mLessonsVIEWSTATE;
+	protected String mDiaryVIEWSTATE;
+	protected String mGradesVIEWSTATE;
 	
-	protected Date currWeekStart = Week.getWeekStart(new Date ());
+	protected String mLogin;
+	protected String mPassword;
+	
+	private static volatile GshisLoader instance;
+	
+	protected boolean mIsLoggedIn;
+	protected boolean mIsLastNetworkCallFailed = false;
+	protected String mLastNetworkFailureReason;
+	
+	protected Date mCurrWeekStart = Week.getWeekStart(new Date ());
 	
 	public Date getCurrWeekStart() {
-		return currWeekStart;
+		return mCurrWeekStart;
 	}
 
 	public void setCurrWeekStart(Date currWeekStart) {
-		this.currWeekStart = currWeekStart;
+		this.mCurrWeekStart = currWeekStart;
 	}
 
 
 	public void setLogin(String login) {
-		this.login = login;
+		this.mLogin = login;
 	}
 
 	public void setPassword(String password) {
-		this.password = password;
+		this.mPassword = password;
 	}
 
 	public void parseLessonsPage(String page) throws ParseException {
 
 		Document doc = Jsoup.parse(page);
 
-		GshisHTMLParser.fetchUserName(doc, user);
-		GshisHTMLParser.fetchPupils(doc, user);
-		GshisHTMLParser.fetchYears(doc, user);
-		GshisHTMLParser.fetchWeeks(doc, user);
-		GshisHTMLParser.fetchLessons(doc, user);
+		GshisHTMLParser.fetchUserName(doc, mUser);
+		GshisHTMLParser.fetchPupils(doc, mUser);
+		GshisHTMLParser.fetchYears(doc, mUser);
+		GshisHTMLParser.fetchWeeks(doc, mUser);
+		GshisHTMLParser.fetchLessons(doc, mUser);
 		
-		lessonsVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+		mLessonsVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
 	
 	public void parseDiaryPage(String page) throws ParseException {
 
 		Document doc = Jsoup.parse(page);
 
-		GshisHTMLParser.fetchUserName(doc, user);
-		GshisHTMLParser.fetchPupils(doc, user);
-		GshisHTMLParser.fetchYears(doc, user);
-		GshisHTMLParser.fetchLessonsDetails(doc, user);
+		GshisHTMLParser.fetchUserName(doc, mUser);
+		GshisHTMLParser.fetchPupils(doc, mUser);
+		GshisHTMLParser.fetchYears(doc, mUser);
+		GshisHTMLParser.fetchLessonsDetails(doc, mUser);
 		
-		diaryVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+		mDiaryVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
 
 	public void parseGradesPage(String page) throws ParseException {
 
 		Document doc = Jsoup.parse(page);
 
-		GshisHTMLParser.fetchUserName(doc, user);
-		GshisHTMLParser.fetchPupils(doc, user);
-		GshisHTMLParser.fetchYears(doc, user);
-		GshisHTMLParser.fetchGradeSemesters(doc, user);
-		GshisHTMLParser.fetchGrades(doc, user);
+		GshisHTMLParser.fetchUserName(doc, mUser);
+		GshisHTMLParser.fetchPupils(doc, mUser);
+		GshisHTMLParser.fetchYears(doc, mUser);
+		GshisHTMLParser.fetchGradeSemesters(doc, mUser);
+		GshisHTMLParser.fetchGrades(doc, mUser);
 		
-		gradesVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+		mGradesVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
 
 	protected String getCookieByName(HttpURLConnection uc, String cookieName) {
@@ -140,316 +149,247 @@ public class GshisLoader {
 		return URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8") + "&"; 
 	}
 
-	protected boolean loginGetCookiesStep1() {
+	protected boolean loginGetAuthVIEWSTATE() throws MalformedURLException, IOException {
 
-		try {
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + LOGIN_STEP_1);
+		uc.connect();
 
-			HttpURLConnection uc = getHttpURLConnection (siteUrl + loginstep1);
-			uc.connect();
+		String affinity = getCookieByName(uc, "ARRAffinity");
+		if (affinity != null)
+			mCookieARRAffinity = affinity;
 
-			String affinity = getCookieByName(uc, "ARRAffinity");
-			if (affinity != null)
-				cookieARRAffinity = affinity;
+		String line = null;
+		StringBuffer tmp = new StringBuffer();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				uc.getInputStream(), "UTF-8"));
+		while ((line = in.readLine()) != null) {
+			tmp.append(line + "\n");
+		}
 
-			String line = null;
-			StringBuffer tmp = new StringBuffer();
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					uc.getInputStream(), "UTF-8"));
-			while ((line = in.readLine()) != null) {
-				tmp.append(line + "\n");
-			}
+		Document doc = Jsoup.parse(String.valueOf(tmp));
+		mAuthVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+		return mAuthVIEWSTATE != null;
+	}
 
-			Document doc = Jsoup.parse(String.valueOf(tmp));
-			authVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
-			if (authVIEWSTATE != null) 
-				return true;
+	protected boolean loginGetASPXAUTH() throws IOException {
 
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + LOGIN_STEP_1);
+		uc.setInstanceFollowRedirects(false);
+
+		String urlParameters = "";
+
+		urlParameters += encodePOSTVar("__EVENTTARGET", "ctl00$btnLogin");
+		urlParameters += encodePOSTVar("__VIEWSTATE", mAuthVIEWSTATE);
+		urlParameters += encodePOSTVar("ctl00$txtLogin", mLogin);
+		urlParameters += encodePOSTVar("ctl00$txtPassword", mPassword);
+
+		uc.setRequestMethod("POST");
+		uc.setRequestProperty("Cookie", "ARRAffinity=" + mCookieARRAffinity);
+		uc.setRequestProperty("Origin", SITE_NAME);
+		uc.setRequestProperty("Referer", SITE_NAME + LOGIN_STEP_1);
+		uc.setRequestProperty("Content-Type",
+				"application/x-www-form-urlencoded; charset=utf-8");
+
+		uc.setRequestProperty("Content-Length",
+				"" + Integer.toString(urlParameters.getBytes().length));
+
+		uc.setUseCaches(false);
+		uc.setDoInput(true);
+		uc.setDoOutput(true);
+
+		// Send request
+		DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		String aspxauth = getCookieByName(uc, ".ASPXAUTH");
+		if (aspxauth != null) {
+
+			mCookieASPXAUTH = aspxauth;
+			return true;
 		}
 
 		return false;
 	}
 
-	protected boolean loginGetCookiesStep2() {
+	protected boolean loginGetSessionId() throws MalformedURLException, IOException {
 
-		if (authVIEWSTATE.length() <= 0) {
-			return false;
-		}
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + LOGIN_STEP_2);
+		uc.setInstanceFollowRedirects(false);
+		uc.setRequestProperty("Cookie", "ARRAffinity=" + mCookieARRAffinity
+				+ "; .ASPXAUTH=" + mCookieASPXAUTH);
+		uc.setRequestProperty("Origin", SITE_NAME);
+		uc.setRequestProperty("Referer", SITE_NAME + LOGIN_STEP_1);
 
-		try {
-			HttpURLConnection uc = getHttpURLConnection(siteUrl + loginstep1);
-			uc.setInstanceFollowRedirects(false);
+		uc.connect();
 
-			String urlParameters = "";
-			
-			
+		String sessionId = getCookieByName(uc, "ASP.NET_SessionId");
+		if (sessionId != null) {
 
-			urlParameters += encodePOSTVar("__EVENTTARGET", "ctl00$btnLogin");
-			urlParameters += encodePOSTVar("__VIEWSTATE", authVIEWSTATE);
-			urlParameters += encodePOSTVar("ctl00$txtLogin", login);
-			urlParameters += encodePOSTVar("ctl00$txtPassword", password);
-			
-			uc.setRequestMethod("POST");
-			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity);
-			uc.setRequestProperty("Origin", siteUrl);
-			uc.setRequestProperty("Referer", siteUrl + loginstep1);
-			uc.setRequestProperty("Content-Type",
-					"application/x-www-form-urlencoded; charset=utf-8");
-
-			uc.setRequestProperty("Content-Length",
-					"" + Integer.toString(urlParameters.getBytes().length));
-
-			uc.setUseCaches(false);
-			uc.setDoInput(true);
-			uc.setDoOutput(true);
-
-			// Send request
-			DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
-			wr.writeBytes(urlParameters);
-			wr.flush();
-			wr.close();
-
-			String aspxauth = getCookieByName(uc, ".ASPXAUTH");
-			if (aspxauth != null) {
-
-				cookieASPXAUTH = aspxauth;
-				return true;
-			}
-
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			mCookieASPNET_SessionId = sessionId;
+			return true;
 		}
 
 		return false;
 	}
 
-	protected boolean loginGetCookiesStep3() {
+	protected String getPageByURL(String pageUrl) throws MalformedURLException, IOException {
 
-		if (cookieASPXAUTH.length() <= 0) {
-			return false;
-		}
-
-		try {
-			HttpURLConnection uc = getHttpURLConnection(siteUrl + loginstep2);
-			uc.setInstanceFollowRedirects(false);
-			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity
-					+ "; .ASPXAUTH=" + cookieASPXAUTH);
-			uc.setRequestProperty("Origin", siteUrl);
-			uc.setRequestProperty("Referer", siteUrl + loginstep1);
-
-			uc.connect();
-
-			String sessionId = getCookieByName(uc, "ASP.NET_SessionId");
-			if (sessionId != null) {
-
-				cookieASPNET_SessionId = sessionId;
-				return true;
-			}
-
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return false;
-	}
-
-	protected String getPageByURL(String pageUrl) {
-
-		if (cookieASPXAUTH.length() <= 0
-				|| cookieASPNET_SessionId.length() <= 0) {
+		if (mCookieASPXAUTH.length() <= 0
+				|| mCookieASPNET_SessionId.length() <= 0) {
 			return null;
 		}
 
-		try {
-			HttpURLConnection uc = getHttpURLConnection(siteUrl + pageUrl);
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + pageUrl);
 
-			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity
-					+ "; .ASPXAUTH=" + cookieASPXAUTH + "; ASP.NET_SessionId="
-					+ cookieASPNET_SessionId);
-			uc.setRequestProperty("Origin", siteUrl);
-			uc.setRequestProperty("Referer", siteUrl + loginstep1);
+		uc.setRequestProperty("Cookie", "ARRAffinity=" + mCookieARRAffinity
+				+ "; .ASPXAUTH=" + mCookieASPXAUTH + "; ASP.NET_SessionId="
+				+ mCookieASPNET_SessionId);
+		uc.setRequestProperty("Origin", SITE_NAME);
+		uc.setRequestProperty("Referer", SITE_NAME + LOGIN_STEP_1);
 
-			uc.connect();
+		uc.connect();
 
-			String line = null;
-			StringBuffer tmp = new StringBuffer();
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					uc.getInputStream(), "UTF-8"));
-			while ((line = in.readLine()) != null) {
-				tmp.append(line + "\n");
-			}
-
-			return tmp.toString();
-
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		String line = null;
+		StringBuffer tmp = new StringBuffer();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				uc.getInputStream(), "UTF-8"));
+		while ((line = in.readLine()) != null) {
+			tmp.append(line + "\n");
 		}
 
-		return null;
+		return tmp.toString();
 	}
 	
-	protected String getLessons (Pupil p, Schedule s, Week w) {
+	protected String getLessons(Pupil p, Schedule s, Week w)
+			throws MalformedURLException, IOException {
 		
-		if (cookieASPXAUTH.length() <= 0
-				|| cookieASPNET_SessionId.length() <= 0) {
+		if (mCookieASPXAUTH.length() <= 0
+				|| mCookieASPNET_SessionId.length() <= 0) {
 			return null;
 		}
 
-		try {
-			HttpURLConnection uc = getHttpURLConnection(siteUrl + lessonsUrl);
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + LESSONS_PAGE);
 
-			String urlParameters = "";
+		String urlParameters = "";
 
-			/*
-			 * Do NOT add ctl00$sm, __EVENTTARGET, __EVENTARGUMENT, __LASTFOCUS,
-			 * __ASYNCPOST, this will break everything for unknown reason!
-			 */
-			urlParameters += encodePOSTVar("__VIEWSTATE", lessonsVIEWSTATE);
-			urlParameters += encodePOSTVar("ctl00$learnYear$drdLearnYears", s.getFormId());
-			urlParameters += encodePOSTVar("ctl00$topMenu$pupil$drdPupils", p.getFormId());
-			urlParameters += encodePOSTVar("ctl00$topMenu$tbUserId", p.getFormId());
-			urlParameters += encodePOSTVar("ctl00$leftMenu$accordion_AccordionExtender_ClientState", "");
-			urlParameters += encodePOSTVar("ctl00$body$week$drdWeeks", w.getFormId());
-			
-			uc.setRequestMethod("POST");
-			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity
-					+ "; ASP.NET_SessionId=" + cookieASPNET_SessionId
-					+ "; .ASPXAUTH=" + cookieASPXAUTH );
-					
-			uc.setRequestProperty("Origin", siteUrl);
-			uc.setRequestProperty("Referer", siteUrl + lessonsUrl);
-			uc.setRequestProperty("Content-Type",
-					"application/x-www-form-urlencoded; charset=utf-8");
+		/*
+		 * Do NOT add ctl00$sm, __EVENTTARGET, __EVENTARGUMENT, __LASTFOCUS,
+		 * __ASYNCPOST, this will break everything for unknown reason!
+		 */
+		urlParameters += encodePOSTVar("__VIEWSTATE", mLessonsVIEWSTATE);
+		urlParameters += encodePOSTVar("ctl00$learnYear$drdLearnYears",
+				s.getFormId());
+		urlParameters += encodePOSTVar("ctl00$topMenu$pupil$drdPupils",
+				p.getFormId());
+		urlParameters += encodePOSTVar("ctl00$topMenu$tbUserId", p.getFormId());
+		urlParameters += encodePOSTVar(
+				"ctl00$leftMenu$accordion_AccordionExtender_ClientState", "");
+		urlParameters += encodePOSTVar("ctl00$body$week$drdWeeks",
+				w.getFormId());
 
-			uc.setRequestProperty("Content-Length",
-					"" + Integer.toString(urlParameters.getBytes().length));
+		uc.setRequestMethod("POST");
+		uc.setRequestProperty("Cookie", "ARRAffinity=" + mCookieARRAffinity
+				+ "; ASP.NET_SessionId=" + mCookieASPNET_SessionId
+				+ "; .ASPXAUTH=" + mCookieASPXAUTH);
 
-			uc.setUseCaches(false);
-			uc.setDoInput(true);
-			uc.setDoOutput(true);
+		uc.setRequestProperty("Origin", SITE_NAME);
+		uc.setRequestProperty("Referer", SITE_NAME + LESSONS_PAGE);
+		uc.setRequestProperty("Content-Type",
+				"application/x-www-form-urlencoded; charset=utf-8");
 
-			// Send request
-			DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
-			wr.writeBytes(urlParameters);
-			wr.flush();
-			wr.close();
+		uc.setRequestProperty("Content-Length",
+				"" + Integer.toString(urlParameters.getBytes().length));
 
-			String line = null;
-			StringBuffer tmp = new StringBuffer();
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					uc.getInputStream(), "UTF-8"));
-			while ((line = in.readLine()) != null) {
-				tmp.append(line + "\n");
-			}
+		uc.setUseCaches(false);
+		uc.setDoInput(true);
+		uc.setDoOutput(true);
 
-			System.out.println("Loaded week " + w.toString());
-			return String.valueOf(tmp);
-		
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// Send request
+		DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		String line = null;
+		StringBuffer tmp = new StringBuffer();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				uc.getInputStream(), "UTF-8"));
+		while ((line = in.readLine()) != null) {
+			tmp.append(line + "\n");
 		}
-		
-		return null;		
+
+		return String.valueOf(tmp);
 	}
 
-	protected String getLessonDetails (Pupil p, Schedule s, Week w) {
+	protected String getLessonDetails(Pupil p, Schedule s, Week w)
+			throws MalformedURLException, IOException {
 		
-		if (cookieASPXAUTH.length() <= 0
-				|| cookieASPNET_SessionId.length() <= 0) {
+		if (mCookieASPXAUTH.length() <= 0
+				|| mCookieASPNET_SessionId.length() <= 0) {
 			return null;
 		}
 
-		try {
-			HttpURLConnection uc = getHttpURLConnection(siteUrl + diaryUrl);
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + DIARY_PAGE);
 
-			String urlParameters = "";
+		String urlParameters = "";
 
-			/*
-			 * Do NOT add ctl00$sm, __EVENTTARGET, __EVENTARGUMENT, __LASTFOCUS,
-			 * __ASYNCPOST, this will break everything for unknown reason!
-			 */
-			urlParameters += encodePOSTVar("__VIEWSTATE", diaryVIEWSTATE);
-			urlParameters += encodePOSTVar("ctl00$learnYear$drdLearnYears", s.getFormId());
-			urlParameters += encodePOSTVar("ctl00$topMenu$pupil$drdPupils", p.getFormId());
-			urlParameters += encodePOSTVar("ctl00$topMenu$tbUserId", p.getFormId());
-			urlParameters += encodePOSTVar("ctl00$leftMenu$accordion_AccordionExtender_ClientState", "");
-			urlParameters += encodePOSTVar("ctl00$body$period$drdPeriodType", "1");
-			urlParameters += encodePOSTVar("ctl00$body$period$week$drdWeeks", w.getFormId());
-			
-			uc.setRequestMethod("POST");
-			uc.setRequestProperty("Cookie", "ARRAffinity=" + cookieARRAffinity
-					+ "; ASP.NET_SessionId=" + cookieASPNET_SessionId
-					+ "; .ASPXAUTH=" + cookieASPXAUTH );
-					
-			uc.setRequestProperty("Origin", siteUrl);
-			uc.setRequestProperty("Referer", siteUrl + diaryUrl);
-			uc.setRequestProperty("Content-Type",
-					"application/x-www-form-urlencoded; charset=utf-8");
+		/*
+		 * Do NOT add ctl00$sm, __EVENTTARGET, __EVENTARGUMENT, __LASTFOCUS,
+		 * __ASYNCPOST, this will break everything for unknown reason!
+		 */
+		urlParameters += encodePOSTVar("__VIEWSTATE", mDiaryVIEWSTATE);
+		urlParameters += encodePOSTVar("ctl00$learnYear$drdLearnYears",
+				s.getFormId());
+		urlParameters += encodePOSTVar("ctl00$topMenu$pupil$drdPupils",
+				p.getFormId());
+		urlParameters += encodePOSTVar("ctl00$topMenu$tbUserId", p.getFormId());
+		urlParameters += encodePOSTVar(
+				"ctl00$leftMenu$accordion_AccordionExtender_ClientState", "");
+		urlParameters += encodePOSTVar("ctl00$body$period$drdPeriodType", "1");
+		urlParameters += encodePOSTVar("ctl00$body$period$week$drdWeeks",
+				w.getFormId());
 
-			uc.setRequestProperty("Content-Length",
-					"" + Integer.toString(urlParameters.getBytes().length));
+		uc.setRequestMethod("POST");
+		uc.setRequestProperty("Cookie", "ARRAffinity=" + mCookieARRAffinity
+				+ "; ASP.NET_SessionId=" + mCookieASPNET_SessionId
+				+ "; .ASPXAUTH=" + mCookieASPXAUTH);
 
-			uc.setUseCaches(false);
-			uc.setDoInput(true);
-			uc.setDoOutput(true);
+		uc.setRequestProperty("Origin", SITE_NAME);
+		uc.setRequestProperty("Referer", SITE_NAME + DIARY_PAGE);
+		uc.setRequestProperty("Content-Type",
+				"application/x-www-form-urlencoded; charset=utf-8");
 
-			// Send request
-			DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
-			wr.writeBytes(urlParameters);
-			wr.flush();
-			wr.close();
+		uc.setRequestProperty("Content-Length",
+				"" + Integer.toString(urlParameters.getBytes().length));
 
-			String line = null;
-			StringBuffer tmp = new StringBuffer();
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					uc.getInputStream(), "UTF-8"));
-			while ((line = in.readLine()) != null) {
-				tmp.append(line + "\n");
-			}
+		uc.setUseCaches(false);
+		uc.setDoInput(true);
+		uc.setDoOutput(true);
 
-			System.out.println("Loaded week details " + w.toString());
-			return String.valueOf(tmp);
-		
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// Send request
+		DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		String line = null;
+		StringBuffer tmp = new StringBuffer();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				uc.getInputStream(), "UTF-8"));
+		while ((line = in.readLine()) != null) {
+			tmp.append(line + "\n");
 		}
-		
-		return null;		
+
+		System.out.println("Loaded week details " + w.toString());
+		return String.valueOf(tmp);
 	}
 	
-	private static volatile GshisLoader instance;
-	
-	protected boolean isLoggedIn;
-
 	protected GshisLoader() {
 
-		user = new User();
-		isLoggedIn = false;
+		mUser = new User();
+		mIsLoggedIn = false;
 	}
 	
 	public static GshisLoader getInstance() {
@@ -470,92 +410,88 @@ public class GshisLoader {
 		return localInstance;
 	}
 
-	protected boolean login () {
+	protected boolean loginSequence() throws MalformedURLException,
+			IOException, InvalidCredentialsException {
 		
-		if (!loginGetCookiesStep1()) {
-			Log.e("login", "loginGetCookiesStep1 () failed!");
-			return false;
+		if (!loginGetAuthVIEWSTATE()) {
+			
+			throw new IllegalStateException (ERROR_CANNOT_LOAD_DATA);
 		}
 
-		if (!loginGetCookiesStep2()) {
-			Log.e("login", "loginGetCookiesStep2 () failed!");
-			return false;
+		if (!loginGetASPXAUTH()) {
+			
+			throw new InvalidCredentialsException ();
 		}
 
-		if (!loginGetCookiesStep3()) {
-			Log.e("login", "loginGetCookiesStep3 () failed!");
-			return false;
+		if (!loginGetSessionId()) {
+			
+			throw new IllegalStateException (ERROR_CANNOT_LOAD_DATA);
 		}
 		
-		isLoggedIn = true;
+		mIsLoggedIn = true;
 		return true;
 	}
 	
 	public void reset () {
 
-		isLoggedIn = false;
+		mIsLoggedIn = false;
 		
-		authVIEWSTATE = null;
-		lessonsVIEWSTATE = null;
-		diaryVIEWSTATE = null;
-		gradesVIEWSTATE = null;
+		mAuthVIEWSTATE = null;
+		mLessonsVIEWSTATE = null;
+		mDiaryVIEWSTATE = null;
+		mGradesVIEWSTATE = null;
 	}
 	
-	protected boolean parseLessonsByDate(Date day) {
+	protected boolean parseLessonsByDate(Date day)
+			throws MalformedURLException, IOException, ParseException {
 
-		try {
-			String page;
-			
-			if (lessonsVIEWSTATE == null || lessonsVIEWSTATE.length() <= 0
-					|| user.getCurrentPupilId() == null) {
-	
-				if ((page = getPageByURL(lessonsUrl)) == null) {
-					Log.e("getLessonsByDate()", "getPageByURL () [1] failed!");
-					return false;
-				}
-	
-				parseLessonsPage(page);
+		String page;
+
+		if (mLessonsVIEWSTATE == null || mLessonsVIEWSTATE.length() <= 0
+				|| mUser.getCurrentPupilId() == null) {
+
+			if ((page = getPageByURL(LESSONS_PAGE)) == null) {
+				Log.e("getLessonsByDate()", "getPageByURL () [1] failed!");
+				return false;
 			}
 
-			Pupil p = user.getCurrentPupil();
-			Schedule s = p.getCurrentSchedule();
-			boolean weekLoaded = s.getWeek(day).getLoaded();
-
-			if (!weekLoaded) {
-
-				page = getLessons(p, s, s.getWeek(day));
-				if (page == null) {
-					Log.e("getLessonsByDate()", "getLessons () [1] failed!");
-					return false;
-				}
-				parseLessonsPage(page);
-			}
-
-			if (diaryVIEWSTATE == null || diaryVIEWSTATE.length() <= 0) {
-				if ((page = getPageByURL(diaryUrl))== null) {
-					Log.e("getLessonsByDate()", "getPageByURL () [2] failed!");
-					return false;
-				}
-				
-				parseDiaryPage(page);
-			}
-			
-			if (!weekLoaded) {
-				page = getLessonDetails(p, s, s.getWeek(day));
-				if ( page == null) {
-					Log.e("getLessonsByDate()", "getLessonDetails () [1] failed!");
-					return false;
-				}
-				parseDiaryPage(page);
-			}
-			
-			return s.getWeek(day).getLoaded();
-
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			parseLessonsPage(page);
 		}
-		return false;
+
+		Pupil p = mUser.getCurrentPupil();
+		Schedule s = p.getCurrentSchedule();
+		boolean weekLoaded = s.getWeek(day).getLoaded();
+
+		if (!weekLoaded) {
+
+			page = getLessons(p, s, s.getWeek(day));
+			if (page == null) {
+				Log.e("getLessonsByDate()", "getLessons () [1] failed!");
+				return false;
+			}
+			parseLessonsPage(page);
+		}
+
+		if (mDiaryVIEWSTATE == null || mDiaryVIEWSTATE.length() <= 0) {
+			if ((page = getPageByURL(DIARY_PAGE)) == null) {
+				Log.e("getLessonsByDate()", "getPageByURL () [2] failed!");
+				return false;
+			}
+
+			parseDiaryPage(page);
+		}
+
+		if (!weekLoaded) {
+			page = getLessonDetails(p, s, s.getWeek(day));
+			if (page == null) {
+				Log.e("getLessonsByDate()", "getLessonDetails () [1] failed!");
+				return false;
+			}
+			parseDiaryPage(page);
+		}
+
+		return s.getWeek(day).getLoaded();
+
 	}
 
 	public ArrayList<Lesson> getLessonsByDate(Date day, boolean canLoad) {
@@ -564,22 +500,42 @@ public class GshisLoader {
 		Schedule s;
 		boolean requestNeeded = false;
 		
-		if (!isLoggedIn) {
+		if (!mIsLoggedIn) {
 			
 			if (!canLoad)
 				return null;
 			
-			for (int i=0; i<2; i++)
-				if (login()) break;
+			// Clear network errors
+			mIsLastNetworkCallFailed = false;
+			mLastNetworkFailureReason = "";
+			
+			for (int i=0; i<2; i++) {
+				
+				try {
+					if (loginSequence()) break;
+					
+				} catch (Exception e) {
+					
+					mIsLastNetworkCallFailed = true;
+					if ((mLastNetworkFailureReason = e.getMessage()) == null)
+						mLastNetworkFailureReason = e.toString();
+					
+					if (e instanceof InvalidCredentialsException) {
+						
+						mLastNetworkFailureReason = ERROR_INV_CREDENTIALS;
+						return null; // else try one more time
+					}
+				}
+			}
 
 			requestNeeded = true;
 		}
 		
-		if (!isLoggedIn) return null;
+		if (!mIsLoggedIn) return null;
 
 		try {
 			
-			s = user.getCurrentPupil().getCurrentSchedule();
+			s = mUser.getCurrentPupil().getCurrentSchedule();
 			
 			if ( !s.getWeek(day).getLoaded() ) {
 				requestNeeded = true;
@@ -594,6 +550,10 @@ public class GshisLoader {
 			return null;
 
 		int l = 1;
+		
+		mIsLastNetworkCallFailed = false;
+		mLastNetworkFailureReason = "";
+
 		try {
 			if (requestNeeded) {
 				
@@ -601,25 +561,39 @@ public class GshisLoader {
 					if (parseLessonsByDate(day)) break;
 			}
 	
-			s = user.getCurrentPupil().getCurrentSchedule();
+			s = mUser.getCurrentPupil().getCurrentSchedule();
 			
 			while (true) {
 
 				res.add(s.getLessonByNumber(day, l));
 				l++;
 			}
-			
+		
 		} catch (NullPointerException e) {
 			
+		} catch (Exception e) {
+
+			mIsLastNetworkCallFailed = true;
+			if ((mLastNetworkFailureReason = e.getMessage()) == null)
+				mLastNetworkFailureReason = e.toString();
 		}
 		
-		Log.i (this.toString(), TS.get() + "getLessonsByDate (), added " + l + " lessons for date " + day.toString());		
+		Log.i(this.toString(), TS.get() + "getLessonsByDate (), added " + l
+				+ " lessons for date " + day.toString());	
 		return res;
 	}
 	
+	public boolean isLastNetworkCallFailed() {
+		return mIsLastNetworkCallFailed;
+	}
+
+	public String getLastNetworkFailureReason() {
+		return mLastNetworkFailureReason;
+	}
+
 	public String getPupilIdByName(String name) {
 		
-		for (Entry<String, Pupil> p : user.getPupilSet()) {
+		for (Entry<String, Pupil> p : mUser.getPupilSet()) {
 			
 			if (p.getValue().getFormText().equals(name)) {
 				return p.getKey();
@@ -632,7 +606,7 @@ public class GshisLoader {
 		
 		ArrayList<String> res = new ArrayList<String> (); 
 
-		for (Entry<String, Pupil> p : user.getPupilSet()) {
+		for (Entry<String, Pupil> p : mUser.getPupilSet()) {
 			res.add(p.getValue().getFormText());
 		}
 			
@@ -641,6 +615,6 @@ public class GshisLoader {
 	
 	public void selectPupilByName (String name) {
 
-		user.setCurrentPupilId(getPupilIdByName(name));
+		mUser.setCurrentPupilId(getPupilIdByName(name));
 	}
 }

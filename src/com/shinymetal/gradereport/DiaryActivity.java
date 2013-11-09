@@ -9,7 +9,6 @@ import java.util.Locale;
 import com.google.android.vending.licensing.LicenseCheckerCallback;
 import com.google.android.vending.licensing.Policy;
 import com.shinymetal.gradereport.R;
-import com.shinymetal.objects.Lesson;
 import com.shinymetal.objects.TS;
 import com.shinymetal.objects.Week;
 import com.shinymetal.utils.GshisLoader;
@@ -62,11 +61,12 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	private boolean mNaviMenuDisable = true;
 	
 	private DatePickerFragment mDateSetFragment;
-	private ProgressDialog mProgressDialog;	
+	private ProgressDialog mProgressDialog;
 	private UpdateLessonsTask mUpdate;
 	
 	private Spinner mPupilSpinner;
 	
+	private static volatile DiaryActivity instance;	
 	private static final GshisLoader mGshisLoader = GshisLoader.getInstance();	
 	
 	private static int mLicState = Policy.RETRY;
@@ -124,28 +124,38 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
     	}
     }
     
-    public void refreshFragments () {
+    public void onUpdateLessonsTaskComplete () {
     	
-    	Log.i (this.toString(), TS.get() + this.toString() + " refreshFragments() started");
-		
-		for (Fragment f : getSupportFragmentManager().getFragments()) {
-			
-			if (f != null && f instanceof LessonSectionFragment) {
+    	Log.i (this.toString(), TS.get() + this.toString() + " onUpdateLessonsTaskComplete() started");
+    	
+    	if (!mGshisLoader.isLastNetworkCallFailed()) {
 
-				((LessonSectionFragment) f).refresh();
-				
-		    	Log.i (this.toString(), TS.get() + this.toString() + " refreshFragments() : "
-		    			+ f.getId() );
+			for (Fragment f : getSupportFragmentManager().getFragments()) {
+
+				if (f != null && f instanceof LessonSectionFragment) {
+
+					LessonsArrayAdapter a = ((LessonSectionFragment) f).getAdapter();
+					if (a != null)
+						a.onUpdateTaskComplete();
+
+					Log.i(this.toString(), TS.get() + this.toString()
+							+ " onUpdateLessonsTaskComplete() : " + f.getId());
+				}
 			}
-		}
-    }
-    
-    public void refreshFragment (int position) {
-		
-		Fragment f = getSupportFragmentManager().findFragmentById(position);
-
-		if (f != null && f instanceof LessonSectionFragment)
-			((LessonSectionFragment) f).refresh();
+			
+			return;
+    	}
+    	
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.title_error)); 
+        builder.setMessage(mGshisLoader.getLastNetworkFailureReason());
+        builder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+            }
+        });
+        
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
     
 	@Override
@@ -153,6 +163,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_diary);
+		instance = this;
 		
 		mSectionsPagerAdapter = new LessonsPagerAdapter(
 				getSupportFragmentManager());
@@ -301,16 +312,18 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 			cal = Calendar.getInstance();
 			cal.setTime(mGshisLoader.getCurrWeekStart());
 			cal.add(Calendar.DATE, -7);
+
 			mGshisLoader.setCurrWeekStart(cal.getTime());
-			refreshFragments();
+			recreate();
 			return true;
 
 		case R.id.action_next_week:
 			cal = Calendar.getInstance();
 			cal.setTime(mGshisLoader.getCurrWeekStart());
 			cal.add(Calendar.DATE, 7);
+
 			mGshisLoader.setCurrWeekStart(cal.getTime());
-			refreshFragments();
+			recreate();
 			return true;
 			
 		case R.id.action_select_date:
@@ -321,9 +334,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		case R.id.action_reload:
 			mGshisLoader.reset();
 			
-			mNaviMenuDisable = true; 
-			invalidateOptionsMenu();
-			refreshFragments();
+			recreate();
 			return true;
 
 		}
@@ -366,15 +377,15 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 			}
 
 			GshisLoader.getInstance().setCurrWeekStart(weekStart);
+			instance.mViewPager.setCurrentItem(item, true);
 			
-			DiaryActivity activity = (DiaryActivity) getActivity(); 
-			activity.mViewPager.setCurrentItem(item, true);
-			
-			for (Fragment f : activity.getSupportFragmentManager().getFragments()) {
-				
-				if (f != null && f instanceof LessonSectionFragment)
-					((LessonSectionFragment) f).refresh();
-			}
+			// this picker should not load again
+			instance.getHandler().postDelayed(new Runnable() {
+				public void run() {
+
+					instance.recreate();
+				}
+			}, 1);
 		}
 	}
 
@@ -417,9 +428,20 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 			args.putInt(LessonSectionFragment.ARG_SECTION_NUMBER, position + 1);
 			
 			fragment.setArguments(args);
-			fragment.setRetainInstance(true);
 			return fragment;
 		}
+		
+		@Override
+	    public int getItemPosition(Object object)
+	    {
+			Log.i (this.toString(), TS.get() + this.toString() + " getItemPosition () started");
+			
+			if (object instanceof LessonSectionFragment) {
+	            return POSITION_NONE;
+			}
+			
+	        return POSITION_UNCHANGED;
+	    }
 
 		@Override
 		public int getCount() {
@@ -458,16 +480,28 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		 * fragment.
 		 */
 		protected static final String ARG_SECTION_NUMBER = "section_number";
-		
-		protected ArrayList<Lesson> values;
-		protected ExpandableListView expListView;
-		protected TextView headerView;
+		protected LessonsArrayAdapter mAdapter;
 		
 		public LessonSectionFragment() {
 			
 		}
 		
-		public void refresh () {			
+		public LessonsArrayAdapter getAdapter () {
+			
+			return mAdapter;
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			
+			View rootView = inflater.inflate(R.layout.fragment_lessons,
+					container, false);
+			ExpandableListView expListView = (ExpandableListView) rootView
+					.findViewById(R.id.section_label);
+			
+			View header = getLayoutInflater(savedInstanceState).inflate(R.layout.lessons_header, null);
+			expListView.addHeaderView(header);
 			
 			Date day = GshisLoader.getInstance().getCurrWeekStart();
 			int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
@@ -497,7 +531,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 				wantDoW = Calendar.SUNDAY;
 				break;
 			}
-
+			
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(day);
 
@@ -511,36 +545,13 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 				}
 
 			day = cal.getTime();
-			if ((values = GshisLoader.getInstance().getLessonsByDate(day, false)) == null) {
-				
-				((DiaryActivity)getActivity()).startUpdateTask ();
-			}
-			else {
+			mAdapter = new LessonsArrayAdapter((DiaryActivity) getActivity(), day);
+			expListView.setAdapter(mAdapter);
 
-				expListView.setAdapter(new LessonsArrayAdapter(getActivity(), values));
-			}
+			((TextView) header.findViewById(R.id.itemHeader))
+					.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH)
+							.format(day));
 
-			headerView.setText(new SimpleDateFormat("dd.MM.yyyy",
-					Locale.ENGLISH).format(day));
-
-			expListView.invalidateViews();
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			
-			View rootView = inflater.inflate(R.layout.fragment_lessons,
-					container, false);
-			expListView = (ExpandableListView) rootView
-					.findViewById(R.id.section_label);
-			
-			View header = getLayoutInflater(savedInstanceState).inflate(R.layout.lessons_header, null);
-			expListView.addHeaderView(header);
-			
-			headerView = (TextView) header.findViewById(R.id.itemHeader);
-			
-			refresh ();
 			return rootView;
 		}
 	}

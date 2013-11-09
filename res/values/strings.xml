@@ -18,13 +18,14 @@
     <string name="label_loading_data">Загрузка данных</string>
     <string name="label_submit">Выбрать</string>
     <string name="label_cancel">Отмена</string>
+    <string name="label_ok">Ок</string>
+    <string name="title_error">Ошибка</string>
     <string name="title_section1">Понедельник</string>
     <string name="title_section2">Вторник</string>
     <string name="title_section3">Среда</string>
     <string name="title_section4">Четверг</string>
     <string name="title_section5">Пятница</string>
     <string name="title_section6">Суббота</string>
-    <string name="site">http://schoolinfo.educom.ru/</string>
     <color name="red">#ff0000</color>
 
 </resources>
