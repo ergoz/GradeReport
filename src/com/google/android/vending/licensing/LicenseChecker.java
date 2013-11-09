@@ -63,7 +63,7 @@ public class LicenseChecker implements ServiceConnection {
     private static final int TIMEOUT_MS = 10 * 1000;
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final boolean DEBUG_LICENSE_ERROR = false;
+    private static final boolean DEBUG_LICENSE_ERROR = true;
 
     private ILicensingService mService;
 
@@ -245,7 +245,7 @@ public class LicenseChecker implements ServiceConnection {
                                 stringError = "ERROR_NON_MATCHING_UID";
                                 break;
                             default:
-                                logResponse = false;
+                                logResponse = true;
                         }
 
                         if (logResponse) {
@@ -254,7 +254,7 @@ public class LicenseChecker implements ServiceConnection {
                             Date date = new Date();
                             Log.d(TAG, "Server Failure: " + stringError);
                             Log.d(TAG, "Android ID: " + android_id);
-                            Log.d(TAG, "Time: " + date.toGMTString());
+                            Log.d(TAG, "Time: " + date.toString());
                         }
                     }
 

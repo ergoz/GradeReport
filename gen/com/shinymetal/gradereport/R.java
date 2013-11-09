@@ -74,12 +74,15 @@ public final class R {
         public static final int action_settings=0x7f060004;
         public static final int app_name=0x7f060000;
         public static final int diary_name=0x7f060001;
+        public static final int label_buy=0x7f06001d;
         public static final int label_cancel=0x7f060010;
         public static final int label_comment=0x7f06000d;
         public static final int label_homework=0x7f06000b;
         public static final int label_loading_data=0x7f06000e;
         public static final int label_marks=0x7f06000c;
         public static final int label_ok=0x7f060011;
+        public static final int label_quit=0x7f06001e;
+        public static final int label_retry=0x7f06001c;
         public static final int label_submit=0x7f06000f;
         public static final int label_theme=0x7f06000a;
         public static final int pref_name=0x7f060002;
@@ -91,6 +94,9 @@ public final class R {
         public static final int title_section4=0x7f060016;
         public static final int title_section5=0x7f060017;
         public static final int title_section6=0x7f060018;
+        public static final int unlicensed_dialog_body=0x7f06001b;
+        public static final int unlicensed_dialog_retry_body=0x7f06001a;
+        public static final int unlicensed_dialog_title=0x7f060019;
     }
     public static final class style {
         /** 

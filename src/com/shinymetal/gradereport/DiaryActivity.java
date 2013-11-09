@@ -20,6 +20,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -70,7 +71,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	private static final GshisLoader mGshisLoader = GshisLoader.getInstance();	
 	
 	private static int mLicState = Policy.RETRY;
-	public LicenseValidator mLicValidator = null;
+	public LicenseValidatorHelper mLicValidator = null;
 	
 	private Handler mHandler;
 	
@@ -180,7 +181,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		}
 		
 		if (mLicState == Policy.RETRY)
-			mLicValidator = new LicenseValidator (this, this);
+			mLicValidator = new LicenseValidatorHelper (this, this);
 	}
 	
 	@Override
@@ -206,27 +207,19 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
     public void allow(int policyReason) {
     	
     	mLicState = Policy.LICENSED;
-    	
-    	if (isFinishing()) {
-    		// Don't update UI if Activity is finishing.
-    		return;
-    	}
-    	
-        // Should allow user access.
-        // displayResult(getString(R.string.allow));
+    	Log.i (this.toString(), TS.get() + "allow (): license valid");    	
     }
     
     public void dontAllow(int policyReason) {
     	
-    	mLicState = Policy.NOT_LICENSED;
+    	mLicState = policyReason;
+    	final boolean bRetry = policyReason == Policy.RETRY;
     	
     	if (isFinishing()) {
     		// Don't update UI if Activity is finishing.
     		return;
     	}
     	
-        // displayResult(getString(R.string.dont_allow));
-        
         // Should not allow access. In most cases, the app should assume
         // the user has access unless it encounters this. If it does,
         // the app should inform the user of their unlicensed ways
@@ -236,8 +229,33 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
         // If the reason for the lack of license is that the service is
         // unavailable or there is another problem, we display a
         // retry button on the dialog and a different message.
+    	
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setTitle(R.string.unlicensed_dialog_title);
+    	builder.setMessage(bRetry ? R.string.unlicensed_dialog_retry_body : R.string.unlicensed_dialog_body);
+        builder.setPositiveButton(bRetry ? R.string.label_retry : R.string.label_buy, new DialogInterface.OnClickListener() {
+            boolean mRetry = bRetry;
+            public void onClick(DialogInterface dialog, int which) {
+                if ( mRetry ) {
+
+                	if (instance.mLicValidator != null) {
+                		instance.mLicValidator.retry();
+                	} else {
+                		instance.mLicValidator = new LicenseValidatorHelper (instance, instance);
+                	}
+                } else {
+                    Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(
+                            "http://market.android.com/details?id=" + getPackageName()));
+                        startActivity(marketIntent);                        
+                }
+            }
+        });
         
-        // displayDialog(policyReason == Policy.RETRY);
+        builder.setNegativeButton(R.string.label_quit, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).create();
     }
     
     public void applicationError(int errorCode) {
@@ -253,8 +271,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
         // while setting up or calling the license checker library.
         // Please examine the error code and fix the error.
         
-        // String result = String.format(getString(R.string.application_error), errorCode);
-        // displayResult(result);
+    	Log.i (this.toString(), TS.get() + "applicationError (): " + errorCode);    	
     }
 	
     @Override
