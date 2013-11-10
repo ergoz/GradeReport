@@ -42,6 +42,7 @@
         android:title="@string/action_select_pupil"/>
     <item
         android:id="@+id/action_settings"
+        android:icon="@drawable/ic_action_settings"
         android:onClick="onOptionsItemSelected"
         android:orderInCategory="100"
         android:showAsAction="never"
