@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,8 +109,8 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 
 		Lesson l = mValues.get(groupPosition);
 
-		itemNameView.setText("" + l.getNumber() + ". " + l.getFormText());
-		itemDetailView.setText(mFormat.format(l.getStart()) + l.getTeacher());
+		itemNameView.setText(Html.fromHtml("" + l.getNumber() + ". " + l.getFormText()));
+		itemDetailView.setText(Html.fromHtml(mFormat.format(l.getStart()) + l.getTeacher()));
 
 		return convertView;
 	}
@@ -129,29 +130,29 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		String theme = mValues.get(groupPosition).getTheme();
 		if (theme == null)
 			theme = "";
-		textTheme.setText(mActivity.getString(R.string.label_theme) + ": " + theme);
+		textTheme.setText(Html.fromHtml(mActivity.getString(R.string.label_theme) + ": " + theme));
 
 		TextView textHomework = (TextView) convertView
 				.findViewById(R.id.itemHomework);
 		String homework = mValues.get(groupPosition).getHomework();
 		if (homework == null)
 			homework = "";
-		textHomework.setText(mActivity.getString(R.string.label_homework) + ": "
-				+ homework);
+		textHomework.setText(Html.fromHtml(mActivity.getString(R.string.label_homework) + ": "
+				+ homework));
 
 		TextView textMarks = (TextView) convertView
 				.findViewById(R.id.itemMarks);
 		String marks = mValues.get(groupPosition).getMarks();
 		if (marks == null)
 			marks = "";
-		textMarks.setText(mActivity.getString(R.string.label_marks) + ": " + marks);
+		textMarks.setText(Html.fromHtml(mActivity.getString(R.string.label_marks) + ": " + marks));
 
 		TextView textComment = (TextView) convertView
 				.findViewById(R.id.itemComment);
 		String comment = mValues.get(groupPosition).getComment();
 		if (comment == null)
 			comment = "";
-		textComment.setText(mActivity.getString(R.string.label_comment) + ": " + comment);
+		textComment.setText(Html.fromHtml(mActivity.getString(R.string.label_comment) + ": " + comment));
 
 		return convertView;
 	}

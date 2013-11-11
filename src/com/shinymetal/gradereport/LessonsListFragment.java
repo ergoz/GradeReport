@@ -11,6 +11,7 @@ import com.shinymetal.utils.GshisLoader;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -117,36 +118,36 @@ public class LessonsListFragment extends Fragment implements UpdateableFragment 
 					String theme = l.getTheme();
 					if (theme == null)
 						theme = "";
-					textTheme.setText(getActivity().getString(
+					textTheme.setText(Html.fromHtml(getActivity().getString(
 							R.string.label_theme)
-							+ ": " + theme);
+							+ ": " + theme));
 
 					TextView textHomework = (TextView) convertView
 							.findViewById(R.id.itemHomework);
 					String homework = l.getHomework();
 					if (homework == null)
 						homework = "";
-					textHomework.setText(getActivity().getString(
+					textHomework.setText(Html.fromHtml(getActivity().getString(
 							R.string.label_homework)
-							+ ": " + homework);
+							+ ": " + homework));
 
 					TextView textMarks = (TextView) convertView
 							.findViewById(R.id.itemMarks);
 					String marks = l.getMarks();
 					if (marks == null)
 						marks = "";
-					textMarks.setText(getActivity().getString(
+					textMarks.setText(Html.fromHtml(getActivity().getString(
 							R.string.label_marks)
-							+ ": " + marks);
+							+ ": " + marks));
 
 					TextView textComment = (TextView) convertView
 							.findViewById(R.id.itemComment);
 					String comment = l.getComment();
 					if (comment == null)
 						comment = "";
-					textComment.setText(getActivity().getString(
+					textComment.setText(Html.fromHtml(getActivity().getString(
 							R.string.label_comment)
-							+ ": " + comment);
+							+ ": " + comment));
 				}
 			}
 		});

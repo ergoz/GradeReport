@@ -9,6 +9,7 @@ import com.shinymetal.objects.Lesson;
 import com.shinymetal.utils.GshisLoader;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,8 +92,8 @@ public class LessonsListAdapter extends
 
 		Lesson l = mValues.get(position);
 
-		itemNameView.setText("" + l.getNumber() + ". " + l.getFormText());
-		itemDetailView.setText(mFormat.format(l.getStart()) + l.getTeacher());
+		itemNameView.setText(Html.fromHtml("" + l.getNumber() + ". " + l.getFormText()));
+		itemDetailView.setText(Html.fromHtml(mFormat.format(l.getStart()) + l.getTeacher()));
 
 		return convertView;
 	}
