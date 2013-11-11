@@ -38,4 +38,9 @@ public class LicenseValidatorHelper {
 		
 		mChecker.checkAccess(mLicenseCheckerCallback);
 	}
+	
+	protected void onDestroy() {
+		
+		mChecker.onDestroy();
+	}
 }

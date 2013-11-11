@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.shinymetal.objects.Lesson;
 import com.shinymetal.utils.GshisLoader;
 
-public class LessonsArrayAdapter extends BaseExpandableListAdapter {
+public class LessonsExpListAdapter extends BaseExpandableListAdapter implements UpdateableAdapter {
 
 	private final DiaryActivity mActivity;
 	private final SimpleDateFormat mFormat;
@@ -23,7 +23,7 @@ public class LessonsArrayAdapter extends BaseExpandableListAdapter {
 	
 	private ArrayList<Lesson> mValues;
 
-	public LessonsArrayAdapter(DiaryActivity activity, Date day) {
+	public LessonsExpListAdapter(DiaryActivity activity, Date day) {
 
 		mActivity = activity;
 		mDay = day;
@@ -99,12 +99,6 @@ public class LessonsArrayAdapter extends BaseExpandableListAdapter {
 			LayoutInflater inflater = (LayoutInflater) mActivity
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.lessons_list, null);
-		}
-
-		if (isExpanded) {
-			// Изменяем что-нибудь, если текущая Group раскрыта
-		} else {
-			// Изменяем что-нибудь, если текущая Group скрыта
 		}
 
 		TextView itemNameView = (TextView) convertView

@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
@@ -141,7 +143,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection();
+		return (HttpURLConnection) new URL(url).openConnection(/* new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080))*/);
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{

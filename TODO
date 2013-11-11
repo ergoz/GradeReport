@@ -1,33 +1,4 @@
 
-+different layouts:
-Fragments API: http://habrahabr.ru/post/113196/, http://habrahabr.ru/post/167315/
-Nested Fragments: http://developer.android.com/about/versions/android-4.2.html#NestedFragments
-
-portrait layout:
-
-DiaryActivity-LessonsPageAdapter-LessonsSectionFragment
-
-landscape layout:
-
-DiaryActivity-LessonsPageAdapter-LessonsComplexFragment-(LessonsListFragment+LessonsDetailFragment)
-
-rename LessonsSectionFragment to LessonsExpListFragment
-add LessonsListFragment, LessonsDetailFragment
-
-
-onUpdateTaskComplete ().onUpdateTaskComplete () - move to interface UpdateableAdapter
-
-LessonSectionFragment.getAdapter() - move to interface UpdateableFragment
-
-DiaryActivity.onUpdateLessonsTaskComplete - move to UpdateableActivity interface (????)
-
-DiaryActivity.onUpdateLessonsTaskComplete ():
-1. cast fragments to UpdateableFragment
-2. cast adapter to UpdateableAdapter
-
-UpdateLessons class:
-1. mActivity should be WeakReference<UpdateableActivity> (????)
-
-+ icon for settings in action bar
++ need to fix the "activity has leaked serviceconnection that was originally bound here" error
 + systemservice background update
 + grade reports

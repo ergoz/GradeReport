@@ -1,6 +1,5 @@
 package com.shinymetal.gradereport;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,6 +19,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,12 +36,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
-import android.widget.ExpandableListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 public class DiaryActivity extends FragmentActivity implements LicenseCheckerCallback {
 
@@ -133,9 +130,9 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 
 			for (Fragment f : getSupportFragmentManager().getFragments()) {
 
-				if (f != null && f instanceof LessonSectionFragment) {
+				if (f != null && f instanceof UpdateableFragment) {
 
-					LessonsArrayAdapter a = ((LessonSectionFragment) f).getAdapter();
+					UpdateableAdapter a = ((UpdateableFragment) f).getAdapter();
 					if (a != null)
 						a.onUpdateTaskComplete();
 
@@ -171,8 +168,10 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
 		
+		mViewPager.setAdapter(null);
+		mViewPager.setAdapter(mSectionsPagerAdapter);
+
 		mHandler = new Handler();
 		
 		if (savedInstanceState != null) {
@@ -186,9 +185,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
-	 
-		super.onSaveInstanceState(savedInstanceState);
-		
+	
 		savedInstanceState.putInt("mLicState", mLicState);
 		savedInstanceState.putBoolean("mNaviMenuDisable", mNaviMenuDisable);
 	}
@@ -200,9 +197,16 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		
     	if (mUpdate != null && mUpdate.getStatus() == AsyncTask.Status.RUNNING)
     		mUpdate.cancel(false);
-		
+
 		super.onPause();
 	}
+	
+    @Override
+    protected void onDestroy() {
+
+        mLicValidator.onDestroy();
+        super.onDestroy();
+    }
     
     public void allow(int policyReason) {
     	
@@ -439,10 +443,23 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 
 		@Override
 		public Fragment getItem(int position) {
+			
+			Fragment fragment;
+			
+	        if (getResources().getConfiguration().orientation
+	                == Configuration.ORIENTATION_LANDSCAPE) {
 
-			Fragment fragment = new LessonSectionFragment();
+	        	fragment = new LessonsNestedFragment();
+	        	Log.i (this.toString(), TS.get() + this.toString() + " getItem () LANDSCAPE");
+	        	
+	        } else {
+
+	        	fragment = new LessonsExpListFragment();
+	        	Log.i (this.toString(), TS.get() + this.toString() + " getItem () PORTRAIT");
+	        }
+	        
 			Bundle args = new Bundle();
-			args.putInt(LessonSectionFragment.ARG_SECTION_NUMBER, position + 1);
+			args.putInt(LessonsExpListFragment.ARG_SECTION_NUMBER, position + 1);
 			
 			fragment.setArguments(args);
 			return fragment;
@@ -453,7 +470,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	    {
 			Log.i (this.toString(), TS.get() + this.toString() + " getItemPosition () started");
 			
-			if (object instanceof LessonSectionFragment) {
+			if (object instanceof UpdateableFragment) {
 	            return POSITION_NONE;
 			}
 			
@@ -484,92 +501,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 				return getString(R.string.title_section6).toUpperCase(l);
 			}
 			return null;
-		}
-	}
-
-	/**
-	 * A dummy fragment representing a section of the app, but that simply
-	 * displays dummy text.
-	 */
-	public static class LessonSectionFragment extends Fragment {
-		/**
-		 * The fragment argument representing the section number for this
-		 * fragment.
-		 */
-		protected static final String ARG_SECTION_NUMBER = "section_number";
-		protected LessonsArrayAdapter mAdapter;
-		
-		public LessonSectionFragment() {
-			
-		}
-		
-		public LessonsArrayAdapter getAdapter () {
-			
-			return mAdapter;
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			
-			View rootView = inflater.inflate(R.layout.fragment_lessons,
-					container, false);
-			ExpandableListView expListView = (ExpandableListView) rootView
-					.findViewById(R.id.section_label);
-			
-			View header = getLayoutInflater(savedInstanceState).inflate(R.layout.lessons_header, null);
-			expListView.addHeaderView(header);
-			
-			Date day = GshisLoader.getInstance().getCurrWeekStart();
-			int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
-
-			Log.i (this.toString(), TS.get() + "refresh (), ARG_SECTION_NUMBER=" + wantDoW);
-			
-			switch (wantDoW) {
-			case 1:
-				wantDoW = Calendar.MONDAY;
-				break;
-			case 2:
-				wantDoW = Calendar.TUESDAY;
-				break;
-			case 3:
-				wantDoW = Calendar.WEDNESDAY;
-				break;
-			case 4:
-				wantDoW = Calendar.THURSDAY;
-				break;
-			case 5:
-				wantDoW = Calendar.FRIDAY;
-				break;
-			case 6:
-				wantDoW = Calendar.SATURDAY;
-				break;
-			default:
-				wantDoW = Calendar.SUNDAY;
-				break;
-			}
-			
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(day);
-
-			if (wantDoW < cal.get(Calendar.DAY_OF_WEEK)) {
-				while (cal.get(Calendar.DAY_OF_WEEK) != wantDoW) {
-					cal.add(Calendar.DATE, -1);
-				}
-			} else if (wantDoW > cal.get(Calendar.DAY_OF_WEEK))
-				while (cal.get(Calendar.DAY_OF_WEEK) != wantDoW) {
-					cal.add(Calendar.DATE, 1);
-				}
-
-			day = cal.getTime();
-			mAdapter = new LessonsArrayAdapter((DiaryActivity) getActivity(), day);
-			expListView.setAdapter(mAdapter);
-
-			((TextView) header.findViewById(R.id.itemHeader))
-					.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH)
-							.format(day));
-
-			return rootView;
 		}
 	}
 }
