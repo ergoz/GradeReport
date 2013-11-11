@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="marquee"
         android:fadingEdge="horizontal"
-        android:maxLines="4"
+        android:maxLines="10"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/itemTheme"
         android:layout_below="@+id/itemTheme"
-        android:maxLines="4"
+        android:maxLines="10"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/itemMarks"
         android:layout_below="@+id/itemMarks"
-        android:maxLines="4"
+        android:maxLines="10"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </RelativeLayout>

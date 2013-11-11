@@ -36,9 +36,9 @@ public class LessonsNestedFragment extends Fragment implements
 		mLessonsDetailsFragment = new LessonDetailsFragment();
 		
 		FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-
-		transaction.add(R.id.fragment_list, mLessonsFragment, "left");
-		transaction.add(R.id.fragment_detail, mLessonsDetailsFragment, "right");
+		
+		transaction.replace(R.id.fragment_list, mLessonsFragment, "left");
+		transaction.replace(R.id.fragment_detail, mLessonsDetailsFragment, "right");
 
 		transaction.commit();
 				

@@ -1,4 +1,5 @@
 
 + need to fix the "activity has leaked serviceconnection that was originally bound here" error
 + systemservice background update
++ store previous weeks in persistent cache
 + grade reports

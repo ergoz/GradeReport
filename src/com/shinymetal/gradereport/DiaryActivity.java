@@ -204,7 +204,11 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
     @Override
     protected void onDestroy() {
 
-        mLicValidator.onDestroy();
+    	if (mLicValidator != null) {
+    		mLicValidator.onDestroy();
+    		mLicValidator = null;
+    	}
+    	
         super.onDestroy();
     }
     
@@ -470,9 +474,9 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	    {
 			Log.i (this.toString(), TS.get() + this.toString() + " getItemPosition () started");
 			
-			if (object instanceof UpdateableFragment) {
-	            return POSITION_NONE;
-			}
+//			if (object instanceof UpdateableFragment) {
+//	            return POSITION_NONE;
+//			}
 			
 	        return POSITION_UNCHANGED;
 	    }

@@ -461,6 +461,24 @@ public class GshisHTMLParser {
 			}
 		}
 	}
+	
+	protected static String fixDuplicateString(String newS, String prevS, int idx) {
+
+		if (idx == 0)
+			return newS;
+		
+		if (newS == null || newS.length() == 0)
+			return prevS;
+		
+		if (prevS == null || prevS.length() == 0)
+			return newS;
+		
+		if(idx == 1) {
+			return "1) " + prevS + "; 2) " + newS;
+		}
+		
+		return prevS + "; " + Integer.toString(idx) + ") " + newS; 
+	}
 
 	public static void fetchLessonsDetails(Document doc, User u)
 			throws ParseException {
@@ -471,7 +489,8 @@ public class GshisHTMLParser {
 
 			int tdCount = 0;
 			Date date = null;
-			Lesson l;
+			Lesson l, lPrev = null; // lPrev to handle duplicate lesson bug
+			int sameLesson = 0;      // Also to handle duplicate lesson bug
 
 			Elements trs = tableCell.getElementsByTag("tr");
 			for (Element tr : trs) {
@@ -481,6 +500,7 @@ public class GshisHTMLParser {
 					continue;
 
 				l = null;
+				sameLesson = 0; // assume no bug here
 				Elements tds = tr.getElementsByTag("td");
 
 				for (Element td : tds) {
@@ -501,7 +521,12 @@ public class GshisHTMLParser {
 
 						String marks = fetchLongCellStringNoWhitespaces(td);
 						if (l != null && marks != null) {
-							l.setMarks(marks);
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setMarks(fixDuplicateString(marks, lPrev.getMarks(), sameLesson));
+							} else
+								l.setMarks(marks);
 						}
 						tdCount++;
 
@@ -510,7 +535,12 @@ public class GshisHTMLParser {
 
 						String comment = fetchLongCellStringNoWhitespaces(td);
 						if (l != null && comment != null) {
-							l.setComment(comment);							
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setComment(fixDuplicateString(comment, lPrev.getComment(), sameLesson));
+							} else
+								l.setComment(comment);							
 						}
 						
 						tdCount++;
@@ -519,7 +549,12 @@ public class GshisHTMLParser {
 
 						String theme = fetchLongCellStringNoWhitespaces(td);
 						if (l != null && theme != null) {
-							l.setTheme(theme);
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setTheme(fixDuplicateString(theme, lPrev.getTheme(), sameLesson));
+							} else
+								l.setTheme(theme);
 						}
 						tdCount++;
 
@@ -527,7 +562,12 @@ public class GshisHTMLParser {
 
 						String homework = fetchLongCellStringNoWhitespaces(td);
 						if (l != null && homework != null) {
-							l.setHomework(homework);
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setHomework(fixDuplicateString(homework, lPrev.getHomework(), sameLesson));
+							} else
+								l.setHomework(homework);
 						}
 						tdCount++;
 					// TODO: use subjects_name pattern
@@ -542,6 +582,15 @@ public class GshisHTMLParser {
 											date,
 											Integer.parseInt(td.text()
 													.substring(0, 1)));
+							
+							if (lPrev != null
+									&& l.getStart().equals(lPrev.getStart())
+									&& l.getNumber() == lPrev.getNumber()
+									&& l.getFormId().equals(lPrev.getFormId())) {
+								
+								// We hit the same lesson bug
+								sameLesson++;
+							}
 						} catch (NullPointerException e) {
 
 							e.printStackTrace();
@@ -553,6 +602,9 @@ public class GshisHTMLParser {
 						tdCount++;
 					}
 				}
+				
+				if (l != null)
+					lPrev = l;
 			}
 		}
 	}

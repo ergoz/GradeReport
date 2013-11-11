@@ -42,5 +42,6 @@ public class LicenseValidatorHelper {
 	protected void onDestroy() {
 		
 		mChecker.onDestroy();
+		mChecker = null;
 	}
 }
