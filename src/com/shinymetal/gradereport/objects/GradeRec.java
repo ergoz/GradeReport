@@ -2,6 +2,7 @@ package com.shinymetal.gradereport.objects;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class GradeRec extends FormTimeInterval {
 	
@@ -9,8 +10,8 @@ public class GradeRec extends FormTimeInterval {
 
 		public static final String TABLE_NAME = "MARK";
 		public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
-				+ "MARKID INTEGER PRIMARY KEY ASC, "
-				+ "GRADEID REFERENCES GRADE, "
+				+ "ID INTEGER PRIMARY KEY ASC, "
+				+ "GRADEID INTEGER REFERENCES GRADE (ID), "
 				+ "MARKS TEXT, "
 				+ "COMMENT TEXT);";
 		
@@ -30,15 +31,15 @@ public class GradeRec extends FormTimeInterval {
 	 
 	public static final String TABLE_NAME = "GRADE";
 	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
-			+ "GRADEID INTEGER PRIMARY KEY ASC, "
-			+ "SCHEDULEID TEXT REFERENCES SCHEDULE (FORMID), "
+			+ "ID INTEGER PRIMARY KEY ASC, "
+			+ "SCHEDULEID INTEGER REFERENCES SCHEDULE (ID), "
 			+ "FORMTEXT TEXT, "
 			+ "START INTEGER, "
 			+ "STOP INTEGER, "
 			+ "ABSENT INTEGER, "
 			+ "RELEASED INTEGER, "
 			+ "SICK INTEGER, "
-			+ "AVERAGE REAL"
+			+ "AVERAGE REAL, "
 			+ "TOTAL INTEGER);";
 
 	protected List<MarkRec> marks;
@@ -108,5 +109,15 @@ public class GradeRec extends FormTimeInterval {
 	}
 	public void setTotal(int total) {
 		this.total = total;
+	}
+
+	public static void insert(Schedule schedule) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public static Set<GradeRec> getSet(Schedule schedule) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

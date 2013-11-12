@@ -9,6 +9,7 @@ import com.google.android.vending.licensing.LicenseCheckerCallback;
 import com.google.android.vending.licensing.Policy;
 
 import com.shinymetal.gradereport.R;
+import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 import com.shinymetal.gradereport.utils.GshisLoader;
@@ -17,6 +18,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -182,6 +184,8 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		
 		if (mLicState == Policy.RETRY)
 			mLicValidator = new LicenseValidatorHelper (this, this);
+		
+		Database.setContext(this);
 	}
 	
 	@Override

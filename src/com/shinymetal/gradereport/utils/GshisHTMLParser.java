@@ -11,11 +11,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.util.Log;
+
 import com.shinymetal.gradereport.objects.GradeRec;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Lesson;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
+import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 
 public class GshisHTMLParser {
@@ -121,7 +124,21 @@ public class GshisHTMLParser {
 						
 					} catch (NullPointerException e) {
 
+						final SimpleDateFormat f = new SimpleDateFormat(
+								"yyyy dd.MM", Locale.ENGLISH);
 						schedule = new Schedule(value, year.text());
+
+						Date start = f.parse(year.text().substring(0,
+								year.text().indexOf("-") - 1)
+								+ " 01.09");
+						Date stop = f.parse(year.text().substring(
+								year.text().indexOf("-") + 2,
+								year.text().length())
+								+ " 31.05");
+						
+						schedule.setStart(start);
+						schedule.setStop(stop);
+				    	
 						selPupil.addSchedule(schedule);
 					}
 
@@ -186,7 +203,7 @@ public class GshisHTMLParser {
 					if (week.hasAttr("selected")
 							&& week.attr("selected").equals("selected")) {
 
-						w.setLoaded();
+						w.setLoaded().update();
 					}
 				}
 			}
@@ -580,8 +597,10 @@ public class GshisHTMLParser {
 					}
 				}
 				
-				if (l != null)
+				if (l != null) {
 					lPrev = l;
+					l.update();
+				}
 			}
 		}
 	}

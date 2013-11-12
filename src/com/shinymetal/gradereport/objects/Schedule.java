@@ -1,16 +1,18 @@
 package com.shinymetal.gradereport.objects;
 
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.Map.Entry;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+
+import com.shinymetal.gradereport.db.Database;
 
 public class Schedule extends FormTimeInterval {
 	
+	private final static String ID_NAME = "ID";
 	private final static String FORMID_NAME = "FORMID";
 	private final static String FORMTEXT_NAME = "FORMTEXT";
 	private final static String PUPILID_NAME = "PUPILID";
@@ -19,48 +21,145 @@ public class Schedule extends FormTimeInterval {
 	
 	public final static String TABLE_NAME = "SCHEDULE";
 	public final static String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
-			+ FORMID_NAME + " TEXT PRIMARY KEY ASC, "
-			+ PUPILID_NAME + " TEXT REFERENCES PUPIL (FORMID), "
+			+ ID_NAME + " INTEGER PRIMARY KEY ASC, "
+			+ FORMID_NAME + " TEXT, "
+			+ PUPILID_NAME + " INTEGER REFERENCES PUPIL (ID), "
 			+ FORMTEXT_NAME + " TEXT, "
 			+ START_NAME + " INTEGER, "
 			+ STOP_NAME + " INTEGER);";
-
-	protected SortedMap<Date, Lesson> lessons;
-	protected SortedMap<Date, Week> weeks;
 	
-	protected SortedMap<String, GradeRec> gradeRecs;
-	protected SortedMap<Date, GradeSemester> semesters;
+	private long mPupilId;
+	private long mRowId;
 	
-	protected String currentSemesterId;
-
-	public Schedule() {
-
-		Comparator<Date> comp = new Comparator<Date>() {
-			public int compare(Date d1, Date d2) {
-				if (d1.equals(d2))
-					return 0;
-				if (d1.before(d2))
-					return -1;
-
-				return 1;
-			}
-		};
-
-		lessons = new TreeMap<Date, Lesson>(comp);
-		gradeRecs = new TreeMap<String, GradeRec> ();
-		weeks = new TreeMap<Date, Week>(comp);
-		semesters = new TreeMap<Date, GradeSemester> (comp);
-	}
-
 	public Schedule(String formId, String schoolYear) {
-
-		this();
 
 		setFormId(formId);
 		setFormText(schoolYear);
 	}
+	
+	public long getRowId () { return mRowId; }
+	
+	public long insert(Pupil p) {		
 
-	public void addLesson(Lesson l) throws IllegalStateException {
+        ContentValues values = new ContentValues();
+        
+        values.put(FORMID_NAME, getFormId());
+        values.put(FORMTEXT_NAME, getFormText());
+        values.put(PUPILID_NAME, mPupilId = p.getRowId());
+        
+    	values.put(START_NAME, getStart().getTime());
+    	values.put(STOP_NAME, getStop().getTime());	
+
+        return mRowId = Database.getWritable().insert(TABLE_NAME, null, values);	
+	}
+	
+	public long update() {
+		
+        ContentValues values = new ContentValues();
+        
+        values.put(FORMID_NAME, getFormId());
+        values.put(FORMTEXT_NAME, getFormText());        
+    	values.put(START_NAME, getStart().getTime());
+    	values.put(STOP_NAME, getStop().getTime());	
+    	
+    	String selection = FORMID_NAME + " = ? AND " + ID_NAME + " = ?";
+        String[] args = new String[] { getFormId(), "" + mRowId };
+		
+    	return Database.getWritable().update(TABLE_NAME, values, selection, args);
+	}
+	
+	public static Schedule getByFormId(Pupil p, String fId) {
+		
+		String selection = FORMID_NAME + " = ? AND " + PUPILID_NAME + " = ?";
+        String[] args = new String[] { fId, "" + p.getRowId() };
+        String[] columns = new String[] {FORMTEXT_NAME, START_NAME, STOP_NAME, ID_NAME};
+
+        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        c.moveToFirst();
+        if (c.getCount() <= 0)
+        	return null;
+		
+		Schedule s = new Schedule (fId, c.getString(c.getColumnIndex(FORMTEXT_NAME)));
+		s.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
+		s.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+		
+		return s;
+	}
+	
+	public static final Set<Schedule> getSet(Pupil p) {
+		
+		Set<Schedule> set = new HashSet<Schedule> (); 
+		
+		String selection = PUPILID_NAME + " = ?";
+        String[] args = new String[] { "" + p.getRowId() };
+        String[] columns = new String[] {FORMTEXT_NAME, FORMID_NAME, START_NAME, STOP_NAME, ID_NAME};
+
+        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+
+		c.moveToFirst();
+		while (!c.isAfterLast()) {
+
+			String formText = c.getString(c.getColumnIndex(FORMTEXT_NAME));
+			String formId = c.getString(c.getColumnIndex(FORMID_NAME));
+			
+			Schedule s = new Schedule (formId, formText);
+			s.mPupilId = p.getRowId();
+			s.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
+			s.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+			s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+			
+			set.add(s);
+			c.moveToNext();
+		}
+		return set;
+	}
+	
+	public static Schedule getBySchoolYear(Pupil p, String schoolYear) {
+		
+		String selection = FORMTEXT_NAME + " = ? AND " + PUPILID_NAME + " = ?";
+        String[] args = new String[] { schoolYear, "" + p.getRowId() };
+        String[] columns = new String[] {FORMID_NAME, START_NAME, STOP_NAME, ID_NAME};
+
+        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        c.moveToFirst();
+        if (c.getCount() <= 0)
+        	return null;
+		
+		Schedule s = new Schedule (c.getString(c.getColumnIndex(FORMID_NAME)), schoolYear);
+		s.mPupilId = p.getRowId();
+		s.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
+		s.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+		
+		return s;
+	}
+	
+	public static Schedule getByDate(Pupil p, Date day) {
+		
+		long date = day.getTime();
+
+		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
+				+ PUPILID_NAME + " = ?";
+        String[] args = new String[] { "" + date, "" + date, "" + p.getRowId() };
+        String[] columns = new String[] {FORMID_NAME, FORMTEXT_NAME, START_NAME, STOP_NAME, ID_NAME};
+
+        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        c.moveToFirst();
+        if (c.getCount() <= 0)
+        	return null;
+		
+		Schedule s = new Schedule(c.getString(c.getColumnIndex(FORMID_NAME)),
+				c.getString(c.getColumnIndex(FORMTEXT_NAME)));
+		s.mPupilId = p.getRowId();
+		s.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
+		s.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+		
+		return s;
+	}
+
+	public Schedule addLesson(Lesson l) throws IllegalStateException {
 
 		Week w = null;
 
@@ -69,58 +168,38 @@ public class Schedule extends FormTimeInterval {
 			throw new IllegalStateException("Week is not loaded");
 		}
 
-		w.setLoaded();
-		lessons.put(l.getStart(), l);
+		w.setLoaded().update();
+		l.insert(this);
+		return this;
 	}
 	
-	public void addSemester(GradeSemester s) {
-		semesters.put(s.getStart(), s);
+	public Schedule addSemester(GradeSemester s) {
+		s.insert(this);
+		return this;
 	}
 	
-	public String getCurrentSemesterId() {
-		return currentSemesterId;
-	}
+	public GradeSemester getSemester(Date day) {
 
-	public void setCurrentSemesterId(String currentSemesterId) {
-		this.currentSemesterId = currentSemesterId;
+		return GradeSemester.getByDate(this, day);
 	}
 	
-	public GradeSemester getSemester(Date day) throws NullPointerException {
+	public GradeSemester getSemester(String formId) {
 
-		SortedMap<Date, GradeSemester> subMapElements = semesters.subMap(day, day);
-		for (Map.Entry<Date, GradeSemester> entry : subMapElements.entrySet()) {
-			return entry.getValue();
-		}
-		
-		throw new NullPointerException();
-	}
-	
-	public GradeSemester getSemester(String formId) throws NullPointerException {
-
-		for (Map.Entry<Date, GradeSemester> entry : semesters.entrySet()) {
-			
-			if (entry.getValue().getFormId().equals(formId))
-				return entry.getValue();
-		}
-		
-		throw new NullPointerException();
-	}
-	
-	public GradeSemester getCurrentSemester () {
-
-		return getSemester(currentSemesterId);
+		return GradeSemester.getByFormId(this, formId);
 	}
 
-	public void addGradeRec(GradeRec gr) throws IllegalStateException {
+	public Schedule addGradeRec(GradeRec gr) {
 
-		gradeRecs.put(gr.getFormText(), gr);
+		GradeRec.insert(this);
+		return this;
 	}
 
 	public Lesson getLesson(Date start) {
-		return lessons.get(start);
+		
+		return Lesson.getByDate(this, start);
 	}
 	
-	public Lesson getLessonByNumber(Date date, int number) throws NullPointerException {
+	public Lesson getLessonByNumber(Date date, int number) {
 		
 		Date start;
 		Date stop;
@@ -138,70 +217,32 @@ public class Schedule extends FormTimeInterval {
         cal.set(Calendar.MINUTE, 59);
         stop = cal.getTime();
 
-		SortedMap<Date, Lesson> subMapElements = lessons.subMap(start, stop);
-		for (Map.Entry<Date, Lesson> entry : subMapElements.entrySet()) {
-			if( entry.getValue().getNumber() == number) {
-				return entry.getValue();
-			}
-		}
-		
-		throw new NullPointerException();
+		return Lesson.getByNumber(this, start, stop, number);
 	}
 
-	public void addWeek(Week w) {
-		weeks.put(w.getStart(), w);
+	public Schedule addWeek(Week w) {
+		
+		w.insert(this);
+		return this;
 	}
 
-	public Week getWeek(Date day) throws NullPointerException {
-
-		SortedMap<Date, Week> subMapElements = weeks.subMap(
-				Week.getWeekStart(day), Week.getWeekStop(day));
-		for (Map.Entry<Date, Week> entry : subMapElements.entrySet()) {
-			return entry.getValue();
-		}
+	public Week getWeek(Date day) {
 		
-		throw new NullPointerException();
+		return Week.getByDate(this, day);
 	}
 	
-	public Week getWeek(String formId) throws NullPointerException {
+	public Week getWeek(String formId) {
 
-		for (Map.Entry<Date, Week> entry : weeks.entrySet()) {
-			
-			if (entry.getValue().getFormId().equals(formId))
-				return entry.getValue();
-		}
+		return Week.getByFormId(this, formId);
+	}
+
+	public final Set<Week> getWeekSet() {
 		
-		throw new NullPointerException();
+		return Week.getSet(this);
 	}
 
-	public final Set<Entry<Date, Week>> getWeekSet() {
-		return weeks.entrySet();
-	}
-
-	public final Set<Entry<String, GradeRec>> getGradeRecSet() {
-		return gradeRecs.entrySet();
-	}
-
-	public String toString() {
-
-		String res = "Weeks:\n";
-
-		for (Map.Entry<Date, Week> entry : weeks.entrySet()) {
-			res += entry.getValue().toString() + "\n";
-		}
-
-		res += "\nLessons:\n";
-
-		for (Map.Entry<Date, Lesson> entry : lessons.entrySet()) {
-			res += entry.getValue().toString() + "\n";
-		}
+	public final Set<GradeRec> getGradeRecSet() {
 		
-		res += "\nGrade Records:\n";
-
-		for (Map.Entry<String, GradeRec> entry : gradeRecs.entrySet()) {
-			res += entry.getValue().toString() + "\n";
-		}
-
-		return res;
+		return GradeRec.getSet(this);
 	}
 }

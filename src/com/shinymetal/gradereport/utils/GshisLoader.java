@@ -459,9 +459,21 @@ public class GshisLoader {
 
 			parseLessonsPage(page);
 		}
+		
+		Log.e("getLessonsByDate()", "AAAAAAAAAAAAAAAAAAAA!");
+		
+				
+		if (pupilName == null)
+			pupilName = currentPupilName;
+		
+		Log.e("getLessonsByDate()", "BBBBBBBBBBBBBBBBBBBB!");
 
 		Pupil p = Pupil.getByFormName(pupilName);
+		
+		Log.e("getLessonsByDate()", "CCCCCCCCCCCCCCCCCCCC!");
 		Schedule s = p.getScheduleByDate(day);
+		
+		Log.e("getLessonsByDate()", "DDDDDDDDDDDDDDDDDDDD!");
 		boolean weekLoaded = s.getWeek(day).getLoaded();
 
 		if (!weekLoaded) {
@@ -540,8 +552,12 @@ public class GshisLoader {
 		}
 		
 		if (!mIsLoggedIn) return null;
-
-		try {
+		
+		if (uName == null) {
+			
+			requestNeeded = true;
+		}
+		else try {
 			
 			p = Pupil.getByFormName(uName);
 			s = p.getScheduleByDate(day);
@@ -550,7 +566,10 @@ public class GshisLoader {
 				requestNeeded = true;
 			}
 			
-		} catch (NullPointerException e) {
+		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
+			
+			Log.i(this.toString(), TS.get() + this.toString()
+					+ " getLessonsByDate() : " + e.toString());
 			
 			requestNeeded = true;
 		}
@@ -566,12 +585,20 @@ public class GshisLoader {
 		try {
 			if (requestNeeded) {
 				
+
+				Log.i(this.toString(), TS.get() + this.toString()
+						+ " getLessonsByDate() : ZZZZZ" );
+				
 				for (int i=0; i<2; i++)
 					if (parseLessonsByDate(day, uName)) break;
 			}
 	
 			// TODO: fix this
-			s = null;
+			if (uName == null)
+				uName = currentPupilName;
+
+			p = Pupil.getByFormName(uName);
+			s = p.getScheduleByDate(day);
 			
 			while (true) {
 
@@ -603,7 +630,7 @@ public class GshisLoader {
 
 	public String getPupilIdByName(String name) {
 		
-		for (Pupil p : Pupil.getPupilSet()) {
+		for (Pupil p : Pupil.getSet()) {
 			
 			if (p.getFormText().equals(name)) {
 				return p.getFormId();
@@ -616,7 +643,7 @@ public class GshisLoader {
 		
 		ArrayList<String> res = new ArrayList<String> (); 
 
-		for (Pupil p : Pupil.getPupilSet()) {
+		for (Pupil p : Pupil.getSet()) {
 			res.add(p.getFormText());
 		}
 			
