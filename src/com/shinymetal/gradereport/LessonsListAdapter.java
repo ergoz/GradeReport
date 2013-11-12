@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import com.shinymetal.objects.Lesson;
-import com.shinymetal.utils.GshisLoader;
+import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.content.Context;
 import android.text.Html;
@@ -30,7 +30,7 @@ public class LessonsListAdapter extends
 		mActivity = activity;
 		mDay = day;
 
-		mValues = GshisLoader.getInstance().getLessonsByDate(mDay, false);
+		mValues = GshisLoader.getInstance().getLessonsByDate(mDay, null, false);
 
 		if (mValues == null) {
 
@@ -43,7 +43,7 @@ public class LessonsListAdapter extends
 
 	public void onUpdateTaskComplete() {
 
-		mValues = GshisLoader.getInstance().getLessonsByDate(mDay, false);
+		mValues = GshisLoader.getInstance().getLessonsByDate(mDay, null, false);
 
 		if (mValues == null) {
 

@@ -1,10 +1,19 @@
-package com.shinymetal.objects;
+package com.shinymetal.gradereport.objects;
 
 import java.util.Calendar;
 import java.util.Date;
 
 public class Week extends FormTimeInterval {
 	
+	public static final String TABLE_NAME = "WEEK";
+	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
+			+ "FORMID TEXT PRIMARY KEY ASC, "
+			+ "SCHEDULEID TEXT REFERENCES SCHEDULE (FORMID), "
+			+ "FORMTEXT TEXT, "
+			+ "START INTEGER, "
+			+ "STOP INTEGER, "
+			+ "LOADED INTEGER);";
+
 	protected boolean loaded;
 	
 	public Week () {

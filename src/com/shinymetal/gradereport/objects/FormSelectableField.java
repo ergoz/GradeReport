@@ -1,4 +1,4 @@
-package com.shinymetal.objects;
+package com.shinymetal.gradereport.objects;
 
 public class FormSelectableField {
 

@@ -13,8 +13,8 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-import com.shinymetal.objects.Lesson;
-import com.shinymetal.utils.GshisLoader;
+import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.utils.GshisLoader;
 
 public class LessonsExpListAdapter extends BaseExpandableListAdapter implements UpdateableAdapter {
 
@@ -30,7 +30,7 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		mDay = day;
 		
 		mValues = GshisLoader.getInstance()
-				.getLessonsByDate(mDay, false);
+				.getLessonsByDate(mDay, null, false);
 		
 		if (mValues == null) {
 			
@@ -44,7 +44,7 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 	public void onUpdateTaskComplete () {
 		
 		mValues = GshisLoader.getInstance()
-				.getLessonsByDate(mDay, false);
+				.getLessonsByDate(mDay, null, false);
 		
 		if (mValues == null) {
 			

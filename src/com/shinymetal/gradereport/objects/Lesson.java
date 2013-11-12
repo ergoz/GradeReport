@@ -1,7 +1,23 @@
-package com.shinymetal.objects;
+package com.shinymetal.gradereport.objects;
 
 public class Lesson extends FormTimeInterval {
 	
+	public static final String TABLE_NAME = "LESSON";
+	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
+			+ "FORMID TEXT PRIMARY KEY ASC, "
+			+ "SCHEDULEID TEXT REFERENCES SCHEDULE (FORMID), "
+			+ "FORMTEXT TEXT, "
+			+ "START INTEGER, "
+			+ "STOP INTEGER, "
+			+ "NUMBER INTEGER, "
+			+ "START INTEGER, "
+			+ "STOP INTEGER, "
+			+ "TEACHER TEXT, "
+			+ "THEME TEXT, "
+			+ "HOMEWORK TEXT, "
+			+ "MARKS TEXT, "
+			+ "COMMENT TEXT);";
+
 	protected String teacher;
 	
 	protected String theme;

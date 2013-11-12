@@ -14,8 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
-import com.shinymetal.objects.TS;
-import com.shinymetal.utils.GshisLoader;
+import com.shinymetal.gradereport.objects.TS;
+import com.shinymetal.gradereport.utils.GshisLoader;
 
 public class LessonsExpListFragment extends Fragment implements
 		UpdateableFragment {

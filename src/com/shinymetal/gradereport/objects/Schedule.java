@@ -1,4 +1,4 @@
-package com.shinymetal.objects;
+package com.shinymetal.gradereport.objects;
 
 import java.util.Calendar;
 import java.util.Comparator;
@@ -9,7 +9,21 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-public class Schedule extends FormSelectableField {
+public class Schedule extends FormTimeInterval {
+	
+	private final static String FORMID_NAME = "FORMID";
+	private final static String FORMTEXT_NAME = "FORMTEXT";
+	private final static String PUPILID_NAME = "PUPILID";
+	private final static String START_NAME = "START";
+	private final static String STOP_NAME = "STOP";
+	
+	public final static String TABLE_NAME = "SCHEDULE";
+	public final static String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
+			+ FORMID_NAME + " TEXT PRIMARY KEY ASC, "
+			+ PUPILID_NAME + " TEXT REFERENCES PUPIL (FORMID), "
+			+ FORMTEXT_NAME + " TEXT, "
+			+ START_NAME + " INTEGER, "
+			+ STOP_NAME + " INTEGER);";
 
 	protected SortedMap<Date, Lesson> lessons;
 	protected SortedMap<Date, Week> weeks;

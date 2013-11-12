@@ -1,4 +1,4 @@
-package com.shinymetal.objects;
+package com.shinymetal.gradereport.objects;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;

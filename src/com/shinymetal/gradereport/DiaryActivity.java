@@ -7,10 +7,11 @@ import java.util.Locale;
 
 import com.google.android.vending.licensing.LicenseCheckerCallback;
 import com.google.android.vending.licensing.Policy;
+
 import com.shinymetal.gradereport.R;
-import com.shinymetal.objects.TS;
-import com.shinymetal.objects.Week;
-import com.shinymetal.utils.GshisLoader;
+import com.shinymetal.gradereport.objects.TS;
+import com.shinymetal.gradereport.objects.Week;
+import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;

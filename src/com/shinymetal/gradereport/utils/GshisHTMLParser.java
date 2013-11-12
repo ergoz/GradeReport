@@ -1,4 +1,4 @@
-package com.shinymetal.utils;
+package com.shinymetal.gradereport.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,13 +11,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.shinymetal.objects.GradeRec;
-import com.shinymetal.objects.GradeSemester;
-import com.shinymetal.objects.Lesson;
-import com.shinymetal.objects.Pupil;
-import com.shinymetal.objects.Schedule;
-import com.shinymetal.objects.User;
-import com.shinymetal.objects.Week;
+import com.shinymetal.gradereport.objects.GradeRec;
+import com.shinymetal.gradereport.objects.GradeSemester;
+import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.objects.Pupil;
+import com.shinymetal.gradereport.objects.Schedule;
+import com.shinymetal.gradereport.objects.Week;
 
 public class GshisHTMLParser {
 
@@ -60,23 +59,11 @@ public class GshisHTMLParser {
 	
 	public final static Pattern whitespaces_only = Pattern.compile("^" + whitespace_charclass +"+$");
 //	public final static Pattern subjects_name = Pattern.compile("^[0-9]{1}\\." + whitespace_charclass + "{1}.*");
-
-	public static void fetchUserName(Document doc, User u)
-			throws ParseException {
-
-		Elements userNames = doc.getElementsByClass("user-name");
-		for (Element userName : userNames) {
-
-			u.setName(userName.text());
-			return;
-		}
-
-		throw new ParseException("Username not found", 0);
-	}
-
-	public static void fetchPupils(Document doc, User u) throws ParseException {
+	
+	public static Pupil getSelectedPupil(Document doc) throws ParseException {
 
 		boolean found = false;
+		Pupil p, selectedP = null;
 
 		Elements pupilSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_topMenu_pupil_drdPupils");
@@ -87,22 +74,18 @@ public class GshisHTMLParser {
 				if (pupil.tagName().equals("option")) {
 
 					String value = pupil.attr("value");
-					Pupil p;
 
 					found = true;
-					try {
-						p = u.getPupilByFormId(value);
-
-					} catch (NullPointerException e) {
+					if ((p = Pupil.getByFormId(value)) == null) {
 
 						p = new Pupil(pupil.text(), value);
-						u.addPupil(p);
+						p.insert();
 					}
 
 					if (pupil.hasAttr("selected")
 							&& pupil.attr("selected").equals("selected")) {
 
-						u.setCurrentPupilId(value);
+						selectedP = p;
 					}
 				}
 			}
@@ -110,11 +93,14 @@ public class GshisHTMLParser {
 
 		if (!found)
 			throw new ParseException("Pupils not found", 0);
+		
+		return selectedP;
 	}
 
-	public static void fetchYears(Document doc, User u) throws ParseException {
+	public static Schedule getSelectedSchedule(Document doc, Pupil selPupil) throws ParseException {
 
 		boolean found = false;
+		Schedule selectedS = null;
 
 		Elements yearSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_learnYear_drdLearnYears");
@@ -131,20 +117,18 @@ public class GshisHTMLParser {
 
 					try {
 
-						schedule = u.getCurrentPupil().getScheduleByFormId(
-								value);
+						schedule = selPupil.getScheduleByFormId(value);
+						
 					} catch (NullPointerException e) {
 
 						schedule = new Schedule(value, year.text());
-
-						Pupil p = u.getCurrentPupil();
-						p.addSchedule(schedule);
+						selPupil.addSchedule(schedule);
 					}
 
 					if (year.hasAttr("selected")
 							&& year.attr("selected").equals("selected")) {
 
-						u.getCurrentPupil().setCurrentScheduleId(value);
+						selectedS = schedule;
 					}
 				}
 			}
@@ -152,9 +136,11 @@ public class GshisHTMLParser {
 
 		if (!found)
 			throw new ParseException("Years not found", 0);
+		
+		return selectedS;
 	}
 
-	public static void fetchWeeks(Document doc, User u) throws ParseException {
+	public static void getWeeks(Document doc, Schedule s) throws ParseException {
 
 		boolean found = false;
 
@@ -170,12 +156,9 @@ public class GshisHTMLParser {
 					Week w;
 					found = true;
 
-					Schedule schedule = u.getCurrentPupil()
-							.getCurrentSchedule();
-
 					try {
 
-						w = schedule.getWeek(week.attr("value"));
+						w = s.getWeek(week.attr("value"));
 					} catch (NullPointerException e) {
 
 						w = new Week();
@@ -185,10 +168,10 @@ public class GshisHTMLParser {
 
 						String year;
 						if (Integer.parseInt(wMonth) > 7) {
-							year = schedule.getFormText().substring(0, schedule.getFormText().indexOf("-") - 1);
+							year = s.getFormText().substring(0, s.getFormText().indexOf("-") - 1);
 						} else {
-							year = schedule.getFormText().substring(schedule.getFormText().indexOf("-") + 2,
-									schedule.getFormText().length());
+							year = s.getFormText().substring(s.getFormText().indexOf("-") + 2,
+									s.getFormText().length());
 						}
 
 						w.setStart(new SimpleDateFormat("yyyy dd.MM", Locale.ENGLISH).parse(year
@@ -197,13 +180,13 @@ public class GshisHTMLParser {
 						w.setFormText(week.text());
 						w.setFormId(week.attr("value"));
 
-						schedule.addWeek(w);
+						s.addWeek(w);
 					}
 
 					if (week.hasAttr("selected")
 							&& week.attr("selected").equals("selected")) {
 
-						schedule.getWeek(week.attr("value")).setLoaded();
+						w.setLoaded();
 					}
 				}
 			}
@@ -213,7 +196,7 @@ public class GshisHTMLParser {
 			throw new ParseException("Weeks not found", 0);
 	}
 
-	public static void fetchLessons(Document doc, User u) throws ParseException {
+	public static void getLessons(Document doc, Schedule s) throws ParseException {
 
 		Elements lessonCells = doc.getElementsByAttribute("number");
 		for (Element lessonCell : lessonCells) {
@@ -255,7 +238,6 @@ public class GshisHTMLParser {
 					continue;
 				}
 
-				Schedule schedule = u.getCurrentPupil().getCurrentSchedule();
 				SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.ENGLISH);
 
 				Lesson l;
@@ -263,7 +245,7 @@ public class GshisHTMLParser {
 				String timeB = time.substring(0, time.indexOf("-") - 1);
 				Date start = format.parse(date + " " + timeB);
 
-				if ((l = schedule.getLesson(start)) == null) {
+				if ((l = s.getLesson(start)) == null) {
 
 					l = new Lesson();
 					
@@ -277,7 +259,7 @@ public class GshisHTMLParser {
 					l.setTeacher(teacherName);
 					l.setNumber(Integer.parseInt(number));
 
-					schedule.addLesson(l);
+					s.addLesson(l);
 				}
 			}
 		}
@@ -322,10 +304,11 @@ public class GshisHTMLParser {
 		return s;
 	}
 
-	public static void fetchGradeSemesters(Document doc, User u)
+	public static GradeSemester getActiveGradeSemester(Document doc, Schedule sch)
 			throws ParseException {
 		
 		boolean found = false;
+		GradeSemester selG = null;
 		
 		Elements semesterSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_body_drdTerms");
@@ -339,12 +322,9 @@ public class GshisHTMLParser {
 					GradeSemester sem;
 					found = true;
 
-					Schedule schedule = u.getCurrentPupil()
-							.getCurrentSchedule();
-
 					try {
 
-						sem = schedule.getSemester(semester.attr("value"));
+						sem = sch.getSemester(semester.attr("value"));
 					} catch (NullPointerException e) {
 						
 						String sBegin = value.substring(12, value.indexOf("-") - 1);
@@ -357,14 +337,14 @@ public class GshisHTMLParser {
 						sem.setFormText(semester.text());
 						sem.setFormId(semester.attr("value"));
 
-						schedule.addSemester(sem);
+						sch.addSemester(sem);
 					}
 
 					if (semester.hasAttr("selected")
 							&& semester.attr("selected").equals("selected")) {
 
-						schedule.getSemester(semester.attr("value")).setLoaded();
-						schedule.setCurrentSemesterId(semester.attr("value"));
+						sem.setLoaded();			
+						selG = sem;
 					}
 				}
 			}
@@ -372,14 +352,13 @@ public class GshisHTMLParser {
 
 		if (!found)
 			throw new ParseException("Semesters not found", 0);
+		
+		return selG;
 	}
 
-	public static void fetchGrades(Document doc, User u)
+	public static void getGrades(Document doc, Schedule sch, GradeSemester s)
 			throws ParseException {
 		
-		Schedule sch = u.getCurrentPupil().getCurrentSchedule();
-		GradeSemester s = sch.getCurrentSemester();
-
 		Elements tableCells = doc.getElementsByAttributeValue("class",
 				"table rating");
 		for (Element tableCell : tableCells) {
@@ -480,7 +459,7 @@ public class GshisHTMLParser {
 		return prevS + "; " + Integer.toString(idx) + ") " + newS; 
 	}
 
-	public static void fetchLessonsDetails(Document doc, User u)
+	public static void getLessonsDetails(Document doc, Schedule s)
 			throws ParseException {
 
 		Elements tableCells = doc.getElementsByAttributeValue("class",
@@ -576,9 +555,7 @@ public class GshisHTMLParser {
 						tdCount = 2;
 
 						try {
-							l = u.getCurrentPupil()
-									.getCurrentSchedule()
-									.getLessonByNumber(
+							l = s.getLessonByNumber(
 											date,
 											Integer.parseInt(td.text()
 													.substring(0, 1)));
@@ -617,5 +594,4 @@ public class GshisHTMLParser {
 
 		return viewstate.val();
 	}
-
 }

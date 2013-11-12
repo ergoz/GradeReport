@@ -1,4 +1,4 @@
-package com.shinymetal.utils;
+package com.shinymetal.gradereport.utils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -14,7 +14,6 @@ import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map.Entry;
 
 import org.apache.http.auth.InvalidCredentialsException;
 import org.jsoup.Jsoup;
@@ -22,12 +21,12 @@ import org.jsoup.nodes.Document;
 
 import android.util.Log;
 
-import com.shinymetal.objects.Lesson;
-import com.shinymetal.objects.Pupil;
-import com.shinymetal.objects.Schedule;
-import com.shinymetal.objects.TS;
-import com.shinymetal.objects.User;
-import com.shinymetal.objects.Week;
+import com.shinymetal.gradereport.objects.GradeSemester;
+import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.objects.Pupil;
+import com.shinymetal.gradereport.objects.Schedule;
+import com.shinymetal.gradereport.objects.TS;
+import com.shinymetal.gradereport.objects.Week;
 
 public class GshisLoader {
 	
@@ -40,8 +39,6 @@ public class GshisLoader {
 	
 	protected final static String ERROR_CANNOT_LOAD_DATA = "Невозможно получить данные с сервера";
 	protected final static String ERROR_INV_CREDENTIALS = "Неверный логин или пароль";
-
-	protected User mUser;
 
 	protected String mCookieARRAffinity;
 	protected String mCookieASPXAUTH;
@@ -63,6 +60,8 @@ public class GshisLoader {
 	
 	protected Date mCurrWeekStart = Week.getWeekStart(new Date ());
 	
+	protected String currentPupilName;
+	
 	public Date getCurrWeekStart() {
 		return mCurrWeekStart;
 	}
@@ -75,6 +74,11 @@ public class GshisLoader {
 	public void setLogin(String login) {
 		this.mLogin = login;
 	}
+	
+	public String getLogin() {
+		
+		return mLogin;
+	}
 
 	public void setPassword(String password) {
 		this.mPassword = password;
@@ -84,11 +88,10 @@ public class GshisLoader {
 
 		Document doc = Jsoup.parse(page);
 
-		GshisHTMLParser.fetchUserName(doc, mUser);
-		GshisHTMLParser.fetchPupils(doc, mUser);
-		GshisHTMLParser.fetchYears(doc, mUser);
-		GshisHTMLParser.fetchWeeks(doc, mUser);
-		GshisHTMLParser.fetchLessons(doc, mUser);
+		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
+		GshisHTMLParser.getWeeks(doc, s);
+		GshisHTMLParser.getLessons(doc, s);
 		
 		mLessonsVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
@@ -97,10 +100,9 @@ public class GshisLoader {
 
 		Document doc = Jsoup.parse(page);
 
-		GshisHTMLParser.fetchUserName(doc, mUser);
-		GshisHTMLParser.fetchPupils(doc, mUser);
-		GshisHTMLParser.fetchYears(doc, mUser);
-		GshisHTMLParser.fetchLessonsDetails(doc, mUser);
+		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
+		GshisHTMLParser.getLessonsDetails(doc, s);
 		
 		mDiaryVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
@@ -109,11 +111,10 @@ public class GshisLoader {
 
 		Document doc = Jsoup.parse(page);
 
-		GshisHTMLParser.fetchUserName(doc, mUser);
-		GshisHTMLParser.fetchPupils(doc, mUser);
-		GshisHTMLParser.fetchYears(doc, mUser);
-		GshisHTMLParser.fetchGradeSemesters(doc, mUser);
-		GshisHTMLParser.fetchGrades(doc, mUser);
+		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
+		GradeSemester g = GshisHTMLParser.getActiveGradeSemester(doc, s);
+		GshisHTMLParser.getGrades(doc, s ,g);
 		
 		mGradesVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
 	}
@@ -391,7 +392,6 @@ public class GshisLoader {
 	
 	protected GshisLoader() {
 
-		mUser = new User();
 		mIsLoggedIn = false;
 	}
 	
@@ -445,13 +445,12 @@ public class GshisLoader {
 		mGradesVIEWSTATE = null;
 	}
 	
-	protected boolean parseLessonsByDate(Date day)
+	protected boolean parseLessonsByDate(Date day, String pupilName)
 			throws MalformedURLException, IOException, ParseException {
 
 		String page;
 
-		if (mLessonsVIEWSTATE == null || mLessonsVIEWSTATE.length() <= 0
-				|| mUser.getCurrentPupilId() == null) {
+		if (mLessonsVIEWSTATE == null || mLessonsVIEWSTATE.length() <= 0) {
 
 			if ((page = getPageByURL(LESSONS_PAGE)) == null) {
 				Log.e("getLessonsByDate()", "getPageByURL () [1] failed!");
@@ -461,8 +460,8 @@ public class GshisLoader {
 			parseLessonsPage(page);
 		}
 
-		Pupil p = mUser.getCurrentPupil();
-		Schedule s = p.getCurrentSchedule();
+		Pupil p = Pupil.getByFormName(pupilName);
+		Schedule s = p.getScheduleByDate(day);
 		boolean weekLoaded = s.getWeek(day).getLoaded();
 
 		if (!weekLoaded) {
@@ -497,11 +496,17 @@ public class GshisLoader {
 
 	}
 
-	public ArrayList<Lesson> getLessonsByDate(Date day, boolean canLoad) {
+	public ArrayList<Lesson> getLessonsByDate(Date day, String pupilName, boolean canLoad) {
 		
-		ArrayList<Lesson> res = new ArrayList<Lesson> (); 
-		Schedule s;
+		ArrayList<Lesson> res = new ArrayList<Lesson> ();
 		boolean requestNeeded = false;
+		
+		String uName = currentPupilName;
+		if (pupilName != null)
+			uName = pupilName;
+
+		Pupil p;
+		Schedule s;
 		
 		if (!mIsLoggedIn) {
 			
@@ -538,7 +543,8 @@ public class GshisLoader {
 
 		try {
 			
-			s = mUser.getCurrentPupil().getCurrentSchedule();
+			p = Pupil.getByFormName(uName);
+			s = p.getScheduleByDate(day);
 			
 			if ( !s.getWeek(day).getLoaded() ) {
 				requestNeeded = true;
@@ -561,10 +567,11 @@ public class GshisLoader {
 			if (requestNeeded) {
 				
 				for (int i=0; i<2; i++)
-					if (parseLessonsByDate(day)) break;
+					if (parseLessonsByDate(day, uName)) break;
 			}
 	
-			s = mUser.getCurrentPupil().getCurrentSchedule();
+			// TODO: fix this
+			s = null;
 			
 			while (true) {
 
@@ -596,10 +603,10 @@ public class GshisLoader {
 
 	public String getPupilIdByName(String name) {
 		
-		for (Entry<String, Pupil> p : mUser.getPupilSet()) {
+		for (Pupil p : Pupil.getPupilSet()) {
 			
-			if (p.getValue().getFormText().equals(name)) {
-				return p.getKey();
+			if (p.getFormText().equals(name)) {
+				return p.getFormId();
 			}			
 		}
 		return null;
@@ -609,8 +616,8 @@ public class GshisLoader {
 		
 		ArrayList<String> res = new ArrayList<String> (); 
 
-		for (Entry<String, Pupil> p : mUser.getPupilSet()) {
-			res.add(p.getValue().getFormText());
+		for (Pupil p : Pupil.getPupilSet()) {
+			res.add(p.getFormText());
 		}
 			
 		return res;
@@ -618,6 +625,6 @@ public class GshisLoader {
 	
 	public void selectPupilByName (String name) {
 
-		mUser.setCurrentPupilId(getPupilIdByName(name));
+		currentPupilName = name;
 	}
 }

@@ -1,4 +1,4 @@
-package com.shinymetal.objects;
+package com.shinymetal.gradereport.objects;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,13 @@ import java.util.List;
 public class GradeRec extends FormTimeInterval {
 	
 	public class MarkRec {
+
+		public static final String TABLE_NAME = "MARK";
+		public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
+				+ "MARKID INTEGER PRIMARY KEY ASC, "
+				+ "GRADEID REFERENCES GRADE, "
+				+ "MARKS TEXT, "
+				+ "COMMENT TEXT);";
 		
 		public String marks;
 		public String comment;
@@ -20,6 +27,19 @@ public class GradeRec extends FormTimeInterval {
 			this.comment = comment;
 		}
 	}
+	 
+	public static final String TABLE_NAME = "GRADE";
+	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
+			+ "GRADEID INTEGER PRIMARY KEY ASC, "
+			+ "SCHEDULEID TEXT REFERENCES SCHEDULE (FORMID), "
+			+ "FORMTEXT TEXT, "
+			+ "START INTEGER, "
+			+ "STOP INTEGER, "
+			+ "ABSENT INTEGER, "
+			+ "RELEASED INTEGER, "
+			+ "SICK INTEGER, "
+			+ "AVERAGE REAL"
+			+ "TOTAL INTEGER);";
 
 	protected List<MarkRec> marks;
 

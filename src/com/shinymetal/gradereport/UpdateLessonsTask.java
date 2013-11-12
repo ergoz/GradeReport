@@ -7,9 +7,9 @@ import java.util.Date;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.shinymetal.objects.Lesson;
-import com.shinymetal.objects.TS;
-import com.shinymetal.utils.GshisLoader;
+import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.objects.TS;
+import com.shinymetal.gradereport.utils.GshisLoader;
 
 public class UpdateLessonsTask extends
 		AsyncTask<Date, Void, ArrayList<Lesson>> {
@@ -27,7 +27,7 @@ public class UpdateLessonsTask extends
 	protected ArrayList<Lesson> doInBackground(Date... dow) {
 		
 		Log.i (this.toString(), TS.get() + "doInBackground ()");
-		return GshisLoader.getInstance().getLessonsByDate(dow[0], true);
+		return GshisLoader.getInstance().getLessonsByDate(dow[0], null, true);
 	}
 
 	protected void onPreExecute() {

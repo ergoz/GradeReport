@@ -5,9 +5,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import com.shinymetal.objects.Lesson;
-import com.shinymetal.objects.TS;
-import com.shinymetal.utils.GshisLoader;
+import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.objects.TS;
+import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
