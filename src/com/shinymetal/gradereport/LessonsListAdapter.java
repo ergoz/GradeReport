@@ -30,7 +30,7 @@ public class LessonsListAdapter extends
 		mActivity = activity;
 		mDay = day;
 
-		mValues = GshisLoader.getInstance().getLessonsByDate(mDay, null, false);
+		mValues = GshisLoader.getInstance().getCachedLessonsByDate(mDay);
 
 		if (mValues == null) {
 
@@ -43,7 +43,7 @@ public class LessonsListAdapter extends
 
 	public void onUpdateTaskComplete() {
 
-		mValues = GshisLoader.getInstance().getLessonsByDate(mDay, null, false);
+		mValues = GshisLoader.getInstance().getCachedLessonsByDate(mDay);
 
 		if (mValues == null) {
 

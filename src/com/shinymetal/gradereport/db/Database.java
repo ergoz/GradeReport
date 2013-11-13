@@ -15,7 +15,7 @@ import android.util.Log;
 public class Database {
 	
     private static final String DATABASE_NAME = "gradereport";    
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 5;
     
     private static volatile Context mContext = null;
 
@@ -75,7 +75,7 @@ public class Database {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 
-			mDatabase = db;
+			mDatabase = db;			
 			
 			mDatabase.execSQL(Pupil.TABLE_CREATE);
 			mDatabase.execSQL(Schedule.TABLE_CREATE);
@@ -92,13 +92,13 @@ public class Database {
             Log.w(this.toString(), "Upgrading database from version " + oldVersion + " to "
                     + newVersion + ", which will destroy all old data");
             
-            db.execSQL("DROP TABLE IF EXISTS " + GradeRec.MarkRec.TABLE_CREATE);
-            db.execSQL("DROP TABLE IF EXISTS " + GradeRec.TABLE_CREATE);
-            db.execSQL("DROP TABLE IF EXISTS " + Lesson.TABLE_CREATE);
-            db.execSQL("DROP TABLE IF EXISTS " + GradeSemester.TABLE_CREATE);
-            db.execSQL("DROP TABLE IF EXISTS " + Week.TABLE_CREATE);
-            db.execSQL("DROP TABLE IF EXISTS " + Schedule.TABLE_CREATE);
-            db.execSQL("DROP TABLE IF EXISTS " + Pupil.TABLE_CREATE);
+            db.execSQL("DROP TABLE IF EXISTS " + GradeRec.MarkRec.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + GradeRec.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + Lesson.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + GradeSemester.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + Week.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + Schedule.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + Pupil.TABLE_NAME);
 
             onCreate(db);
 		}

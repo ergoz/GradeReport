@@ -27,7 +27,7 @@ public class UpdateLessonsTask extends
 	protected ArrayList<Lesson> doInBackground(Date... dow) {
 		
 		Log.i (this.toString(), TS.get() + "doInBackground ()");
-		return GshisLoader.getInstance().getLessonsByDate(dow[0], null, true);
+		return GshisLoader.getInstance().getNonCachedLessonsByDate(dow[0], null);
 	}
 
 	protected void onPreExecute() {

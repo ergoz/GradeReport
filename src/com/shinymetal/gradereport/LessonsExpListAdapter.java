@@ -29,8 +29,7 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		mActivity = activity;
 		mDay = day;
 		
-		mValues = GshisLoader.getInstance()
-				.getLessonsByDate(mDay, null, false);
+		mValues = GshisLoader.getInstance().getCachedLessonsByDate(mDay);
 		
 		if (mValues == null) {
 			
@@ -43,8 +42,7 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 	
 	public void onUpdateTaskComplete () {
 		
-		mValues = GshisLoader.getInstance()
-				.getLessonsByDate(mDay, null, false);
+		mValues = GshisLoader.getInstance().getCachedLessonsByDate(mDay);
 		
 		if (mValues == null) {
 			

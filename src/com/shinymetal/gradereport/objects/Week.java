@@ -7,6 +7,7 @@ import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.shinymetal.gradereport.db.Database;
 
@@ -22,7 +23,7 @@ public class Week extends FormTimeInterval {
 	
 	public static final String TABLE_NAME = "WEEK";
 	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
-			+ ID_NAME + " PRIMARY KEY ASC, "
+			+ ID_NAME + " INTEGER PRIMARY KEY ASC, "
 			+ FORMID_NAME + " TEXT, "
 			+ SCHEDULEID_NAME + " INTEGER REFERENCES SCHEDULE (ID), "
 			+ FORMTEXT_NAME + " TEXT, "
@@ -92,7 +93,9 @@ public class Week extends FormTimeInterval {
 	}
 	
 	public String toString() {
-		return getStart().toString() + " - " + getStop().toString() + " l: " + mLoaded + " f: " + getFormId();
+		return getStart().toString() + " - " + getStop().toString() + " l: "
+				+ mLoaded + " f: " + getFormId() + " ScheduleId: "
+				+ mScheduleId + " mRowId: " + mRowId;
 	}
 
 	public long update() {
@@ -105,8 +108,8 @@ public class Week extends FormTimeInterval {
     	values.put(STOP_NAME, getStop().getTime());
     	values.put(LOADED_NAME, getLoaded());
     	
-    	String selection = FORMID_NAME + " = ? AND " + ID_NAME + " = ?";
-        String[] args = new String[] { getFormId(), "" + mRowId };
+    	String selection = FORMID_NAME + " = ? AND " + SCHEDULEID_NAME + " = ?";
+        String[] args = new String[] { getFormId(), "" + mScheduleId };
 		
     	return Database.getWritable().update(TABLE_NAME, values, selection, args);		
 	}
@@ -144,13 +147,18 @@ public class Week extends FormTimeInterval {
 		w.setFormId(c.getString(c.getColumnIndex(FORMID_NAME)));
 		w.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
 		w.mScheduleId = schedule.getRowId();
-		w.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-		w.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		
+		long start = c.getLong(c.getColumnIndex(START_NAME));
+		w.setStart(new Date(start));		
+		long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+		w.setStop(new Date(stop));
 		w.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
 		
+		Log.d("Week.getByDate ()", TS.get() + " Week.getByDate () w = " + w
+				+ " start=" + start + " stop=" + stop);
 		return w;
 	}
 
@@ -168,14 +176,20 @@ public class Week extends FormTimeInterval {
         Week w = new Week();
 		
 		w.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
+		w.setFormId(formId);
 		w.mScheduleId = schedule.getRowId();
-		w.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-		w.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		
+		long start = c.getLong(c.getColumnIndex(START_NAME));
+		w.setStart(new Date(start));		
+		long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+		w.setStop(new Date(stop));
 		w.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
 		
+		Log.d("Week.getByFormId ()", TS.get() + " Week.getByFormId () w = " + w
+				+ " start=" + start + " stop=" + stop);
 		return w;
 	}
 
@@ -197,14 +211,19 @@ public class Week extends FormTimeInterval {
 			w.setFormId(c.getString(c.getColumnIndex(FORMID_NAME)));
 			w.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
 			w.mScheduleId = schedule.getRowId();
-			w.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-			w.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+			
+			long start = c.getLong(c.getColumnIndex(START_NAME));
+			w.setStart(new Date(start));			
+			long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+			w.setStop(new Date(stop));
 			w.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 			
 			if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 				w.setLoaded();
 			
 			set.add(w);
+			Log.d("Week.getSet ()", TS.get() + " Week.getSet () w = " + w
+					+ " start=" + start + " stop=" + stop);
 			c.moveToNext();
 		}
 		return set;

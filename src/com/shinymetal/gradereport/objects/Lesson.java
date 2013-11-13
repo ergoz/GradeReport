@@ -1,6 +1,8 @@
 package com.shinymetal.gradereport.objects;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -24,7 +26,7 @@ public class Lesson extends FormTimeInterval {
 	
 	public static final String TABLE_NAME = "LESSON";
 	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
-			+ ID_NAME + " PRIMARY KEY ASC, "
+			+ ID_NAME + " INTEGER PRIMARY KEY ASC, "
 			+ FORMID_NAME + " TEXT, "
 			+ SCHEDULEID_NAME + " INTEGER REFERENCES SCHEDULE (ID), "
 			+ FORMTEXT_NAME + " TEXT, "
@@ -142,15 +144,15 @@ public class Lesson extends FormTimeInterval {
     	values.put(MARKS_NAME, getMarks());
     	values.put(COMMENT_NAME, getComment());
     	
-    	String selection = FORMID_NAME + " = ? AND " + ID_NAME + " = ?";
-        String[] args = new String[] { getFormId(), "" + mRowId };
+    	String selection = FORMID_NAME + " = ? AND " + SCHEDULEID_NAME + " = ?";
+        String[] args = new String[] { getFormId(), "" + mScheduleId };
 		
     	return Database.getWritable().update(TABLE_NAME, values, selection, args);		
 	}
 
-	public static Lesson getByDate(Schedule schedule, Date start) {
+	public static Lesson getByDate(Schedule schedule, Date day) {
 
-		long date = start.getTime();
+		long date = day.getTime();
 
 		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
 				+ SCHEDULEID_NAME + " = ?";
@@ -169,8 +171,10 @@ public class Lesson extends FormTimeInterval {
 		l.setFormId(c.getString(c.getColumnIndex(FORMID_NAME)));
 		l.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
 		l.mScheduleId = schedule.getRowId();
-		l.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-		l.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		long start = c.getLong(c.getColumnIndex(START_NAME));
+		l.setStart(new Date(start));		
+		long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+		l.setStop(new Date(stop));
 		l.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		l.setNumber(c.getInt(c.getColumnIndex(NUMBER_NAME)));
 		l.setTeacher(c.getString(c.getColumnIndex(TEACHER_NAME)));
@@ -205,8 +209,10 @@ public class Lesson extends FormTimeInterval {
 		l.setFormId(c.getString(c.getColumnIndex(FORMID_NAME)));
 		l.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
 		l.mScheduleId = schedule.getRowId();
-		l.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-		l.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		long start1 = c.getLong(c.getColumnIndex(START_NAME));
+		l.setStart(new Date(start1));		
+		long stop1 = c.getLong(c.getColumnIndex(STOP_NAME));
+		l.setStop(new Date(stop1));
 		l.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		l.setNumber(c.getInt(c.getColumnIndex(NUMBER_NAME)));
 		l.setTeacher(c.getString(c.getColumnIndex(TEACHER_NAME)));
@@ -216,5 +222,43 @@ public class Lesson extends FormTimeInterval {
 		l.setComment(c.getString(c.getColumnIndex(COMMENT_NAME)));
 		
 		return l;
+	}
+
+	public static Set<Lesson> getSet(Schedule schedule) {
+
+		Set<Lesson> set = new HashSet<Lesson> (); 
+		
+		String selection = SCHEDULEID_NAME + " = ?";
+        String[] args = new String[] { "" + schedule.getRowId() };
+        String[] columns = new String[] {FORMID_NAME, FORMTEXT_NAME,
+				START_NAME, STOP_NAME, ID_NAME, NUMBER_NAME, TEACHER_NAME,
+				THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME};
+
+        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+
+		c.moveToFirst();
+		while (!c.isAfterLast()) {
+			
+			Lesson l = new Lesson();
+			
+			l.setFormId(c.getString(c.getColumnIndex(FORMID_NAME)));
+			l.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
+			l.mScheduleId = schedule.getRowId();
+			long start = c.getLong(c.getColumnIndex(START_NAME));
+			l.setStart(new Date(start));		
+			long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+			l.setStop(new Date(stop));
+			l.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+			l.setNumber(c.getInt(c.getColumnIndex(NUMBER_NAME)));
+			l.setTeacher(c.getString(c.getColumnIndex(TEACHER_NAME)));
+			l.setTheme(c.getString(c.getColumnIndex(THEME_NAME)));
+			l.setHomework(c.getString(c.getColumnIndex(HOMEWORK_NAME)));
+			l.setMarks(c.getString(c.getColumnIndex(MARKS_NAME)));
+			l.setComment(c.getString(c.getColumnIndex(COMMENT_NAME)));
+
+			set.add(l);
+			c.moveToNext();
+		}
+		return set;
 	}
 }

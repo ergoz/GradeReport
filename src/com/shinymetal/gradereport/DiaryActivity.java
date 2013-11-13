@@ -90,6 +90,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 
 			mProgressDialog.setMessage(getString(R.string.label_loading_data));
 			mProgressDialog.setIndeterminate(true);
+			mProgressDialog.setCancelable(false);
 			mProgressDialog.show();
 		}		
 	}

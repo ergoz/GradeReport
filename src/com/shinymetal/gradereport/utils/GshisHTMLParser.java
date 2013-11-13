@@ -82,7 +82,8 @@ public class GshisHTMLParser {
 					if ((p = Pupil.getByFormId(value)) == null) {
 
 						p = new Pupil(pupil.text(), value);
-						p.insert();
+						long rowId = p.insert();
+						Log.i("GshisHTMLParser", TS.get() + " Pupil.insert() = " + rowId);
 					}
 
 					if (pupil.hasAttr("selected")
@@ -117,12 +118,10 @@ public class GshisHTMLParser {
 					Schedule schedule;
 
 					found = true;
+					
+					Log.e("getSelectedSchedule()", "S1!");
 
-					try {
-
-						schedule = selPupil.getScheduleByFormId(value);
-						
-					} catch (NullPointerException e) {
+					if ((schedule = selPupil.getScheduleByFormId(value)) == null) {
 
 						final SimpleDateFormat f = new SimpleDateFormat(
 								"yyyy dd.MM", Locale.ENGLISH);
@@ -160,7 +159,7 @@ public class GshisHTMLParser {
 	public static void getWeeks(Document doc, Schedule s) throws ParseException {
 
 		boolean found = false;
-
+		
 		Elements weekSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_body_week_drdWeeks");
 		for (Element weekSelector : weekSelectors) {
@@ -172,11 +171,8 @@ public class GshisHTMLParser {
 					String value = week.text();
 					Week w;
 					found = true;
-
-					try {
-
-						w = s.getWeek(week.attr("value"));
-					} catch (NullPointerException e) {
+					
+					if ((w = s.getWeek(week.attr("value"))) == null ) {
 
 						w = new Week();
 						
@@ -203,7 +199,8 @@ public class GshisHTMLParser {
 					if (week.hasAttr("selected")
 							&& week.attr("selected").equals("selected")) {
 
-						w.setLoaded().update();
+						long u = w.setLoaded().update();
+						Log.i("GshisHTMLParser", TS.get() + " Week.update() = " + u);
 					}
 				}
 			}
@@ -339,10 +336,7 @@ public class GshisHTMLParser {
 					GradeSemester sem;
 					found = true;
 
-					try {
-
-						sem = sch.getSemester(semester.attr("value"));
-					} catch (NullPointerException e) {
+					if ((sem = sch.getSemester(semester.attr("value"))) == null ) {
 						
 						String sBegin = value.substring(12, value.indexOf("-") - 1);
 						String sEnd = value.substring(value.indexOf("-") + 2, value.length() - 2);
@@ -571,26 +565,17 @@ public class GshisHTMLParser {
 
 						tdCount = 2;
 
-						try {
-							l = s.getLessonByNumber(
-											date,
-											Integer.parseInt(td.text()
-													.substring(0, 1)));
-							
-							if (lPrev != null
-									&& l.getStart().equals(lPrev.getStart())
-									&& l.getNumber() == lPrev.getNumber()
-									&& l.getFormId().equals(lPrev.getFormId())) {
-								
-								// We hit the same lesson bug
-								sameLesson++;
-							}
-						} catch (NullPointerException e) {
+						l = s.getLessonByNumber(date,
+								Integer.parseInt(td.text().substring(0, 1)));
 
-							e.printStackTrace();
-						} catch (NumberFormatException e) {
-							e.printStackTrace();
-						}						
+						if (lPrev != null
+								&& l.getStart().equals(lPrev.getStart())
+								&& l.getNumber() == lPrev.getNumber()
+								&& l.getFormId().equals(lPrev.getFormId())) {
+
+							// We hit the same lesson bug
+							sameLesson++;
+						}
 
 					} else {
 						tdCount++;

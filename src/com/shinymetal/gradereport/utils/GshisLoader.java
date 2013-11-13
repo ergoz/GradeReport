@@ -89,7 +89,9 @@ public class GshisLoader {
 		Document doc = Jsoup.parse(page);
 
 		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
-		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
+		currentPupilName = p.getFormText();
+		
+		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);		
 		GshisHTMLParser.getWeeks(doc, s);
 		GshisHTMLParser.getLessons(doc, s);
 		
@@ -101,6 +103,8 @@ public class GshisLoader {
 		Document doc = Jsoup.parse(page);
 
 		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		currentPupilName = p.getFormText();
+		
 		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
 		GshisHTMLParser.getLessonsDetails(doc, s);
 		
@@ -112,6 +116,8 @@ public class GshisLoader {
 		Document doc = Jsoup.parse(page);
 
 		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		currentPupilName = p.getFormText();
+		
 		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
 		GradeSemester g = GshisHTMLParser.getActiveGradeSemester(doc, s);
 		GshisHTMLParser.getGrades(doc, s ,g);
@@ -144,8 +150,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection(/* new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080))*/);
+		return (HttpURLConnection) new URL(url).openConnection( new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080)));
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
@@ -450,9 +456,12 @@ public class GshisLoader {
 
 		String page;
 
+		Log.i(this.toString(), TS.get() + this.toString() + "parseLessonsByDate() : started!");
+
 		if (mLessonsVIEWSTATE == null || mLessonsVIEWSTATE.length() <= 0) {
 
 			if ((page = getPageByURL(LESSONS_PAGE)) == null) {
+				
 				Log.e("getLessonsByDate()", "getPageByURL () [1] failed!");
 				return false;
 			}
@@ -460,20 +469,12 @@ public class GshisLoader {
 			parseLessonsPage(page);
 		}
 		
-		Log.e("getLessonsByDate()", "AAAAAAAAAAAAAAAAAAAA!");
-		
-				
 		if (pupilName == null)
 			pupilName = currentPupilName;
 		
-		Log.e("getLessonsByDate()", "BBBBBBBBBBBBBBBBBBBB!");
-
 		Pupil p = Pupil.getByFormName(pupilName);
-		
-		Log.e("getLessonsByDate()", "CCCCCCCCCCCCCCCCCCCC!");
 		Schedule s = p.getScheduleByDate(day);
 		
-		Log.e("getLessonsByDate()", "DDDDDDDDDDDDDDDDDDDD!");
 		boolean weekLoaded = s.getWeek(day).getLoaded();
 
 		if (!weekLoaded) {
@@ -505,26 +506,55 @@ public class GshisLoader {
 		}
 
 		return s.getWeek(day).getLoaded();
-
 	}
 
-	public ArrayList<Lesson> getLessonsByDate(Date day, String pupilName, boolean canLoad) {
+	public ArrayList<Lesson> getCachedLessonsByDate(Date day) {		
+		
+		ArrayList<Lesson> res = null;
+		String uName = currentPupilName;
+		
+		Log.d(this.toString(), TS.get() + this.toString() + " getCachedLessonsByDate() : Start");
+
+		if (uName == null)
+			return null;
+
+		try {
+			
+			Schedule s = Pupil.getByFormName(uName).getScheduleByDate(day);
+			
+			if ( !s.getWeek(day).getLoaded() ) {
+				return null;
+			}
+
+			int l = 1;
+			res = new ArrayList<Lesson> ();
+
+			while (true) {
+
+				res.add(s.getLessonByNumber(day, l));
+				l++;
+			}
+			
+		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
+			
+			Log.e(this.toString(), TS.get() + this.toString()
+					+ " getCachedLessonsByDate() : Exception: " + e.toString()
+					+ " StackTrace: " + e.getStackTrace());
+		}
+		
+		Log.d(this.toString(), TS.get() + this.toString() + " getCachedLessonsByDate() : Finish");
+		return res;
+	}
+	
+	public ArrayList<Lesson> getNonCachedLessonsByDate(Date day, String pupilName) {
 		
 		ArrayList<Lesson> res = new ArrayList<Lesson> ();
-		boolean requestNeeded = false;
-		
 		String uName = currentPupilName;
 		if (pupilName != null)
 			uName = pupilName;
-
-		Pupil p;
-		Schedule s;
 		
 		if (!mIsLoggedIn) {
-			
-			if (!canLoad)
-				return null;
-			
+
 			// Clear network errors
 			mIsLastNetworkCallFailed = false;
 			mLastNetworkFailureReason = "";
@@ -547,59 +577,30 @@ public class GshisLoader {
 					}
 				}
 			}
-
-			requestNeeded = true;
 		}
 		
 		if (!mIsLoggedIn) return null;
-		
-		if (uName == null) {
-			
-			requestNeeded = true;
-		}
-		else try {
-			
-			p = Pupil.getByFormName(uName);
-			s = p.getScheduleByDate(day);
-			
-			if ( !s.getWeek(day).getLoaded() ) {
-				requestNeeded = true;
-			}
-			
-		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
-			
-			Log.i(this.toString(), TS.get() + this.toString()
-					+ " getLessonsByDate() : " + e.toString());
-			
-			requestNeeded = true;
-		}
-		
-		if (requestNeeded && !canLoad)
-			return null;
-
 		int l = 1;
 		
 		mIsLastNetworkCallFailed = false;
 		mLastNetworkFailureReason = "";
 
 		try {
-			if (requestNeeded) {
-				
 
-				Log.i(this.toString(), TS.get() + this.toString()
-						+ " getLessonsByDate() : ZZZZZ" );
-				
-				for (int i=0; i<2; i++)
-					if (parseLessonsByDate(day, uName)) break;
-			}
-	
-			// TODO: fix this
-			if (uName == null)
-				uName = currentPupilName;
-
-			p = Pupil.getByFormName(uName);
-			s = p.getScheduleByDate(day);
+			for (int i=0; i<2; i++)
+				if (parseLessonsByDate(day, uName)) break;
 			
+			Schedule s = Pupil.getByFormName(currentPupilName).getScheduleByDate(day);
+			
+			Log.e(this.toString(), TS.get() + this.toString()
+					+ " getLessonsByDate() : Z3Z3" );
+			
+			Log.e(this.toString(), TS.get() + this.toString()
+					+ " getLessonsByDate() : Z3Z3 s=" + s );
+			
+			Log.e(this.toString(), TS.get() + this.toString()
+					+ " getLessonsByDate() : Z3Z3 s.toString()=" + s.toString() );
+
 			while (true) {
 
 				res.add(s.getLessonByNumber(day, l));
@@ -608,15 +609,28 @@ public class GshisLoader {
 		
 		} catch (NullPointerException e) {
 			
+			Log.e(this.toString(),
+					TS.get() + this.toString()
+							+ " getNonCachedLessonsByDate() : Exception: "
+							+ e.toString() + " StackTrace: "
+							+ e.getStackTrace());
+			
 		} catch (Exception e) {
+			
+			Log.e(this.toString(),
+					TS.get() + this.toString()
+							+ " getNonCachedLessonsByDate() : Exception: "
+							+ e.toString() + " StackTrace: "
+							+ e.getStackTrace());
 
 			mIsLastNetworkCallFailed = true;
 			if ((mLastNetworkFailureReason = e.getMessage()) == null)
 				mLastNetworkFailureReason = e.toString();
 		}
 		
-		Log.i(this.toString(), TS.get() + "getLessonsByDate (), added " + l
+		Log.i(this.toString(), TS.get() + "getLessonsByDate (), added " + (l - 1)
 				+ " lessons for date " + day.toString());	
+
 		return res;
 	}
 	

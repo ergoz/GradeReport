@@ -47,12 +47,6 @@ public class Pupil extends FormSelectableField {
         values.put(FORMID_NAME, getFormId());
         values.put(FORMTEXT_NAME, getFormText());
         values.put(USERNAME_NAME, GshisLoader.getInstance().getLogin());
-        
-		
-
-		Log.i("AAAAAAAAAAAa", TS.get() 
-				+ " Pupil.insert() : started");
-
 
         return mRowId = Database.getWritable().insert(TABLE_NAME, null, values);		
 	}

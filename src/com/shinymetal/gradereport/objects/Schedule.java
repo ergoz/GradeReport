@@ -7,6 +7,7 @@ import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.shinymetal.gradereport.db.Database;
 
@@ -80,8 +81,10 @@ public class Schedule extends FormTimeInterval {
         	return null;
 		
 		Schedule s = new Schedule (fId, c.getString(c.getColumnIndex(FORMTEXT_NAME)));
-		s.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-		s.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		long start = c.getLong(c.getColumnIndex(START_NAME));
+		s.setStart(new Date(start));		
+		long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+		s.setStop(new Date(stop));
 		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
 		return s;
@@ -128,8 +131,10 @@ public class Schedule extends FormTimeInterval {
 		
 		Schedule s = new Schedule (c.getString(c.getColumnIndex(FORMID_NAME)), schoolYear);
 		s.mPupilId = p.getRowId();
-		s.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-		s.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		long start = c.getLong(c.getColumnIndex(START_NAME));
+		s.setStart(new Date(start));		
+		long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+		s.setStop(new Date(stop));
 		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
 		return s;
@@ -152,8 +157,10 @@ public class Schedule extends FormTimeInterval {
 		Schedule s = new Schedule(c.getString(c.getColumnIndex(FORMID_NAME)),
 				c.getString(c.getColumnIndex(FORMTEXT_NAME)));
 		s.mPupilId = p.getRowId();
-		s.setStart(new Date(c.getInt(c.getColumnIndex(START_NAME))));
-		s.setStop(new Date(c.getInt(c.getColumnIndex(STOP_NAME))));
+		long start = c.getLong(c.getColumnIndex(START_NAME));
+		s.setStart(new Date(start));		
+		long stop = c.getLong(c.getColumnIndex(STOP_NAME));
+		s.setStop(new Date(stop));
 		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
 		return s;
@@ -222,27 +229,64 @@ public class Schedule extends FormTimeInterval {
 
 	public Schedule addWeek(Week w) {
 		
+		Log.d(this.toString(), TS.get() + this.toString()
+				+ " addWeek() = " + w );
 		w.insert(this);
 		return this;
 	}
 
 	public Week getWeek(Date day) {
 		
-		return Week.getByDate(this, day);
+		Week w = Week.getByDate(this, day);
+		Log.d(this.toString(), TS.get() + this.toString()
+				+ " getWeek() = " + w );
+		return w;
 	}
 	
 	public Week getWeek(String formId) {
 
-		return Week.getByFormId(this, formId);
+		Week w = Week.getByFormId(this, formId);
+		Log.d(this.toString(), TS.get() + this.toString()
+				+ " getWeek() = " + w );
+		return w;
 	}
 
 	public final Set<Week> getWeekSet() {
 		
 		return Week.getSet(this);
 	}
+	
+	public final Set<Lesson> getLessonSet() {
+		
+		return Lesson.getSet(this);
+	}
 
 	public final Set<GradeRec> getGradeRecSet() {
 		
 		return GradeRec.getSet(this);
 	}
+	
+	public String toString() {
+
+		String res = "Weeks:\n";
+
+		for (Week entry : getWeekSet()) {
+			res += entry.toString() + "\n";
+		}
+
+		res += "\nLessons:\n";
+
+		for (Lesson entry : getLessonSet()) {
+			res += entry.toString() + "\n";
+		}
+
+//		res += "\nGrade Records:\n";
+//
+//		for (GradeRec entry : getGradeRecSet()) {
+//			res += entry.toString() + "\n";
+//		}
+
+		return res;
+	}
+
 }
