@@ -150,8 +150,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection( new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080)));
+		return (HttpURLConnection) new URL(url).openConnection(/* new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080))*/);
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
@@ -392,7 +392,6 @@ public class GshisLoader {
 			tmp.append(line + "\n");
 		}
 
-		System.out.println("Loaded week details " + w.toString());
 		return String.valueOf(tmp);
 	}
 	
@@ -456,8 +455,6 @@ public class GshisLoader {
 
 		String page;
 
-		Log.i(this.toString(), TS.get() + this.toString() + "parseLessonsByDate() : started!");
-
 		if (mLessonsVIEWSTATE == null || mLessonsVIEWSTATE.length() <= 0) {
 
 			if ((page = getPageByURL(LESSONS_PAGE)) == null) {
@@ -511,11 +508,15 @@ public class GshisLoader {
 	public ArrayList<Lesson> getCachedLessonsByDate(Date day) {		
 		
 		ArrayList<Lesson> res = null;
-		String uName = currentPupilName;
+		String uName;
 		
-		Log.d(this.toString(), TS.get() + this.toString() + " getCachedLessonsByDate() : Start");
-
-		if (uName == null)
+		if (currentPupilName == null) {
+				
+			ArrayList<String> names = getPupilNames();
+			if (names.size() > 0) currentPupilName = names.get(0);
+		}
+			
+		if ((uName = currentPupilName) == null)
 			return null;
 
 		try {
@@ -526,14 +527,20 @@ public class GshisLoader {
 				return null;
 			}
 
-			int l = 1;
+			int number = 1;
 			res = new ArrayList<Lesson> ();
 
-			while (true) {
+			do {
 
-				res.add(s.getLessonByNumber(day, l));
-				l++;
-			}
+				Lesson l = s.getLessonByNumber(day, number);
+
+				if (l == null) 
+					break;
+
+				res.add(l);
+				number++;
+				
+			} while (true);
 			
 		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
 			
@@ -542,16 +549,24 @@ public class GshisLoader {
 					+ " StackTrace: " + e.getStackTrace());
 		}
 		
-		Log.d(this.toString(), TS.get() + this.toString() + " getCachedLessonsByDate() : Finish");
 		return res;
 	}
 	
 	public ArrayList<Lesson> getNonCachedLessonsByDate(Date day, String pupilName) {
 		
 		ArrayList<Lesson> res = new ArrayList<Lesson> ();
-		String uName = currentPupilName;
-		if (pupilName != null)
-			uName = pupilName;
+		String uName = pupilName;
+		
+		if (uName == null) {
+			
+			if (currentPupilName == null) {
+				
+				ArrayList<String> names = getPupilNames();
+				if (names.size() > 0) currentPupilName = names.get(0);
+			}
+			
+			uName = currentPupilName;
+		}
 		
 		if (!mIsLoggedIn) {
 
@@ -580,41 +595,32 @@ public class GshisLoader {
 		}
 		
 		if (!mIsLoggedIn) return null;
-		int l = 1;
 		
 		mIsLastNetworkCallFailed = false;
 		mLastNetworkFailureReason = "";
 
+		int number = 1;
+		
 		try {
 
 			for (int i=0; i<2; i++)
 				if (parseLessonsByDate(day, uName)) break;
 			
 			Schedule s = Pupil.getByFormName(currentPupilName).getScheduleByDate(day);
-			
-			Log.e(this.toString(), TS.get() + this.toString()
-					+ " getLessonsByDate() : Z3Z3" );
-			
-			Log.e(this.toString(), TS.get() + this.toString()
-					+ " getLessonsByDate() : Z3Z3 s=" + s );
-			
-			Log.e(this.toString(), TS.get() + this.toString()
-					+ " getLessonsByDate() : Z3Z3 s.toString()=" + s.toString() );
+			res = new ArrayList<Lesson> ();
 
-			while (true) {
+			do {
 
-				res.add(s.getLessonByNumber(day, l));
-				l++;
-			}
+				Lesson l = s.getLessonByNumber(day, number);
+
+				if (l == null) 
+					break;
+
+				res.add(l);
+				number++;
+				
+			} while (true);
 		
-		} catch (NullPointerException e) {
-			
-			Log.e(this.toString(),
-					TS.get() + this.toString()
-							+ " getNonCachedLessonsByDate() : Exception: "
-							+ e.toString() + " StackTrace: "
-							+ e.getStackTrace());
-			
 		} catch (Exception e) {
 			
 			Log.e(this.toString(),
@@ -628,9 +634,6 @@ public class GshisLoader {
 				mLastNetworkFailureReason = e.toString();
 		}
 		
-		Log.i(this.toString(), TS.get() + "getLessonsByDate (), added " + (l - 1)
-				+ " lessons for date " + day.toString());	
-
 		return res;
 	}
 	

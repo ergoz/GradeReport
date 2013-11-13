@@ -87,11 +87,14 @@ public class Pupil extends FormSelectableField {
 	
 	public static final Set<Pupil> getSet() {
 		
-		Set<Pupil> set = new HashSet<Pupil> (); 
+		Set<Pupil> set = new HashSet<Pupil> ();
+		String login = GshisLoader.getInstance().getLogin();
+		
+		if (login == null) return set;
 		
 		String selection = USERNAME_NAME + " = ?";
-        String[] args = new String[] { GshisLoader.getInstance().getLogin() };
-        String[] columns = new String[] {FORMTEXT_NAME, FORMID_NAME};
+        String[] args = new String[] { login };
+        String[] columns = new String[] {FORMTEXT_NAME, FORMID_NAME, ID_NAME};
 
         Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
 

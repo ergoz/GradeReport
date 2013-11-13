@@ -166,14 +166,19 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		
 		setContentView(R.layout.activity_diary);
 		instance = this;
+
+		Database.setContext(this);
 		
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		
+		mGshisLoader.setLogin(prefs.getString("login", ""));
+		mGshisLoader.setPassword(prefs.getString("password", ""));
+
 		mSectionsPagerAdapter = new LessonsPagerAdapter(
 				getSupportFragmentManager());
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
-		
-		mViewPager.setAdapter(null);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
 
 		mHandler = new Handler();
@@ -185,8 +190,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		
 		if (mLicState == Policy.RETRY)
 			mLicValidator = new LicenseValidatorHelper (this, this);
-		
-		Database.setContext(this);
 	}
 	
 	@Override

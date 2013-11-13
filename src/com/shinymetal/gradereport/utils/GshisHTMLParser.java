@@ -119,8 +119,6 @@ public class GshisHTMLParser {
 
 					found = true;
 					
-					Log.e("getSelectedSchedule()", "S1!");
-
 					if ((schedule = selPupil.getScheduleByFormId(value)) == null) {
 
 						final SimpleDateFormat f = new SimpleDateFormat(
@@ -211,7 +209,7 @@ public class GshisHTMLParser {
 	}
 
 	public static void getLessons(Document doc, Schedule s) throws ParseException {
-
+		
 		Elements lessonCells = doc.getElementsByAttribute("number");
 		for (Element lessonCell : lessonCells) {
 
@@ -258,7 +256,7 @@ public class GshisHTMLParser {
 				
 				String timeB = time.substring(0, time.indexOf("-") - 1);
 				Date start = format.parse(date + " " + timeB);
-
+				
 				if ((l = s.getLesson(start)) == null) {
 
 					l = new Lesson();
@@ -275,6 +273,8 @@ public class GshisHTMLParser {
 
 					s.addLesson(l);
 				}
+//				else
+//					Log.e("getLessons()", TS.get() + "getLessons() : Found lesson: " + l);				
 			}
 		}
 
@@ -564,11 +564,10 @@ public class GshisHTMLParser {
 					} else if (td.text().matches("^[0-9]{1}\\." + whitespace_charclass + "{1}.*")) {
 
 						tdCount = 2;
+						int number = Integer.parseInt(td.text().substring(0, 1)); 
+						l = s.getLessonByNumber(date, number);
 
-						l = s.getLessonByNumber(date,
-								Integer.parseInt(td.text().substring(0, 1)));
-
-						if (lPrev != null
+						if (lPrev != null && l != null
 								&& l.getStart().equals(lPrev.getStart())
 								&& l.getNumber() == lPrev.getNumber()
 								&& l.getFormId().equals(lPrev.getFormId())) {

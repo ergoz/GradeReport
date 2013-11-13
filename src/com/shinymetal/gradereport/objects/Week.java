@@ -29,7 +29,8 @@ public class Week extends FormTimeInterval {
 			+ FORMTEXT_NAME + " TEXT, "
 			+ START_NAME + " INTEGER, "
 			+ STOP_NAME + " INTEGER, "
-			+ LOADED_NAME + " INTEGER);";
+			+ LOADED_NAME + " INTEGER, "
+			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + SCHEDULEID_NAME + "));";
 
 	private boolean mLoaded;
 
@@ -108,8 +109,8 @@ public class Week extends FormTimeInterval {
     	values.put(STOP_NAME, getStop().getTime());
     	values.put(LOADED_NAME, getLoaded());
     	
-    	String selection = FORMID_NAME + " = ? AND " + SCHEDULEID_NAME + " = ?";
-        String[] args = new String[] { getFormId(), "" + mScheduleId };
+    	String selection = ID_NAME + " = ?";
+        String[] args = new String[] { "" + mRowId };
 		
     	return Database.getWritable().update(TABLE_NAME, values, selection, args);		
 	}
@@ -157,8 +158,8 @@ public class Week extends FormTimeInterval {
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
 		
-		Log.d("Week.getByDate ()", TS.get() + " Week.getByDate () w = " + w
-				+ " start=" + start + " stop=" + stop);
+//		Log.d("Week.getByDate ()", TS.get() + " Week.getByDate () w = " + w
+//				+ " start=" + start + " stop=" + stop);
 		return w;
 	}
 
@@ -188,8 +189,8 @@ public class Week extends FormTimeInterval {
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
 		
-		Log.d("Week.getByFormId ()", TS.get() + " Week.getByFormId () w = " + w
-				+ " start=" + start + " stop=" + stop);
+//		Log.d("Week.getByFormId ()", TS.get() + " Week.getByFormId () w = " + w
+//				+ " start=" + start + " stop=" + stop);
 		return w;
 	}
 
@@ -222,8 +223,8 @@ public class Week extends FormTimeInterval {
 				w.setLoaded();
 			
 			set.add(w);
-			Log.d("Week.getSet ()", TS.get() + " Week.getSet () w = " + w
-					+ " start=" + start + " stop=" + stop);
+//			Log.d("Week.getSet ()", TS.get() + " Week.getSet () w = " + w
+//					+ " start=" + start + " stop=" + stop);
 			c.moveToNext();
 		}
 		return set;

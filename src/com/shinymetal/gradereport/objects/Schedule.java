@@ -27,7 +27,8 @@ public class Schedule extends FormTimeInterval {
 			+ PUPILID_NAME + " INTEGER REFERENCES PUPIL (ID), "
 			+ FORMTEXT_NAME + " TEXT, "
 			+ START_NAME + " INTEGER, "
-			+ STOP_NAME + " INTEGER);";
+			+ STOP_NAME + " INTEGER, "
+			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + PUPILID_NAME + "));";
 	
 	private long mPupilId;
 	private long mRowId;
@@ -222,6 +223,7 @@ public class Schedule extends FormTimeInterval {
         start = cal.getTime();
         cal.set(Calendar.HOUR_OF_DAY, 23);
         cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
         stop = cal.getTime();
 
 		return Lesson.getByNumber(this, start, stop, number);
@@ -229,8 +231,8 @@ public class Schedule extends FormTimeInterval {
 
 	public Schedule addWeek(Week w) {
 		
-		Log.d(this.toString(), TS.get() + this.toString()
-				+ " addWeek() = " + w );
+//		Log.d(this.toString(), TS.get() + this.toString()
+//				+ " addWeek() = " + w );
 		w.insert(this);
 		return this;
 	}
@@ -288,5 +290,4 @@ public class Schedule extends FormTimeInterval {
 
 		return res;
 	}
-
 }

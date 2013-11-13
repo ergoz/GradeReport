@@ -6,6 +6,7 @@ import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.shinymetal.gradereport.db.Database;
 
@@ -37,7 +38,8 @@ public class Lesson extends FormTimeInterval {
 			+ THEME_NAME + " TEXT, "
 			+ HOMEWORK_NAME + " TEXT, "
 			+ MARKS_NAME + " TEXT, "
-			+ COMMENT_NAME + " TEXT);";
+			+ COMMENT_NAME + " TEXT, "
+			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + SCHEDULEID_NAME + "));";
 
 	protected String teacher;
 	
@@ -104,9 +106,10 @@ public class Lesson extends FormTimeInterval {
 
 	public String toString() {
 
-		String res = "" + number + " " + getStop().toString() + " - "
+		String res = "" + number + " " + getStart().toString() + " - "
 				+ getStop().toString() + " " + getFormText() + " / " + teacher
-				+ ", H: " + homework + ", M: " + marks + ", C: " + comment;
+				+ ", H: " + homework + ", M: " + marks + ", C: " + comment + " mRowId = "
+				+ mRowId + " mScheduleId = " + mScheduleId;
 		return res;
 	}
 
@@ -144,8 +147,8 @@ public class Lesson extends FormTimeInterval {
     	values.put(MARKS_NAME, getMarks());
     	values.put(COMMENT_NAME, getComment());
     	
-    	String selection = FORMID_NAME + " = ? AND " + SCHEDULEID_NAME + " = ?";
-        String[] args = new String[] { getFormId(), "" + mScheduleId };
+    	String selection = ID_NAME + " = ?";
+        String[] args = new String[] { "" + mRowId };
 		
     	return Database.getWritable().update(TABLE_NAME, values, selection, args);		
 	}
@@ -190,9 +193,15 @@ public class Lesson extends FormTimeInterval {
 			int number) {
 
 		long date1 = start.getTime();
-		long date2 = start.getTime();
+		long date2 = stop.getTime();
+		
+//		Log.e("Lesson.getByNumber()", TS.get()
+//				+ "Lesson.getByNumber() : ScheduleId: " + schedule.getRowId() + " " 
+//				+ START_NAME + " >= " + date1 + start.toString() + " AND " + STOP_NAME + " <=  "
+//				+ date2 + stop.toString() + " AND " + SCHEDULEID_NAME + " = " + schedule.getRowId() + " AND " + NUMBER_NAME
+//				+ " = " + number);	
 
-		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
+		String selection = START_NAME + " >= ? AND " + STOP_NAME + " <= ? AND "
 				+ SCHEDULEID_NAME + " = ? AND " + NUMBER_NAME + " = ?";
         String[] args = new String[] { "" + date1, "" + date2, "" + schedule.getRowId(), "" + number };
 		String[] columns = new String[] { FORMID_NAME, FORMTEXT_NAME,
