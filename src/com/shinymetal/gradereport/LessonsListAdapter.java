@@ -32,11 +32,8 @@ public class LessonsListAdapter extends
 
 		mValues = GshisLoader.getInstance().getCachedLessonsByDate(mDay);
 
-		if (mValues == null) {
-
+		if (mValues == null)
 			mValues = new ArrayList<Lesson>();
-			mActivity.startUpdateTask();
-		}
 
 		mFormat = new SimpleDateFormat("HH:mm ", Locale.ENGLISH);
 	}

@@ -9,10 +9,10 @@ import android.util.Log;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.GshisLoader;
 
-public class UpdateLessonsTask extends
+public class UpdateCurPupilLessonsByDateTask extends
 		AsyncTask<Date, Void, Void> {
 
-	protected WeakReference<DiaryActivity> mActivity;
+	protected WeakReference<DiaryActivity> mActivity = null;
 	protected boolean mSuccess = false;
 	protected Date mDay;
 
@@ -24,7 +24,7 @@ public class UpdateLessonsTask extends
 	@Override
 	protected Void doInBackground(Date... dow) {
 		
-		Log.i (this.toString(), TS.get() + "doInBackground ()");
+		Log.i (this.toString(), TS.get() + " doInBackground () started!");
 		GshisLoader.getInstance().getNonCachedLessonsByDate(dow[0], null);
 		
 		return null;
@@ -32,14 +32,17 @@ public class UpdateLessonsTask extends
 
 	protected void onPreExecute() {
 
-		DiaryActivity activity = mActivity.get();
+		if (mActivity != null) {
+			
+			DiaryActivity activity = mActivity.get();
 
-		if (activity != null) {
-			activity.setBusy();
+			if (activity != null) {
+				activity.setBusy();
+			}
 		}
 	}
 
-	protected void onPostExecute() {
+	protected void onPostExecute(Void result) {
 		
 		Log.i (this.toString(), TS.get() + this.toString() + " onPostExecute() started");
 		
@@ -49,17 +52,21 @@ public class UpdateLessonsTask extends
 			return;
 		}
 
-		DiaryActivity activity = mActivity.get();
-
-		if (activity != null ) {
+		
+		if (mActivity != null) {
 			
-			activity.getHandler().postDelayed(new Runnable() {
-				public void run() {
+			DiaryActivity activity = mActivity.get();
 
-					mActivity.get().setIdle();
-					mActivity.get().onUpdateLessonsTaskComplete();
-				}
-			}, 100);
+			if (activity != null) {
+
+				activity.getHandler().postDelayed(new Runnable() {
+					public void run() {
+
+						mActivity.get().setIdle();
+						mActivity.get().onUpdateLessonsTaskComplete(mDay);
+					}
+				}, 100);
+			}
 		}
 		
 		Log.i (this.toString(), TS.get() + this.toString() + " onPostExecute() finished");

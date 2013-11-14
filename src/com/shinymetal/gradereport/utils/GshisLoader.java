@@ -14,6 +14,7 @@ import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Set;
 
 import org.apache.http.auth.InvalidCredentialsException;
 import org.jsoup.Jsoup;
@@ -150,8 +151,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080)));
+		return (HttpURLConnection) new URL(url).openConnection(/*new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080))*/);
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
@@ -610,6 +611,44 @@ public class GshisLoader {
 		}
 		
 		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : finished");
+	}
+	
+	public void getAllPupilsLessons () {
+		
+		Log.i (this.toString(), TS.get() + "getAllPupilsLessons () : started");
+		
+		for (int i=0; i<2; i++) {
+			
+			try {
+				if (loginSequence()) break;
+				
+			} catch (Exception e) {
+				
+				mIsLastNetworkCallFailed = true;
+				if ((mLastNetworkFailureReason = e.getMessage()) == null)
+					mLastNetworkFailureReason = e.toString();
+				
+				if (e instanceof InvalidCredentialsException) {
+					
+					mLastNetworkFailureReason = ERROR_INV_CREDENTIALS;
+					return; // else try one more time
+				}
+			}
+		}
+
+		Set<Pupil> set = Pupil.getSet();
+		if ( set != null && set.size() > 0) {
+			for (Pupil p : set) {
+	
+				// TODO: implement the rest 
+			}
+		}
+		else {
+			
+			// TODO: implement the rest, use null as pupil name
+		}
+		
+		Log.i (this.toString(), TS.get() + "getAllPupilsLessons () : finished");
 	}
 	
 	public boolean isLastNetworkCallFailed() {

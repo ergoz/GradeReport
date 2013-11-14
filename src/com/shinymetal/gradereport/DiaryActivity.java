@@ -14,10 +14,13 @@ import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 import com.shinymetal.gradereport.utils.GshisLoader;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -60,7 +63,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	private ViewPager mViewPager;
 	private DatePickerFragment mDateSetFragment;
 	private ProgressDialog mProgressDialog;
-	private UpdateLessonsTask mUpdate;
+	private UpdateCurPupilLessonsByDateTask mUpdate;
 	
 	private Spinner mPupilSpinner;
 	
@@ -110,35 +113,38 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
     		mGshisLoader.setLogin(prefs.getString("login", ""));
     		mGshisLoader.setPassword(prefs.getString("password", ""));
     	
-			mUpdate = new UpdateLessonsTask ();
-	
+			mUpdate = new UpdateCurPupilLessonsByDateTask();
+
 			mUpdate.setUpdateTarget(this);
 			mUpdate.execute(mGshisLoader.getCurrWeekStart());
     	}
     }
     
-    public void onUpdateLessonsTaskComplete () {
+    public void onUpdateLessonsTaskComplete (Date day) {
     	
     	Log.i (this.toString(), TS.get() + this.toString() + " onUpdateLessonsTaskComplete() started");
     	
     	if (!mGshisLoader.isLastNetworkCallFailed()) {
 
-//			for (Fragment f : getSupportFragmentManager().getFragments()) {
-//
-//				if (f != null && f instanceof UpdateableFragment) {
-//
-//					UpdateableAdapter a = ((UpdateableFragment) f).getAdapter();
-//					if (a != null)
-//						a.onUpdateTaskComplete();
-//
-//					Log.i(this.toString(), TS.get() + this.toString()
-//							+ " onUpdateLessonsTaskComplete() : " + f.getId());
-//				}
-//			}
-//			
-//			return;
-    		
-    		recreate();
+    		// Only update if there is no error and it's current week
+    		if (day == mGshisLoader.getCurrWeekStart()) {
+
+				for (Fragment f : getSupportFragmentManager().getFragments()) {
+
+					if (f != null && f instanceof UpdateableFragment) {
+
+						UpdateableAdapter a = ((UpdateableFragment) f).getAdapter();
+						
+						if (a != null)
+							a.onUpdateTaskComplete();
+
+						Log.i(this.toString(), TS.get() + this.toString()
+								+ " onUpdateLessonsTaskComplete() : " + f.getId());
+					}
+				}
+
+//    			recreate();
+    		}
     	}
     	
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -152,6 +158,25 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
+    
+	private void setRecurringAlarm(Context context) {
+		
+		Intent downloader = new Intent(context, AlarmReceiver.class);
+		downloader.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
+				downloader, PendingIntent.FLAG_CANCEL_CURRENT);
+		
+		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+		Date firstRun = new Date();
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+				firstRun.getTime() + 10,
+				AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
+		
+		Log.i (this.toString(), TS.get() + this.toString() + " Set alarmManager.setRepeating to: "
+				+ firstRun.toString());
+	}
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -182,6 +207,8 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		
 		if (mLicState == Policy.RETRY)
 			mLicValidator = new LicenseValidatorHelper (this, this);
+		
+		setRecurringAlarm(this);
 	}
 	
 	@Override
@@ -359,9 +386,8 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		case R.id.action_reload:
 			mGshisLoader.reset();
 			
-			recreate();
+			startUpdateTask ();
 			return true;
-
 		}
 		return true;
 	}
