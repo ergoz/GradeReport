@@ -1,5 +1,6 @@
 package com.shinymetal.gradereport.objects;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -202,9 +203,31 @@ public class Schedule extends FormTimeInterval {
 		return this;
 	}
 
-	public Lesson getLesson(Date start) {
+	public Lesson getLessonByStart(Date start) {
 		
-		return Lesson.getByDate(this, start);
+		return Lesson.getByStart(this, start);
+	}
+	
+	public ArrayList<Lesson> getAllLessonsByDate(Date date) {
+		
+		Date start;
+		Date stop;
+		
+		Calendar cal = Calendar.getInstance();				
+		
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        
+        start = cal.getTime();
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        stop = cal.getTime();
+		
+		return Lesson.getAllByDate(this, start, stop);
 	}
 	
 	public Lesson getLessonByNumber(Date date, int number) {

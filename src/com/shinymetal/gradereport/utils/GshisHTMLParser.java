@@ -257,7 +257,7 @@ public class GshisHTMLParser {
 				String timeB = time.substring(0, time.indexOf("-") - 1);
 				Date start = format.parse(date + " " + timeB);
 				
-				if ((l = s.getLesson(start)) == null) {
+				if ((l = s.getLessonByStart(start)) == null) {
 
 					l = new Lesson();
 					

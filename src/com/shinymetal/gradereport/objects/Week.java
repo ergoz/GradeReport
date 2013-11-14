@@ -7,7 +7,6 @@ import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.util.Log;
 
 import com.shinymetal.gradereport.db.Database;
 
@@ -33,6 +32,8 @@ public class Week extends FormTimeInterval {
 			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + SCHEDULEID_NAME + "));";
 
 	private boolean mLoaded;
+	
+	private static volatile Week mLastWeek;
 
 	private long mScheduleId;
 	private long mRowId;
@@ -129,9 +130,17 @@ public class Week extends FormTimeInterval {
         return mRowId = Database.getWritable().insert(TABLE_NAME, null, values);		
 	}
 
-	public static Week getByDate(Schedule schedule, Date day) {
+	public static synchronized Week getByDate(Schedule schedule, Date day) {
 		
 		long date = day.getTime();
+		
+		// Elementary caching
+		if (mLastWeek != null && mLastWeek.getStart().getTime() <= date
+				&& mLastWeek.getStop().getTime() >= date
+				&& mLastWeek.mScheduleId == schedule.getRowId()) {
+			
+			return mLastWeek;
+		}
 
 		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
 				+ SCHEDULEID_NAME + " = ?";
@@ -157,13 +166,18 @@ public class Week extends FormTimeInterval {
 		
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
-		
-//		Log.d("Week.getByDate ()", TS.get() + " Week.getByDate () w = " + w
-//				+ " start=" + start + " stop=" + stop);
-		return w;
+
+		return mLastWeek = w;
 	}
 
-	public static Week getByFormId(Schedule schedule, String formId) {
+	public static synchronized Week getByFormId(Schedule schedule, String formId) {
+		
+		// Elementary caching
+		if (mLastWeek != null && mLastWeek.getFormId().equals(formId)
+				&& mLastWeek.mScheduleId == schedule.getRowId()) {
+			
+			return mLastWeek;
+		}
 
 		String selection = FORMID_NAME + " = ? AND " + SCHEDULEID_NAME + " = ?";
         String[] args = new String[] { formId, "" + schedule.getRowId() };
@@ -189,9 +203,7 @@ public class Week extends FormTimeInterval {
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
 		
-//		Log.d("Week.getByFormId ()", TS.get() + " Week.getByFormId () w = " + w
-//				+ " start=" + start + " stop=" + stop);
-		return w;
+		return mLastWeek = w;
 	}
 
 	public static Set<Week> getSet(Schedule schedule) {

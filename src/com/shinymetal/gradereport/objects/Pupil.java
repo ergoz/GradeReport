@@ -9,7 +9,6 @@ import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.util.Log;
 
 public class Pupil extends FormSelectableField {	
 	
@@ -26,6 +25,8 @@ public class Pupil extends FormSelectableField {
 			+ USERNAME_NAME + " TEXT);";
 	
 	private long mRowId;
+	
+	private static volatile Pupil mLastPupil;
 
 	public Pupil(String n) {
 
@@ -51,7 +52,11 @@ public class Pupil extends FormSelectableField {
         return mRowId = Database.getWritable().insert(TABLE_NAME, null, values);		
 	}
 	
-	public static Pupil getByFormId(String fId) {
+	public static synchronized Pupil getByFormId(String fId) {
+		
+		// Elementary caching
+		if (mLastPupil != null && mLastPupil.getFormId().equals(fId))
+			return mLastPupil;
 		
 		String selection = FORMID_NAME + " = ? AND " + USERNAME_NAME + " = ?";
         String[] args = new String[] { fId, GshisLoader.getInstance().getLogin() };
@@ -65,10 +70,14 @@ public class Pupil extends FormSelectableField {
         String formText = c.getString(c.getColumnIndex(FORMTEXT_NAME));
         Pupil p = new Pupil(formText, fId);
         p.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
-        return p; 
+        return mLastPupil = p; 
 	}
 	
-	public static Pupil getByFormName(String name) {
+	public static synchronized Pupil getByFormName(String name) {
+		
+		// Elementary caching
+		if (mLastPupil != null && mLastPupil.getFormText().equals(name))
+			return mLastPupil;
 		
 		String selection = FORMTEXT_NAME + " = ? AND " + USERNAME_NAME + " = ?";
         String[] args = new String[] { name, GshisLoader.getInstance().getLogin() };
@@ -82,7 +91,7 @@ public class Pupil extends FormSelectableField {
         String formId = c.getString(c.getColumnIndex(FORMID_NAME));
         Pupil p = new Pupil(name, formId);
         p.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
-        return p; 
+        return mLastPupil = p; 
 	}
 	
 	public static final Set<Pupil> getSet() {

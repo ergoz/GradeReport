@@ -1,18 +1,16 @@
 package com.shinymetal.gradereport;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Date;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.shinymetal.gradereport.objects.Lesson;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.GshisLoader;
 
 public class UpdateLessonsTask extends
-		AsyncTask<Date, Void, ArrayList<Lesson>> {
+		AsyncTask<Date, Void, Void> {
 
 	protected WeakReference<DiaryActivity> mActivity;
 	protected boolean mSuccess = false;
@@ -24,10 +22,12 @@ public class UpdateLessonsTask extends
 	}
 
 	@Override
-	protected ArrayList<Lesson> doInBackground(Date... dow) {
+	protected Void doInBackground(Date... dow) {
 		
 		Log.i (this.toString(), TS.get() + "doInBackground ()");
-		return GshisLoader.getInstance().getNonCachedLessonsByDate(dow[0], null);
+		GshisLoader.getInstance().getNonCachedLessonsByDate(dow[0], null);
+		
+		return null;
 	}
 
 	protected void onPreExecute() {
@@ -39,7 +39,7 @@ public class UpdateLessonsTask extends
 		}
 	}
 
-	protected void onPostExecute(ArrayList<Lesson> values) {
+	protected void onPostExecute() {
 		
 		Log.i (this.toString(), TS.get() + this.toString() + " onPostExecute() started");
 		
@@ -61,5 +61,7 @@ public class UpdateLessonsTask extends
 				}
 			}, 100);
 		}
+		
+		Log.i (this.toString(), TS.get() + this.toString() + " onPostExecute() finished");
 	}
 }

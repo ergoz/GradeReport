@@ -15,7 +15,7 @@ import android.util.Log;
 public class Database {
 	
     private static final String DATABASE_NAME = "gradereport";    
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     
     private static volatile Context mContext = null;
 

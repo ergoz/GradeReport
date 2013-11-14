@@ -150,8 +150,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection(/* new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080))*/);
+		return (HttpURLConnection) new URL(url).openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080)));
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
@@ -527,21 +527,8 @@ public class GshisLoader {
 				return null;
 			}
 
-			int number = 1;
-			res = new ArrayList<Lesson> ();
+			res = s.getAllLessonsByDate(day);
 
-			do {
-
-				Lesson l = s.getLessonByNumber(day, number);
-
-				if (l == null) 
-					break;
-
-				res.add(l);
-				number++;
-				
-			} while (true);
-			
 		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
 			
 			Log.e(this.toString(), TS.get() + this.toString()
@@ -552,11 +539,11 @@ public class GshisLoader {
 		return res;
 	}
 	
-	public ArrayList<Lesson> getNonCachedLessonsByDate(Date day, String pupilName) {
+	public void getNonCachedLessonsByDate(Date day, String pupilName) {
 		
-		ArrayList<Lesson> res = new ArrayList<Lesson> ();
+		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : started");
+		
 		String uName = pupilName;
-		
 		if (uName == null) {
 			
 			if (currentPupilName == null) {
@@ -567,6 +554,8 @@ public class GshisLoader {
 			
 			uName = currentPupilName;
 		}
+		
+		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : trying to log in...");
 		
 		if (!mIsLoggedIn) {
 
@@ -588,39 +577,25 @@ public class GshisLoader {
 					if (e instanceof InvalidCredentialsException) {
 						
 						mLastNetworkFailureReason = ERROR_INV_CREDENTIALS;
-						return null; // else try one more time
+						return; // else try one more time
 					}
 				}
 			}
 		}
+		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : logged: " + mIsLoggedIn );
 		
-		if (!mIsLoggedIn) return null;
+		if (!mIsLoggedIn) return;
 		
 		mIsLastNetworkCallFailed = false;
 		mLastNetworkFailureReason = "";
 
-		int number = 1;
-		
 		try {
 
+			Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : calling parseLessonsByDate");
+			
 			for (int i=0; i<2; i++)
 				if (parseLessonsByDate(day, uName)) break;
 			
-			Schedule s = Pupil.getByFormName(currentPupilName).getScheduleByDate(day);
-			res = new ArrayList<Lesson> ();
-
-			do {
-
-				Lesson l = s.getLessonByNumber(day, number);
-
-				if (l == null) 
-					break;
-
-				res.add(l);
-				number++;
-				
-			} while (true);
-		
 		} catch (Exception e) {
 			
 			Log.e(this.toString(),
@@ -634,7 +609,7 @@ public class GshisLoader {
 				mLastNetworkFailureReason = e.toString();
 		}
 		
-		return res;
+		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : finished");
 	}
 	
 	public boolean isLastNetworkCallFailed() {

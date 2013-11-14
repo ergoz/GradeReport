@@ -7,7 +7,9 @@ import java.util.Locale;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +42,25 @@ public class LessonsExpListFragment extends Fragment implements
 				false);
 		ExpandableListView expListView = (ExpandableListView) rootView
 				.findViewById(R.id.section_label);
+		
+		int width = (int) (getResources().getDisplayMetrics().widthPixels - TypedValue
+				.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, getResources()
+						.getDisplayMetrics()));
+		
+		DisplayMetrics metrics = new DisplayMetrics();
+		getActivity().getWindowManager().getDefaultDisplay()
+				.getMetrics(metrics);
+		float scale = getResources().getDisplayMetrics().density;
+		
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+			expListView.setIndicatorBounds(
+					width - (int) (50 * scale),
+					width - (int) (10 * scale));
+		} else {
+			expListView.setIndicatorBoundsRelative(
+					width - (int) (50 * scale),
+					width - (int) (10 * scale));
+		}
 
 		View header = getLayoutInflater(savedInstanceState).inflate(
 				R.layout.lessons_header, null);

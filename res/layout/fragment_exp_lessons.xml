@@ -11,8 +11,6 @@
     <ExpandableListView
         android:id="@+id/section_label"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indicatorLeft="250dip"
-        android:indicatorRight="290dip" />
+        android:layout_height="wrap_content" />
 
 </RelativeLayout>

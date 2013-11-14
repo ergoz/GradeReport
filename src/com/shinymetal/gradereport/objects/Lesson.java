@@ -1,12 +1,12 @@
 package com.shinymetal.gradereport.objects;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.util.Log;
 
 import com.shinymetal.gradereport.db.Database;
 
@@ -153,9 +153,9 @@ public class Lesson extends FormTimeInterval {
     	return Database.getWritable().update(TABLE_NAME, values, selection, args);		
 	}
 
-	public static Lesson getByDate(Schedule schedule, Date day) {
+	public static Lesson getByStart(Schedule schedule, Date startTime) {
 
-		long date = day.getTime();
+		long date = startTime.getTime();
 
 		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
 				+ SCHEDULEID_NAME + " = ?";
@@ -189,8 +189,47 @@ public class Lesson extends FormTimeInterval {
 		return l;
 	}
 
-	public static Lesson getByNumber(Schedule schedule, Date start, Date stop,
-			int number) {
+	public static ArrayList<Lesson> getAllByDate(Schedule schedule, Date start, Date stop) {
+
+		ArrayList<Lesson> res = new ArrayList<Lesson> ();
+		
+		long date1 = start.getTime();
+		long date2 = stop.getTime();
+
+		String selection = START_NAME + " >= ? AND " + STOP_NAME + " <= ? AND "
+				+ SCHEDULEID_NAME + " = ?";
+        String[] args = new String[] { "" + date1, "" + date2, "" + schedule.getRowId()};
+		String[] columns = new String[] { FORMID_NAME, FORMTEXT_NAME,
+				START_NAME, STOP_NAME, ID_NAME, NUMBER_NAME, TEACHER_NAME,
+				THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME };
+
+        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, NUMBER_NAME);
+        c.moveToFirst();
+		while (!c.isAfterLast()) {
+			
+			Lesson l = new Lesson();
+			
+			l.setFormId(c.getString(c.getColumnIndex(FORMID_NAME)));
+			l.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
+			l.mScheduleId = schedule.getRowId();
+			l.setStart(new Date(c.getLong(c.getColumnIndex(START_NAME))));		
+			l.setStop(new Date(c.getLong(c.getColumnIndex(STOP_NAME))));
+			l.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+			l.setNumber(c.getInt(c.getColumnIndex(NUMBER_NAME)));
+			l.setTeacher(c.getString(c.getColumnIndex(TEACHER_NAME)));
+			l.setTheme(c.getString(c.getColumnIndex(THEME_NAME)));
+			l.setHomework(c.getString(c.getColumnIndex(HOMEWORK_NAME)));
+			l.setMarks(c.getString(c.getColumnIndex(MARKS_NAME)));
+			l.setComment(c.getString(c.getColumnIndex(COMMENT_NAME)));
+
+			res.add(l);
+			c.moveToNext();
+		}
+
+		return res;
+	}
+	
+	public static Lesson getByNumber(Schedule schedule, Date start, Date stop, int number) {
 
 		long date1 = start.getTime();
 		long date2 = stop.getTime();

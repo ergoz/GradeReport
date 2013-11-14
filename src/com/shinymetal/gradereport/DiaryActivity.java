@@ -18,7 +18,6 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -59,8 +58,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	 * The {@link ViewPager} that will host the section contents.
 	 */
 	private ViewPager mViewPager;
-	private boolean mNaviMenuDisable = true;
-	
 	private DatePickerFragment mDateSetFragment;
 	private ProgressDialog mProgressDialog;
 	private UpdateLessonsTask mUpdate;
@@ -83,9 +80,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		
 		if (!isFinishing()) {
 			
-			mNaviMenuDisable = true;
-			invalidateOptionsMenu();
-			
 			mProgressDialog = new ProgressDialog(this);
 
 			mProgressDialog.setMessage(getString(R.string.label_loading_data));
@@ -98,9 +92,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
     public void setIdle () {
     
     	if (!isFinishing()) {
-    		
-    		mNaviMenuDisable = false;
-    		invalidateOptionsMenu();
     		
     		if (mProgressDialog != null) {
     			
@@ -132,20 +123,22 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
     	
     	if (!mGshisLoader.isLastNetworkCallFailed()) {
 
-			for (Fragment f : getSupportFragmentManager().getFragments()) {
-
-				if (f != null && f instanceof UpdateableFragment) {
-
-					UpdateableAdapter a = ((UpdateableFragment) f).getAdapter();
-					if (a != null)
-						a.onUpdateTaskComplete();
-
-					Log.i(this.toString(), TS.get() + this.toString()
-							+ " onUpdateLessonsTaskComplete() : " + f.getId());
-				}
-			}
-			
-			return;
+//			for (Fragment f : getSupportFragmentManager().getFragments()) {
+//
+//				if (f != null && f instanceof UpdateableFragment) {
+//
+//					UpdateableAdapter a = ((UpdateableFragment) f).getAdapter();
+//					if (a != null)
+//						a.onUpdateTaskComplete();
+//
+//					Log.i(this.toString(), TS.get() + this.toString()
+//							+ " onUpdateLessonsTaskComplete() : " + f.getId());
+//				}
+//			}
+//			
+//			return;
+    		
+    		recreate();
     	}
     	
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -185,7 +178,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		
 		if (savedInstanceState != null) {
 			mLicState = savedInstanceState.getInt("mLicState");
-			mNaviMenuDisable = savedInstanceState.getBoolean("mNaviMenuDisable");
 		}
 		
 		if (mLicState == Policy.RETRY)
@@ -196,7 +188,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	
 		savedInstanceState.putInt("mLicState", mLicState);
-		savedInstanceState.putBoolean("mNaviMenuDisable", mNaviMenuDisable);
 	}
 	
 	@Override
@@ -430,21 +421,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		return true;
 	}
 	
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-
-		menu.findItem(R.id.action_select_pupil).setEnabled(
-				!mNaviMenuDisable);
-		menu.findItem(R.id.action_select_date)
-				.setEnabled(!mNaviMenuDisable);
-		menu.findItem(R.id.action_previous_week).setEnabled(
-				!mNaviMenuDisable);
-		menu.findItem(R.id.action_next_week).setEnabled(!mNaviMenuDisable);
-
-		return true;
-	}
-	
-    	/**
+	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
 	 */
