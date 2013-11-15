@@ -56,8 +56,8 @@ public class GshisLoader {
 	private static volatile GshisLoader instance;
 	
 	protected boolean mIsLoggedIn;
-	protected boolean mIsLastNetworkCallFailed = false;
-	protected String mLastNetworkFailureReason;
+	protected volatile boolean mIsLastNetworkCallFailed = false;
+	protected volatile String mLastNetworkFailureReason;
 	
 	protected Date mCurrWeekStart = Week.getWeekStart(new Date ());
 	
@@ -575,7 +575,7 @@ public class GshisLoader {
 		return null;
 	}
 	
-	public void getNonCachedLessonsByDate(Date day, String pupilName) {
+	public synchronized void getNonCachedLessonsByDate(Date day, String pupilName) {
 		
 		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : started");
 		
@@ -609,6 +609,8 @@ public class GshisLoader {
 					mIsLastNetworkCallFailed = true;
 					if ((mLastNetworkFailureReason = e.getMessage()) == null)
 						mLastNetworkFailureReason = e.toString();
+					
+					e.printStackTrace();
 					
 					if (e instanceof InvalidCredentialsException) {
 						

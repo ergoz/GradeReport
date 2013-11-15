@@ -19,16 +19,19 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -41,6 +44,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.Spinner;
@@ -62,94 +66,85 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	 */
 	private ViewPager mViewPager;
 	private DatePickerFragment mDateSetFragment;
-	private ProgressDialog mProgressDialog;
-	private UpdateCurPupilLessonsByDateTask mUpdate;
-	
+			
 	private Spinner mPupilSpinner;
 	
 	private static volatile DiaryActivity instance;	
 	private static final GshisLoader mGshisLoader = GshisLoader.getInstance();	
 	
 	private static int mLicState = Policy.RETRY;
+	private boolean mServiceBusy = false;
 	public LicenseValidatorHelper mLicValidator = null;
 	
-	private Handler mHandler;
+	private static class IncomingHandler extends Handler {
+        @Override
+		public void handleMessage(Message message) {
+
+			Log.i(this.toString(), TS.get() + "received Message what="
+					+ message.what);
+
+			switch (message.what) {
+			case DiaryUpdateService.MSG_SET_INT_VALUE:
+
+				switch (message.arg1) {
+				
+				case DiaryUpdateService.MSG_TASK_STARTED:
+					instance.setProgressBarIndeterminateVisibility(instance.mServiceBusy = true);
+					break;
+				
+				case DiaryUpdateService.MSG_TASK_COMPLETED:
+					instance.mServiceBusy = false;
+					instance.recreate();
+					break;
+
+				case DiaryUpdateService.MSG_TASK_FAILED:
+					instance.setProgressBarIndeterminateVisibility(instance.mServiceBusy = false);
+					instance.showAlertDialog(mGshisLoader
+							.getLastNetworkFailureReason());
+					break;
+				}
+
+				break;
+			}
+		}
+	}
+	
+	private IncomingHandler mHandler = new IncomingHandler ();	
+	private DiaryUpdateService mUpdateService;
+	
+	public ServiceConnection mConnection = new ServiceConnection() {
+
+	    public void onServiceConnected(ComponentName className, IBinder binder) {
+	    	
+	        mUpdateService = ((DiaryUpdateService.DiaryUpdateBinder) binder).getService();
+	    }
+
+	    public void onServiceDisconnected(ComponentName className) {
+
+	        mUpdateService = null;
+	    }
+	};
+		
+	public void doBindService() {
+	    Intent intent = null;
+	    intent = new Intent(this, DiaryUpdateService.class);
+	    // Create a new Messenger for the communication back
+	    // From the Service to the Activity
+	    Messenger messenger = new Messenger(mHandler);
+	    intent.putExtra("MESSENGER", messenger);
+
+	    bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+	}
 	
 	public Handler getHandler() {
 		return mHandler;
 	}
-
-	public void setBusy() {
-		
-		if (!isFinishing()) {
-			
-			mProgressDialog = new ProgressDialog(this);
-
-			mProgressDialog.setMessage(getString(R.string.label_loading_data));
-			mProgressDialog.setIndeterminate(true);
-			mProgressDialog.setCancelable(false);
-			mProgressDialog.show();
-		}		
-	}
     
-    public void setIdle () {
-    
-    	if (!isFinishing()) {
-    		
-    		if (mProgressDialog != null) {
-    			
-    			mProgressDialog.dismiss();
-    			mProgressDialog = null;    			
-    		}
-    	}
-    }
-    
-    public void startUpdateTask () {
-    	
-    	if (mUpdate == null || mUpdate.getStatus() == AsyncTask.Status.FINISHED) {
-    		
-    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-    		mGshisLoader.setLogin(prefs.getString("login", ""));
-    		mGshisLoader.setPassword(prefs.getString("password", ""));
-    	
-			mUpdate = new UpdateCurPupilLessonsByDateTask();
-
-			mUpdate.setUpdateTarget(this);
-			mUpdate.execute(mGshisLoader.getCurrWeekStart());
-    	}
-    }
-    
-    public void onUpdateLessonsTaskComplete (Date day) {
-    	
-    	Log.i (this.toString(), TS.get() + this.toString() + " onUpdateLessonsTaskComplete() started");
-    	
-    	if (!mGshisLoader.isLastNetworkCallFailed()) {
-
-    		// Only update if there is no error and it's current week
-    		if (day == mGshisLoader.getCurrWeekStart()) {
-
-				for (Fragment f : getSupportFragmentManager().getFragments()) {
-
-					if (f != null && f instanceof UpdateableFragment) {
-
-						UpdateableAdapter a = ((UpdateableFragment) f).getAdapter();
-						
-						if (a != null)
-							a.onUpdateTaskComplete();
-
-						Log.i(this.toString(), TS.get() + this.toString()
-								+ " onUpdateLessonsTaskComplete() : " + f.getId());
-					}
-				}
-
-//    			recreate();
-    		}
-    	}
+    public void showAlertDialog (String text) {
     	
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.title_error)); 
-        builder.setMessage(mGshisLoader.getLastNetworkFailureReason());
+        builder.setMessage(text);
         builder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int arg1) {
             }
@@ -159,13 +154,20 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
         alertDialog.show();
     }
     
-	private void setRecurringAlarm(Context context) {
+	private void setRecurringAlarm(Context context, boolean forceUpdate) {
+		
+		boolean alarmUp = (PendingIntent.getBroadcast(context, 0, 
+		        new Intent(context, AlarmReceiver.class), 
+		        PendingIntent.FLAG_NO_CREATE) != null);
+		
+		if (alarmUp && !forceUpdate)
+			return;
 		
 		Intent downloader = new Intent(context, AlarmReceiver.class);
 		downloader.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
-				downloader, PendingIntent.FLAG_CANCEL_CURRENT);
+				downloader, PendingIntent.FLAG_UPDATE_CURRENT);
 		
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
@@ -181,6 +183,8 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		
 		setContentView(R.layout.activity_diary);
 		instance = this;
@@ -199,34 +203,50 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
 
-		mHandler = new Handler();
-		
 		if (savedInstanceState != null) {
+			
 			mLicState = savedInstanceState.getInt("mLicState");
+			mServiceBusy = savedInstanceState.getBoolean("mServiceBusy");
 		}
+		
+        setProgressBarIndeterminateVisibility(mServiceBusy);
 		
 		if (mLicState == Policy.RETRY)
 			mLicValidator = new LicenseValidatorHelper (this, this);
 		
-		setRecurringAlarm(this);
+		setRecurringAlarm(this, false);
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	
 		savedInstanceState.putInt("mLicState", mLicState);
+		savedInstanceState.putBoolean("mServiceBusy", mServiceBusy);
 	}
 	
 	@Override
 	public void onPause() {
 		
-		setIdle ();
+		if (mUpdateService != null) {
+			
+			unbindService(mConnection);
+			mUpdateService = null;
+		}
 		
-    	if (mUpdate != null && mUpdate.getStatus() == AsyncTask.Status.RUNNING)
-    		mUpdate.cancel(false);
-
 		super.onPause();
 	}
+	
+	@Override
+	public void onResume() {
+		
+		if (mUpdateService == null) {
+			
+			doBindService();
+		}
+		
+		super.onResume();
+	}
+	
 	
     @Override
     protected void onDestroy() {
@@ -242,7 +262,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
     public void allow(int policyReason) {
     	
     	mLicState = Policy.LICENSED;
-    	Log.i (this.toString(), TS.get() + "allow (): license valid");    	
+    	Log.i (this.toString(), TS.get() + "allow (): license valid");   	
     }
     
     public void dontAllow(int policyReason) {
@@ -384,9 +404,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 			return true;
 			
 		case R.id.action_reload:
-			mGshisLoader.reset();
-			
-			startUpdateTask ();
+			setRecurringAlarm(this, true);
 			return true;
 		}
 		return true;

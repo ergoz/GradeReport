@@ -46,11 +46,17 @@ public class LessonsListAdapter extends
 	@Override
 	public int getCount() {
 		
+		if (mCursor == null || mCursor.isClosed())
+			return 0;
+		
 		return mCursor.getCount();
 	}
 
 	@Override
 	public Object getItem(int position) {
+		
+		if (mCursor == null || mCursor.isClosed())
+			return null;
 		
 		mCursor.moveToPosition(position);
 		
@@ -88,8 +94,10 @@ public class LessonsListAdapter extends
 
 		Lesson l = (Lesson) getItem(position);
 
-		itemNameView.setText(Html.fromHtml("" + l.getNumber() + ". " + l.getFormText()));
-		itemDetailView.setText(Html.fromHtml(mFormat.format(l.getStart()) + l.getTeacher()));
+		if (l != null) {
+			itemNameView.setText(Html.fromHtml("" + l.getNumber() + ". " + l.getFormText()));
+			itemDetailView.setText(Html.fromHtml(mFormat.format(l.getStart()) + l.getTeacher()));
+		}
 
 		return convertView;
 	}

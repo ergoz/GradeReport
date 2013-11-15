@@ -45,18 +45,27 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 
 	@Override
 	public int getGroupCount() {
+		
+		if (mCursor == null || mCursor.isClosed())
+			return 0;
 
 		return mCursor.getCount();
 	}
 
 	@Override
 	public int getChildrenCount(int groupPosition) {
+		
+		if (mCursor == null || mCursor.isClosed())
+			return 0;
 
 		return 1;
 	}
 
 	@Override
 	public Object getGroup(int groupPosition) {
+		
+		if (mCursor == null || mCursor.isClosed())
+			return null;
 		
 		mCursor.moveToPosition(groupPosition);
 
@@ -68,6 +77,9 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 
 	@Override
 	public Object getChild(int groupPosition, int childPosition) {
+		
+		if (mCursor == null || mCursor.isClosed())
+			return null;
 
 		mCursor.moveToPosition(groupPosition);
 		
@@ -89,7 +101,8 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 
 	@Override
 	public boolean hasStableIds() {
-		return true;
+		
+		return false;
 	}
 
 	@Override
@@ -108,9 +121,12 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 				.findViewById(R.id.itemDetail);
 
 		Lesson l = (Lesson) getGroup(groupPosition);
+		
+		if (l != null) {
 
-		itemNameView.setText(Html.fromHtml("" + l.getNumber() + ". " + l.getFormText()));
-		itemDetailView.setText(Html.fromHtml(mFormat.format(l.getStart()) + l.getTeacher()));
+			itemNameView.setText(Html.fromHtml("" + l.getNumber() + ". " + l.getFormText()));
+			itemDetailView.setText(Html.fromHtml(mFormat.format(l.getStart()) + l.getTeacher()));
+		}
 
 		return convertView;
 	}
@@ -120,41 +136,45 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 			boolean isLastChild, View convertView, ViewGroup parent) {
 
 		if (convertView == null) {
+			
 			LayoutInflater inflater = (LayoutInflater) mActivity
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.lessons_detail, null);
 		}
 		
 		Lesson l = (Lesson) getChild(groupPosition, 0);
+		
+		if (l != null) {
 
-		TextView textTheme = (TextView) convertView
-				.findViewById(R.id.itemTheme);
-		String theme = l.getTheme();
-		if (theme == null)
-			theme = "";
-		textTheme.setText(Html.fromHtml(mActivity.getString(R.string.label_theme) + ": " + theme));
-
-		TextView textHomework = (TextView) convertView
-				.findViewById(R.id.itemHomework);
-		String homework = l.getHomework();
-		if (homework == null)
-			homework = "";
-		textHomework.setText(Html.fromHtml(mActivity.getString(R.string.label_homework) + ": "
-				+ homework));
-
-		TextView textMarks = (TextView) convertView
-				.findViewById(R.id.itemMarks);
-		String marks = l.getMarks();
-		if (marks == null)
-			marks = "";
-		textMarks.setText(Html.fromHtml(mActivity.getString(R.string.label_marks) + ": " + marks));
-
-		TextView textComment = (TextView) convertView
-				.findViewById(R.id.itemComment);
-		String comment = l.getComment();
-		if (comment == null)
-			comment = "";
-		textComment.setText(Html.fromHtml(mActivity.getString(R.string.label_comment) + ": " + comment));
+			TextView textTheme = (TextView) convertView
+					.findViewById(R.id.itemTheme);
+			String theme = l.getTheme();
+			if (theme == null)
+				theme = "";
+			textTheme.setText(Html.fromHtml(mActivity.getString(R.string.label_theme) + ": " + theme));
+	
+			TextView textHomework = (TextView) convertView
+					.findViewById(R.id.itemHomework);
+			String homework = l.getHomework();
+			if (homework == null)
+				homework = "";
+			textHomework.setText(Html.fromHtml(mActivity.getString(R.string.label_homework) + ": "
+					+ homework));
+	
+			TextView textMarks = (TextView) convertView
+					.findViewById(R.id.itemMarks);
+			String marks = l.getMarks();
+			if (marks == null)
+				marks = "";
+			textMarks.setText(Html.fromHtml(mActivity.getString(R.string.label_marks) + ": " + marks));
+	
+			TextView textComment = (TextView) convertView
+					.findViewById(R.id.itemComment);
+			String comment = l.getComment();
+			if (comment == null)
+				comment = "";
+			textComment.setText(Html.fromHtml(mActivity.getString(R.string.label_comment) + ": " + comment));
+		}
 
 		return convertView;
 	}
