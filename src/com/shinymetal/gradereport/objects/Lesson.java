@@ -1,6 +1,5 @@
 package com.shinymetal.gradereport.objects;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,6 +39,29 @@ public class Lesson extends FormTimeInterval {
 			+ MARKS_NAME + " TEXT, "
 			+ COMMENT_NAME + " TEXT, "
 			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + SCHEDULEID_NAME + "));";
+	
+	public static final String SELECTION_UPDATE = ID_NAME + " = ?";
+	public static final String SELECTION_GET_BY_START = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
+			+ SCHEDULEID_NAME + " = ?";
+	public static final String RAWQUERY_EXISTS_BY_START = "SELECT 1 FROM "
+			+ TABLE_NAME + " WHERE " + SELECTION_GET_BY_START;
+	public static final String[] COLUMNS_GET_BY_START = new String[] { FORMID_NAME, FORMTEXT_NAME,
+			START_NAME, STOP_NAME, ID_NAME, SCHEDULEID_NAME, NUMBER_NAME, TEACHER_NAME,
+			THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME };
+	public static final String SELECTION_GET_ALL_BY_DATE = START_NAME + " >= ? AND " + STOP_NAME + " <= ? AND "
+			+ SCHEDULEID_NAME + " = ?";
+	public static final String[] COLUMNS_GET_ALL_BY_DATE = new String[] { FORMID_NAME, FORMTEXT_NAME,
+			START_NAME, STOP_NAME, ID_NAME, SCHEDULEID_NAME, NUMBER_NAME, TEACHER_NAME,
+			THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME };
+	public static final String SELECTION_GET_BY_NUMBER = START_NAME + " >= ? AND " + STOP_NAME + " <= ? AND "
+			+ SCHEDULEID_NAME + " = ? AND " + NUMBER_NAME + " = ?";
+	public static final String[] COLUMNS_GET_BY_NUMBER = new String[] { FORMID_NAME, FORMTEXT_NAME,
+			START_NAME, STOP_NAME, ID_NAME, SCHEDULEID_NAME, NUMBER_NAME, TEACHER_NAME,
+			THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME };
+	public static final String SELECTION_GET_SET = SCHEDULEID_NAME + " = ?";
+	public static final String[] COLUMNS_GET_SET = new String[] {FORMID_NAME, FORMTEXT_NAME,
+			START_NAME, STOP_NAME, ID_NAME, SCHEDULEID_NAME, NUMBER_NAME, TEACHER_NAME,
+			THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME};
 
 	protected String teacher;
 	
@@ -147,27 +169,36 @@ public class Lesson extends FormTimeInterval {
     	values.put(MARKS_NAME, getMarks());
     	values.put(COMMENT_NAME, getComment());
     	
-    	String selection = ID_NAME + " = ?";
         String[] args = new String[] { "" + mRowId };
-		
-    	return Database.getWritable().update(TABLE_NAME, values, selection, args);		
+    	return Database.getWritable().update(TABLE_NAME, values, SELECTION_UPDATE, args);		
 	}
+	
+	public static boolean existsByStart(Schedule schedule, Date startTime) {
 
+		long date = startTime.getTime();
+		String[] args = new String[] { "" + date, "" + date,
+				"" + schedule.getRowId() };
+		Cursor c = Database.getReadable().rawQuery(RAWQUERY_EXISTS_BY_START, args);
+
+		boolean exists = (c.getCount() > 0);
+		c.close();
+		return exists;
+	}
+	
 	public static Lesson getByStart(Schedule schedule, Date startTime) {
 
 		long date = startTime.getTime();
+		String[] args = new String[] { "" + date, "" + date, "" + schedule.getRowId() };
 
-		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
-				+ SCHEDULEID_NAME + " = ?";
-        String[] args = new String[] { "" + date, "" + date, "" + schedule.getRowId() };
-		String[] columns = new String[] { FORMID_NAME, FORMTEXT_NAME,
-				START_NAME, STOP_NAME, ID_NAME, NUMBER_NAME, TEACHER_NAME,
-				THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME };
-
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_START, SELECTION_GET_BY_START, args, null, null,
+				null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
 		
 		Lesson l = new Lesson();
 		
@@ -186,71 +217,87 @@ public class Lesson extends FormTimeInterval {
 		l.setMarks(c.getString(c.getColumnIndex(MARKS_NAME)));
 		l.setComment(c.getString(c.getColumnIndex(COMMENT_NAME)));
 		
+		c.close();
+		return l;
+	}
+	
+	public static Cursor getCursorAllByDate(Schedule schedule, Date start, Date stop) {
+
+		long date1 = start.getTime();
+		long date2 = stop.getTime();
+		
+        String[] args = new String[] { "" + date1, "" + date2, "" + schedule.getRowId()};
+
+		return Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_ALL_BY_DATE, SELECTION_GET_ALL_BY_DATE, args, null,
+				null, NUMBER_NAME);
+	}
+	
+	public static Lesson getFromCursor(Cursor c) {
+		
+		int fieldPos;
+		
+		if(c == null || c.isAfterLast()) {
+			
+			return null;
+		}
+		
+		Lesson l = new Lesson();
+		
+		if ((fieldPos = c.getColumnIndex(FORMID_NAME)) != -1)
+			l.setFormId(c.getString(fieldPos));
+
+		if ((fieldPos = c.getColumnIndex(FORMTEXT_NAME)) != -1)
+			l.setFormText(c.getString(fieldPos));
+		
+		if ((fieldPos = c.getColumnIndex(TEACHER_NAME)) != -1)
+			l.setTeacher(c.getString(fieldPos));
+		
+		if ((fieldPos = c.getColumnIndex(THEME_NAME)) != -1)
+			l.setTheme(c.getString(fieldPos));
+		
+		if ((fieldPos = c.getColumnIndex(HOMEWORK_NAME)) != -1)
+			l.setHomework(c.getString(fieldPos));
+		
+		if ((fieldPos = c.getColumnIndex(MARKS_NAME)) != -1)
+			l.setMarks(c.getString(fieldPos));
+		
+		if ((fieldPos = c.getColumnIndex(COMMENT_NAME)) != -1)
+			l.setComment(c.getString(fieldPos));
+
+		if ((fieldPos = c.getColumnIndex(SCHEDULEID_NAME)) != -1)
+			l.mScheduleId = c.getLong(fieldPos);
+		
+		if ((fieldPos = c.getColumnIndex(START_NAME)) != -1)
+			l.setStart(new Date(c.getLong(fieldPos)));
+		
+		if ((fieldPos = c.getColumnIndex(STOP_NAME)) != -1)
+			l.setStop(new Date(c.getLong(fieldPos)));
+		
+		if ((fieldPos = c.getColumnIndex(ID_NAME)) != -1)
+			l.mRowId = c.getLong(fieldPos);
+		
+		if ((fieldPos = c.getColumnIndex(NUMBER_NAME)) != -1)
+			l.setNumber(c.getInt(fieldPos));
+	
 		return l;
 	}
 
-	public static ArrayList<Lesson> getAllByDate(Schedule schedule, Date start, Date stop) {
-
-		ArrayList<Lesson> res = new ArrayList<Lesson> ();
-		
-		long date1 = start.getTime();
-		long date2 = stop.getTime();
-
-		String selection = START_NAME + " >= ? AND " + STOP_NAME + " <= ? AND "
-				+ SCHEDULEID_NAME + " = ?";
-        String[] args = new String[] { "" + date1, "" + date2, "" + schedule.getRowId()};
-		String[] columns = new String[] { FORMID_NAME, FORMTEXT_NAME,
-				START_NAME, STOP_NAME, ID_NAME, NUMBER_NAME, TEACHER_NAME,
-				THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME };
-
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, NUMBER_NAME);
-        c.moveToFirst();
-		while (!c.isAfterLast()) {
-			
-			Lesson l = new Lesson();
-			
-			l.setFormId(c.getString(c.getColumnIndex(FORMID_NAME)));
-			l.setFormText(c.getString(c.getColumnIndex(FORMTEXT_NAME)));
-			l.mScheduleId = schedule.getRowId();
-			l.setStart(new Date(c.getLong(c.getColumnIndex(START_NAME))));		
-			l.setStop(new Date(c.getLong(c.getColumnIndex(STOP_NAME))));
-			l.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
-			l.setNumber(c.getInt(c.getColumnIndex(NUMBER_NAME)));
-			l.setTeacher(c.getString(c.getColumnIndex(TEACHER_NAME)));
-			l.setTheme(c.getString(c.getColumnIndex(THEME_NAME)));
-			l.setHomework(c.getString(c.getColumnIndex(HOMEWORK_NAME)));
-			l.setMarks(c.getString(c.getColumnIndex(MARKS_NAME)));
-			l.setComment(c.getString(c.getColumnIndex(COMMENT_NAME)));
-
-			res.add(l);
-			c.moveToNext();
-		}
-
-		return res;
-	}
-	
 	public static Lesson getByNumber(Schedule schedule, Date start, Date stop, int number) {
 
 		long date1 = start.getTime();
 		long date2 = stop.getTime();
-		
-//		Log.e("Lesson.getByNumber()", TS.get()
-//				+ "Lesson.getByNumber() : ScheduleId: " + schedule.getRowId() + " " 
-//				+ START_NAME + " >= " + date1 + start.toString() + " AND " + STOP_NAME + " <=  "
-//				+ date2 + stop.toString() + " AND " + SCHEDULEID_NAME + " = " + schedule.getRowId() + " AND " + NUMBER_NAME
-//				+ " = " + number);	
-
-		String selection = START_NAME + " >= ? AND " + STOP_NAME + " <= ? AND "
-				+ SCHEDULEID_NAME + " = ? AND " + NUMBER_NAME + " = ?";
         String[] args = new String[] { "" + date1, "" + date2, "" + schedule.getRowId(), "" + number };
-		String[] columns = new String[] { FORMID_NAME, FORMTEXT_NAME,
-				START_NAME, STOP_NAME, ID_NAME, NUMBER_NAME, TEACHER_NAME,
-				THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME };
-
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_NUMBER, SELECTION_GET_BY_NUMBER, args, null,
+				null, null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
 		
 		Lesson l = new Lesson();
 		
@@ -269,20 +316,17 @@ public class Lesson extends FormTimeInterval {
 		l.setMarks(c.getString(c.getColumnIndex(MARKS_NAME)));
 		l.setComment(c.getString(c.getColumnIndex(COMMENT_NAME)));
 		
+		c.close();
 		return l;
 	}
 
 	public static Set<Lesson> getSet(Schedule schedule) {
 
 		Set<Lesson> set = new HashSet<Lesson> (); 
-		
-		String selection = SCHEDULEID_NAME + " = ?";
         String[] args = new String[] { "" + schedule.getRowId() };
-        String[] columns = new String[] {FORMID_NAME, FORMTEXT_NAME,
-				START_NAME, STOP_NAME, ID_NAME, NUMBER_NAME, TEACHER_NAME,
-				THEME_NAME, HOMEWORK_NAME, MARKS_NAME, COMMENT_NAME};
-
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        
+		Cursor c = Database.getReadable().query(TABLE_NAME, COLUMNS_GET_SET,
+				SELECTION_GET_SET, args, null, null, null);
 
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
@@ -307,6 +351,8 @@ public class Lesson extends FormTimeInterval {
 			set.add(l);
 			c.moveToNext();
 		}
+		
+		c.close();
 		return set;
 	}
 }

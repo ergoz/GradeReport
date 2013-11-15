@@ -20,10 +20,10 @@ import org.apache.http.auth.InvalidCredentialsException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import android.database.Cursor;
 import android.util.Log;
 
 import com.shinymetal.gradereport.objects.GradeSemester;
-import com.shinymetal.gradereport.objects.Lesson;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
 import com.shinymetal.gradereport.objects.TS;
@@ -85,7 +85,7 @@ public class GshisLoader {
 		this.mPassword = password;
 	}
 
-	public void parseLessonsPage(String page) throws ParseException {
+	public Week parseLessonsPage(String page) throws ParseException {
 
 		Document doc = Jsoup.parse(page);
 
@@ -93,13 +93,14 @@ public class GshisLoader {
 		currentPupilName = p.getFormText();
 		
 		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);		
-		GshisHTMLParser.getWeeks(doc, s);
+		Week w = GshisHTMLParser.getSelectedWeek(doc, s);
 		GshisHTMLParser.getLessons(doc, s);
 		
 		mLessonsVIEWSTATE = GshisHTMLParser.getVIEWSTATE(doc);
+		return w;
 	}
 	
-	public void parseDiaryPage(String page) throws ParseException {
+	public void parseLessonsDetailsPage(String page) throws ParseException {
 
 		Document doc = Jsoup.parse(page);
 
@@ -455,8 +456,13 @@ public class GshisLoader {
 			throws MalformedURLException, IOException, ParseException {
 
 		String page;
+		Week week = null;
+		
+		Log.i (this.toString(), TS.get() + "parseLessonsByDate () : started");
 
 		if (mLessonsVIEWSTATE == null || mLessonsVIEWSTATE.length() <= 0) {
+			
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () mLessonsVIEWSTATE is null, fetching...");
 
 			if ((page = getPageByURL(LESSONS_PAGE)) == null) {
 				
@@ -464,7 +470,9 @@ public class GshisLoader {
 				return false;
 			}
 
-			parseLessonsPage(page);
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsPage () ...");
+			week = parseLessonsPage(page);
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsPage () done");
 		}
 		
 		if (pupilName == null)
@@ -473,42 +481,75 @@ public class GshisLoader {
 		Pupil p = Pupil.getByFormName(pupilName);
 		Schedule s = p.getScheduleByDate(day);
 		
-		boolean weekLoaded = s.getWeek(day).getLoaded();
+		Log.i (this.toString(), TS.get() + "parseLessonsByDate () check if week is already loaded ...");
+		
+		boolean weekLoaded = false;
+		if (week != null && week.getLoaded() && week.getStart().equals(Week.getWeekStart(day)))
+		{
+			weekLoaded = true;
+		}
+		else
+			week = s.getWeek(day);
+		
+		Log.i (this.toString(), TS.get() + "parseLessonsByDate () check done");
 
 		if (!weekLoaded) {
+			
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call getLessons ()");
 
-			page = getLessons(p, s, s.getWeek(day));
+			page = getLessons(p, s, week);
+			
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call getLessons () done ");
+			
 			if (page == null) {
 				Log.e("getLessonsByDate()", "getLessons () [1] failed!");
 				return false;
 			}
+
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsPage () ...");
 			parseLessonsPage(page);
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsPage () done");
 		}
 
 		if (mDiaryVIEWSTATE == null || mDiaryVIEWSTATE.length() <= 0) {
+			
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () mDiaryVIEWSTATE is null, fetching...");
+			
 			if ((page = getPageByURL(DIARY_PAGE)) == null) {
 				Log.e("getLessonsByDate()", "getPageByURL () [2] failed!");
 				return false;
 			}
 
-			parseDiaryPage(page);
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsDetailsPage () ...");
+			parseLessonsDetailsPage(page);
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsDetailsPage () done");
 		}
 
 		if (!weekLoaded) {
-			page = getLessonDetails(p, s, s.getWeek(day));
+			
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call getLessonsDetails ()");
+			
+			page = getLessonDetails(p, s, week);
+			
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call getLessonsDetails () done");
+			
 			if (page == null) {
 				Log.e("getLessonsByDate()", "getLessonDetails () [1] failed!");
 				return false;
 			}
-			parseDiaryPage(page);
+			
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsDetailsPage () ...");
+			parseLessonsDetailsPage(page);
+			Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsDetailsPage () done");
 		}
+		
+		Log.i (this.toString(), TS.get() + "parseLessonsByDate () : finished");
 
-		return s.getWeek(day).getLoaded();
+		return week.getLoaded();
 	}
 
-	public ArrayList<Lesson> getCachedLessonsByDate(Date day) {		
+	public Cursor getCursorLessonsByDate(Date day) {
 		
-		ArrayList<Lesson> res = null;
 		String uName;
 		
 		if (currentPupilName == null) {
@@ -521,23 +562,17 @@ public class GshisLoader {
 			return null;
 
 		try {
-			
-			Schedule s = Pupil.getByFormName(uName).getScheduleByDate(day);
-			
-			if ( !s.getWeek(day).getLoaded() ) {
-				return null;
-			}
-
-			res = s.getAllLessonsByDate(day);
+			return Pupil.getByFormName(uName).getScheduleByDate(day)
+					.getCursorLessonsByDate(day);
 
 		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
 			
 			Log.e(this.toString(), TS.get() + this.toString()
-					+ " getCachedLessonsByDate() : Exception: " + e.toString()
-					+ " StackTrace: " + e.getStackTrace());
+					+ " getCachedLessonsByDate() : Exception: " + e.toString());
+			e.printStackTrace();
 		}
 		
-		return res;
+		return null;
 	}
 	
 	public void getNonCachedLessonsByDate(Date day, String pupilName) {
@@ -583,7 +618,7 @@ public class GshisLoader {
 				}
 			}
 		}
-		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : logged: " + mIsLoggedIn );
+		Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate () : logged in: " + mIsLoggedIn );
 		
 		if (!mIsLoggedIn) return;
 		
@@ -602,8 +637,9 @@ public class GshisLoader {
 			Log.e(this.toString(),
 					TS.get() + this.toString()
 							+ " getNonCachedLessonsByDate() : Exception: "
-							+ e.toString() + " StackTrace: "
-							+ e.getStackTrace());
+							+ e.toString());
+			
+			e.printStackTrace();
 
 			mIsLastNetworkCallFailed = true;
 			if ((mLastNetworkFailureReason = e.getMessage()) == null)
@@ -672,11 +708,15 @@ public class GshisLoader {
 	
 	public ArrayList<String> getPupilNames () {
 		
+		Log.i (this.toString(), TS.get() + "getPupilNames () : started");
+		
 		ArrayList<String> res = new ArrayList<String> (); 
 
 		for (Pupil p : Pupil.getSet()) {
 			res.add(p.getFormText());
 		}
+		
+		Log.i (this.toString(), TS.get() + "getPupilNames () : finished");
 			
 		return res;
 	}

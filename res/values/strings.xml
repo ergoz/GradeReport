@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Школьный Дневник</string>
+    <string name="app_name">Дневник ГШИС</string>
     <string name="diary_name">Табель</string>
     <string name="pref_name">Настройки</string>
     <string name="shiny_metal">ShinyMetal</string>

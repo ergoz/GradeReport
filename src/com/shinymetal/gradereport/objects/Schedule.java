@@ -1,6 +1,5 @@
 package com.shinymetal.gradereport.objects;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -31,6 +30,18 @@ public class Schedule extends FormTimeInterval {
 			+ STOP_NAME + " INTEGER, "
 			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + PUPILID_NAME + "));";
 	
+	private final static String SELECTION_UPDATE = ID_NAME + " = ?";
+	private final static String SELECTION_GET_BY_FORM_ID = FORMID_NAME + " = ? AND " + PUPILID_NAME + " = ?";
+	private final static String[] COLUMNS_GET_BY_FORM_ID = new String[] {FORMTEXT_NAME, START_NAME, STOP_NAME, ID_NAME};
+	private final static String[] COLUMNS_GET_SET = new String[] {FORMTEXT_NAME, FORMID_NAME, START_NAME, STOP_NAME, ID_NAME};
+	private final static String SELECTION_GET_SET = PUPILID_NAME + " = ?";	
+	private final static String SELECTION_GET_BY_SCHOOL_YEAR = FORMTEXT_NAME + " = ? AND " + PUPILID_NAME + " = ?";
+	private final static String[] COLUMNS_GET_BY_SCHOOL_YEAR = new String[] {FORMID_NAME, START_NAME, STOP_NAME, ID_NAME};
+	private final static String SELECTION_GET_BY_DATE = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
+			+ PUPILID_NAME + " = ?";
+	private final static String[] COLUMNS_GET_BY_DATE = new String[] {FORMID_NAME, FORMTEXT_NAME, START_NAME, STOP_NAME, ID_NAME};
+	
+	@SuppressWarnings("unused")
 	private long mPupilId;
 	private long mRowId;
 	
@@ -64,23 +75,24 @@ public class Schedule extends FormTimeInterval {
         values.put(FORMTEXT_NAME, getFormText());        
     	values.put(START_NAME, getStart().getTime());
     	values.put(STOP_NAME, getStop().getTime());	
-    	
-    	String selection = FORMID_NAME + " = ? AND " + ID_NAME + " = ?";
-        String[] args = new String[] { getFormId(), "" + mRowId };
+        String[] args = new String[] { "" + mRowId };
 		
-    	return Database.getWritable().update(TABLE_NAME, values, selection, args);
+    	return Database.getWritable().update(TABLE_NAME, values, SELECTION_UPDATE, args);
 	}
 	
 	public static Schedule getByFormId(Pupil p, String fId) {
-		
-		String selection = FORMID_NAME + " = ? AND " + PUPILID_NAME + " = ?";
-        String[] args = new String[] { fId, "" + p.getRowId() };
-        String[] columns = new String[] {FORMTEXT_NAME, START_NAME, STOP_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        String[] args = new String[] { fId, "" + p.getRowId() };
+
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_FORM_ID, SELECTION_GET_BY_FORM_ID, args, null,
+				null, null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
 		
 		Schedule s = new Schedule (fId, c.getString(c.getColumnIndex(FORMTEXT_NAME)));
 		long start = c.getLong(c.getColumnIndex(START_NAME));
@@ -89,18 +101,18 @@ public class Schedule extends FormTimeInterval {
 		s.setStop(new Date(stop));
 		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
+		c.close();
 		return s;
 	}
 	
 	public static final Set<Schedule> getSet(Pupil p) {
 		
 		Set<Schedule> set = new HashSet<Schedule> (); 
-		
-		String selection = PUPILID_NAME + " = ?";
-        String[] args = new String[] { "" + p.getRowId() };
-        String[] columns = new String[] {FORMTEXT_NAME, FORMID_NAME, START_NAME, STOP_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        String[] args = new String[] { "" + p.getRowId() };
+		
+		Cursor c = Database.getReadable().query(TABLE_NAME, COLUMNS_GET_SET,
+				SELECTION_GET_SET, args, null, null, null);
 
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
@@ -117,19 +129,24 @@ public class Schedule extends FormTimeInterval {
 			set.add(s);
 			c.moveToNext();
 		}
+		
+		c.close();
 		return set;
 	}
 	
 	public static Schedule getBySchoolYear(Pupil p, String schoolYear) {
-		
-		String selection = FORMTEXT_NAME + " = ? AND " + PUPILID_NAME + " = ?";
-        String[] args = new String[] { schoolYear, "" + p.getRowId() };
-        String[] columns = new String[] {FORMID_NAME, START_NAME, STOP_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+        String[] args = new String[] { schoolYear, "" + p.getRowId() };
+        
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_SCHOOL_YEAR, SELECTION_GET_BY_SCHOOL_YEAR, args,
+				null, null, null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
 		
 		Schedule s = new Schedule (c.getString(c.getColumnIndex(FORMID_NAME)), schoolYear);
 		s.mPupilId = p.getRowId();
@@ -139,22 +156,24 @@ public class Schedule extends FormTimeInterval {
 		s.setStop(new Date(stop));
 		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
+		c.close();
 		return s;
 	}
 	
 	public static Schedule getByDate(Pupil p, Date day) {
 		
 		long date = day.getTime();
-
-		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
-				+ PUPILID_NAME + " = ?";
         String[] args = new String[] { "" + date, "" + date, "" + p.getRowId() };
-        String[] columns = new String[] {FORMID_NAME, FORMTEXT_NAME, START_NAME, STOP_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_DATE, SELECTION_GET_BY_DATE, args, null, null,
+				null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
 		
 		Schedule s = new Schedule(c.getString(c.getColumnIndex(FORMID_NAME)),
 				c.getString(c.getColumnIndex(FORMTEXT_NAME)));
@@ -165,24 +184,18 @@ public class Schedule extends FormTimeInterval {
 		s.setStop(new Date(stop));
 		s.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 		
+		c.close();
 		return s;
 	}
 
 	public Schedule addLesson(Lesson l) throws IllegalStateException {
 
-		Week w = null;
-
-		// Find week and mark as loaded
-		if ((w = getWeek(l.getStart())) == null) {
-			throw new IllegalStateException("Week is not loaded");
-		}
-
-		w.setLoaded().update();
 		l.insert(this);
 		return this;
 	}
 	
 	public Schedule addSemester(GradeSemester s) {
+
 		s.insert(this);
 		return this;
 	}
@@ -208,11 +221,14 @@ public class Schedule extends FormTimeInterval {
 		return Lesson.getByStart(this, start);
 	}
 	
-	public ArrayList<Lesson> getAllLessonsByDate(Date date) {
+	public boolean existsLessonByStart(Date start) {
+		
+		return Lesson.existsByStart(this, start);
+	}
+	
+	public Cursor getCursorLessonsByDate(Date date) {
 		
 		Date start;
-		Date stop;
-		
 		Calendar cal = Calendar.getInstance();				
 		
         cal.setTime(date);
@@ -225,16 +241,13 @@ public class Schedule extends FormTimeInterval {
         cal.set(Calendar.HOUR_OF_DAY, 23);
         cal.set(Calendar.MINUTE, 59);
         cal.set(Calendar.SECOND, 59);
-        stop = cal.getTime();
 		
-		return Lesson.getAllByDate(this, start, stop);
+		return Lesson.getCursorAllByDate(this, start, cal.getTime());
 	}
 	
 	public Lesson getLessonByNumber(Date date, int number) {
 		
 		Date start;
-		Date stop;
-		
 		Calendar cal = Calendar.getInstance();				
 		
         cal.setTime(date);
@@ -247,9 +260,8 @@ public class Schedule extends FormTimeInterval {
         cal.set(Calendar.HOUR_OF_DAY, 23);
         cal.set(Calendar.MINUTE, 59);
         cal.set(Calendar.SECOND, 59);
-        stop = cal.getTime();
 
-		return Lesson.getByNumber(this, start, stop, number);
+		return Lesson.getByNumber(this, start, cal.getTime(), number);
 	}
 
 	public Schedule addWeek(Week w) {

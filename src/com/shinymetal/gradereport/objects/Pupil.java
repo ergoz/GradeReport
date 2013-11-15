@@ -24,8 +24,14 @@ public class Pupil extends FormSelectableField {
 			+ FORMTEXT_NAME	+ " TEXT, "
 			+ USERNAME_NAME + " TEXT);";
 	
-	private long mRowId;
+	private final static String SELECTION_GET_BY_FORM_ID = FORMID_NAME + " = ? AND " + USERNAME_NAME + " = ?";
+	private final static String[] COLUMNS_GET_BY_FORM_ID = new String[] {FORMTEXT_NAME, ID_NAME};
+	private final static String SELECTION_GET_BY_FORM_NAME = FORMTEXT_NAME + " = ? AND " + USERNAME_NAME + " = ?";
+	private final static String[] COLUMNS_GET_BY_FORM_NAME = new String[] {FORMID_NAME, ID_NAME};
+	private final static String SELECTION_GET_SET = USERNAME_NAME + " = ?";
+	private final static String[] COLUMNS_GET_SET = new String[] {FORMTEXT_NAME, FORMID_NAME, ID_NAME};
 	
+	private long mRowId;	
 	private static volatile Pupil mLastPupil;
 
 	public Pupil(String n) {
@@ -58,18 +64,22 @@ public class Pupil extends FormSelectableField {
 		if (mLastPupil != null && mLastPupil.getFormId().equals(fId))
 			return mLastPupil;
 		
-		String selection = FORMID_NAME + " = ? AND " + USERNAME_NAME + " = ?";
         String[] args = new String[] { fId, GshisLoader.getInstance().getLogin() };
-        String[] columns = new String[] {FORMTEXT_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_FORM_ID, SELECTION_GET_BY_FORM_ID, args, null,
+				null, null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
         
-        String formText = c.getString(c.getColumnIndex(FORMTEXT_NAME));
-        Pupil p = new Pupil(formText, fId);
+        Pupil p = new Pupil(c.getString(c.getColumnIndex(FORMTEXT_NAME)), fId);
         p.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+
+        c.close();
         return mLastPupil = p; 
 	}
 	
@@ -79,18 +89,22 @@ public class Pupil extends FormSelectableField {
 		if (mLastPupil != null && mLastPupil.getFormText().equals(name))
 			return mLastPupil;
 		
-		String selection = FORMTEXT_NAME + " = ? AND " + USERNAME_NAME + " = ?";
         String[] args = new String[] { name, GshisLoader.getInstance().getLogin() };
-        String[] columns = new String[] {FORMID_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_FORM_NAME, SELECTION_GET_BY_FORM_NAME, args,
+				null, null, null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
         
-        String formId = c.getString(c.getColumnIndex(FORMID_NAME));
-        Pupil p = new Pupil(name, formId);
+        Pupil p = new Pupil(name, c.getString(c.getColumnIndex(FORMID_NAME)));
         p.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
+        
+        c.close();
         return mLastPupil = p; 
 	}
 	
@@ -101,23 +115,22 @@ public class Pupil extends FormSelectableField {
 		
 		if (login == null) return set;
 		
-		String selection = USERNAME_NAME + " = ?";
         String[] args = new String[] { login };
-        String[] columns = new String[] {FORMTEXT_NAME, FORMID_NAME, ID_NAME};
-
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME, COLUMNS_GET_SET,
+				SELECTION_GET_SET, args, null, null, null);
 
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
 
-			String formText = c.getString(c.getColumnIndex(FORMTEXT_NAME));
-			String formId = c.getString(c.getColumnIndex(FORMID_NAME));
-			Pupil p = new Pupil(formText, formId); 
+			Pupil p = new Pupil(c.getString(c.getColumnIndex(FORMTEXT_NAME)),
+					c.getString(c.getColumnIndex(FORMID_NAME)));
 			p.mRowId = c.getLong(c.getColumnIndex(ID_NAME));
 			set.add(p);
 			
 			c.moveToNext();
 		}
+		
+		c.close();
 		return set;
 	}
 

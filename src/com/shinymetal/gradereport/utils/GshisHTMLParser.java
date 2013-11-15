@@ -61,7 +61,7 @@ public class GshisHTMLParser {
 			+ "]";
 	
 	public final static Pattern whitespaces_only = Pattern.compile("^" + whitespace_charclass +"+$");
-//	public final static Pattern subjects_name = Pattern.compile("^[0-9]{1}\\." + whitespace_charclass + "{1}.*");
+	public final static Pattern subjects_name = Pattern.compile("^[0-9]{1}\\." + whitespace_charclass + "{1}.*");
 	
 	public static Pupil getSelectedPupil(Document doc) throws ParseException {
 
@@ -154,9 +154,10 @@ public class GshisHTMLParser {
 		return selectedS;
 	}
 
-	public static void getWeeks(Document doc, Schedule s) throws ParseException {
+	public static Week getSelectedWeek(Document doc, Schedule s) throws ParseException {
 
 		boolean found = false;
+		Week selectedW = null;
 		
 		Elements weekSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_body_week_drdWeeks");
@@ -196,7 +197,8 @@ public class GshisHTMLParser {
 
 					if (week.hasAttr("selected")
 							&& week.attr("selected").equals("selected")) {
-
+						
+						selectedW = w;
 						long u = w.setLoaded().update();
 						Log.i("GshisHTMLParser", TS.get() + " Week.update() = " + u);
 					}
@@ -206,14 +208,18 @@ public class GshisHTMLParser {
 
 		if (!found)
 			throw new ParseException("Weeks not found", 0);
+		
+		return selectedW;
 	}
 
 	public static void getLessons(Document doc, Schedule s) throws ParseException {
-		
+
+		final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.ENGLISH);
 		Elements lessonCells = doc.getElementsByAttribute("number");
+		
 		for (Element lessonCell : lessonCells) {
 
-			String number = lessonCell.attr("number");
+			int number = Integer.parseInt(lessonCell.attr("number"));
 			String time = "";
 
 			Elements timeDetails = lessonCell
@@ -228,63 +234,154 @@ public class GshisHTMLParser {
 			for (Element lessonCellDetail : lessonCellDetails) {
 
 				String date = lessonCellDetail.attr("jsdate");
-				String subjectName = "";
-				String teacherName = "";
-				String formId = "";
+				Element subject = lessonCellDetail
+						.getElementsByAttributeValue("class", "lesson-subject").first();
 
-				Elements subjects = lessonCellDetail
-						.getElementsByAttributeValue("class", "lesson-subject");
-				for (Element subject : subjects) {
-					subjectName = subject.text();
-					formId = subject.attr("id");
-				}
-
-				Elements teachers = lessonCellDetail
-						.getElementsByAttributeValue("class", "lesson-teacher");
-				for (Element teacher : teachers) {
-					teacherName = teacher.text();
-				}
-
-				if (subjectName.length() <= 0) {
+				if (subject == null || subject.text() == null || subject.text().length() <= 0) {
 					// No lesson scheduled
 					continue;
 				}
 
-				SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.ENGLISH);
+				Date start = format.parse(date + " " + time.substring(0, time.indexOf("-") - 1));				
+				if (!s.existsLessonByStart(start)) {
 
-				Lesson l;
-				
-				String timeB = time.substring(0, time.indexOf("-") - 1);
-				Date start = format.parse(date + " " + timeB);
-				
-				if ((l = s.getLessonByStart(start)) == null) {
-
-					l = new Lesson();
+					Lesson l = new Lesson();
 					
-					String timeE = time.substring(time.indexOf("-") + 2, time.length());
-					Date stop = format.parse(date + " " + timeE);
-
 					l.setStart(start);
-					l.setStop(stop);
-					l.setFormId(formId);
-					l.setFormText(subjectName);
-					l.setTeacher(teacherName);
-					l.setNumber(Integer.parseInt(number));
+					l.setStop(format.parse(date + " "
+							+ time.substring(time.indexOf("-") + 2,	time.length())));
+					l.setFormId(subject.attr("id"));
+					l.setFormText(subject.text());
+					l.setTeacher(lessonCellDetail
+							.getElementsByAttributeValue("class",
+									"lesson-teacher").first().text());
+					l.setNumber(number);
 
 					s.addLesson(l);
 				}
-//				else
-//					Log.e("getLessons()", TS.get() + "getLessons() : Found lesson: " + l);				
 			}
 		}
+	}
 
-		// Lessons may not be found, this is okay
+	public static void getLessonsDetails(Document doc, Schedule s)
+			throws ParseException {
+
+		final SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy",
+				Locale.ENGLISH);
+		
+		Elements tableCells = doc.getElementsByAttributeValue("class",
+				"table diary");
+		for (Element tableCell : tableCells) {
+
+			int tdCount = 0;
+			Date date = null;
+			Lesson l, lPrev = null; // lPrev to handle duplicate lesson bug
+			int sameLesson = 0;      // Also to handle duplicate lesson bug
+
+			Elements trs = tableCell.getElementsByTag("tr");
+			for (Element tr : trs) {
+
+				if (tr.hasAttr("class")
+						&& tr.attr("class").equals("table-header"))
+					continue;
+
+				l = null;
+				sameLesson = 0; // assume no bug here
+				Elements tds = tr.getElementsByTag("td");
+
+				for (Element td : tds) {
+
+					if (td.hasAttr("class") && td.attr("class").equals("date")) {
+
+						date = fmt.parse(td.getElementsByTag("div").first().text());
+						tdCount = 1;
+
+					} else if (td.hasAttr("class")
+							&& td.attr("class").equals("diary-mark")) {
+
+						String marks = fetchLongCellStringNoWhitespaces(td);
+						if (l != null && marks != null) {
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setMarks(fixDuplicateString(marks, lPrev.getMarks(), sameLesson));
+							} else
+								l.setMarks(marks);
+						}
+						tdCount++;
+
+					} else if (td.hasAttr("class")
+							&& td.attr("class").equals("diary-comment")) {
+
+						String comment = fetchLongCellStringNoWhitespaces(td);
+						if (l != null && comment != null) {
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setComment(fixDuplicateString(comment, lPrev.getComment(), sameLesson));
+							} else
+								l.setComment(comment);							
+						}
+						
+						tdCount++;
+
+					} else if (tdCount == 2) {
+
+						String theme = fetchLongCellStringNoWhitespaces(td);
+						if (l != null && theme != null) {
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setTheme(fixDuplicateString(theme, lPrev.getTheme(), sameLesson));
+							} else
+								l.setTheme(theme);
+						}
+						tdCount++;
+
+					} else if (tdCount == 3) {
+
+						String homework = fetchLongCellStringNoWhitespaces(td);
+						if (l != null && homework != null) {
+							
+							if (sameLesson > 0 && lPrev != null) {
+								
+								l.setHomework(fixDuplicateString(homework, lPrev.getHomework(), sameLesson));
+							} else
+								l.setHomework(homework);
+						}
+						tdCount++;
+
+					} else if (subjects_name.matcher(td.text()).find()) {
+
+						tdCount = 2;
+						int number = Integer.parseInt(td.text().substring(0, 1)); 
+						l = s.getLessonByNumber(date, number);
+
+						if (lPrev != null && l != null
+								&& l.getStart().equals(lPrev.getStart())
+								&& l.getNumber() == lPrev.getNumber()
+								&& l.getFormId().equals(lPrev.getFormId())) {
+
+							// We hit the same lesson bug
+							sameLesson++;
+						}
+
+					} else {
+						tdCount++;
+					}
+				}
+				
+				if (l != null) {
+					lPrev = l;
+					l.update();
+				}
+			}
+		}
 	}
 
 	public static String fetchLongCellString(Element e) {
 
-		Elements links = e.getElementsByTag("a");
-		for (Element link : links) {
+		for (Element link : e.getElementsByTag("a")) {
 
 			if (link.hasAttr("txttitle")) {
 				return link.attr("txttitle");
@@ -298,8 +395,7 @@ public class GshisHTMLParser {
 		if (str == null || str.length() <= 0)
 			return false;
 
-		String s = str.replaceAll("&nbsp;", " ");
-		Matcher matcher = whitespaces_only.matcher(s);
+		Matcher matcher = whitespaces_only.matcher(str.replaceAll("&nbsp;", " "));
 
 		if (matcher.find())
 			return false;
@@ -468,125 +564,6 @@ public class GshisHTMLParser {
 		}
 		
 		return prevS + "; " + Integer.toString(idx) + ") " + newS; 
-	}
-
-	public static void getLessonsDetails(Document doc, Schedule s)
-			throws ParseException {
-
-		Elements tableCells = doc.getElementsByAttributeValue("class",
-				"table diary");
-		for (Element tableCell : tableCells) {
-
-			int tdCount = 0;
-			Date date = null;
-			Lesson l, lPrev = null; // lPrev to handle duplicate lesson bug
-			int sameLesson = 0;      // Also to handle duplicate lesson bug
-
-			Elements trs = tableCell.getElementsByTag("tr");
-			for (Element tr : trs) {
-
-				if (tr.hasAttr("class")
-						&& tr.attr("class").equals("table-header"))
-					continue;
-
-				l = null;
-				sameLesson = 0; // assume no bug here
-				Elements tds = tr.getElementsByTag("td");
-
-				for (Element td : tds) {
-
-					if (td.hasAttr("class") && td.attr("class").equals("date")) {
-
-						Elements divs = td.getElementsByTag("div");
-						for (Element div : divs) {
-
-							date = new SimpleDateFormat("dd.MM.yyyy",
-									Locale.ENGLISH).parse(div.text());
-						}
-
-						tdCount = 1;
-
-					} else if (td.hasAttr("class")
-							&& td.attr("class").equals("diary-mark")) {
-
-						String marks = fetchLongCellStringNoWhitespaces(td);
-						if (l != null && marks != null) {
-							
-							if (sameLesson > 0 && lPrev != null) {
-								
-								l.setMarks(fixDuplicateString(marks, lPrev.getMarks(), sameLesson));
-							} else
-								l.setMarks(marks);
-						}
-						tdCount++;
-
-					} else if (td.hasAttr("class")
-							&& td.attr("class").equals("diary-comment")) {
-
-						String comment = fetchLongCellStringNoWhitespaces(td);
-						if (l != null && comment != null) {
-							
-							if (sameLesson > 0 && lPrev != null) {
-								
-								l.setComment(fixDuplicateString(comment, lPrev.getComment(), sameLesson));
-							} else
-								l.setComment(comment);							
-						}
-						
-						tdCount++;
-
-					} else if (tdCount == 2) {
-
-						String theme = fetchLongCellStringNoWhitespaces(td);
-						if (l != null && theme != null) {
-							
-							if (sameLesson > 0 && lPrev != null) {
-								
-								l.setTheme(fixDuplicateString(theme, lPrev.getTheme(), sameLesson));
-							} else
-								l.setTheme(theme);
-						}
-						tdCount++;
-
-					} else if (tdCount == 3) {
-
-						String homework = fetchLongCellStringNoWhitespaces(td);
-						if (l != null && homework != null) {
-							
-							if (sameLesson > 0 && lPrev != null) {
-								
-								l.setHomework(fixDuplicateString(homework, lPrev.getHomework(), sameLesson));
-							} else
-								l.setHomework(homework);
-						}
-						tdCount++;
-					// TODO: use subjects_name pattern
-					} else if (td.text().matches("^[0-9]{1}\\." + whitespace_charclass + "{1}.*")) {
-
-						tdCount = 2;
-						int number = Integer.parseInt(td.text().substring(0, 1)); 
-						l = s.getLessonByNumber(date, number);
-
-						if (lPrev != null && l != null
-								&& l.getStart().equals(lPrev.getStart())
-								&& l.getNumber() == lPrev.getNumber()
-								&& l.getFormId().equals(lPrev.getFormId())) {
-
-							// We hit the same lesson bug
-							sameLesson++;
-						}
-
-					} else {
-						tdCount++;
-					}
-				}
-				
-				if (l != null) {
-					lPrev = l;
-					l.update();
-				}
-			}
-		}
 	}
 
 	public static String getVIEWSTATE(Document doc) {
