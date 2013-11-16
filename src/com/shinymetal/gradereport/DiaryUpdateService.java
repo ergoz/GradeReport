@@ -1,7 +1,6 @@
 package com.shinymetal.gradereport;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.GshisLoader;
@@ -75,7 +74,7 @@ public class DiaryUpdateService extends IntentService {
 		GshisLoader.getInstance().setLogin(prefs.getString("login", ""));
 		GshisLoader.getInstance().setPassword(prefs.getString("password", ""));
 
-		new Thread(new Runnable() {
+		Thread update = new Thread(new Runnable() {
 
 			public void run() {
 
@@ -83,8 +82,7 @@ public class DiaryUpdateService extends IntentService {
 						+ " About to update current week for current pupil.");
 				
 				updateActivityWithStatus(MSG_TASK_STARTED);				
-				GshisLoader.getInstance().getNonCachedLessonsByDate(new Date(),
-						null);
+				GshisLoader.getInstance().getAllPupilsLessons(GshisLoader.getInstance().getCurrWeekStart());
 				
 				Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate (): finished");
 				
@@ -98,6 +96,9 @@ public class DiaryUpdateService extends IntentService {
 						
 				stopSelf();
 			}
-		}).start();		
+		});
+		
+		update.setPriority(Thread.MIN_PRIORITY + 1);
+		update.start();		
 	}
 }

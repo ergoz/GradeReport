@@ -266,8 +266,6 @@ public class Schedule extends FormTimeInterval {
 
 	public Schedule addWeek(Week w) {
 		
-//		Log.d(this.toString(), TS.get() + this.toString()
-//				+ " addWeek() = " + w );
 		w.insert(this);
 		return this;
 	}
@@ -275,16 +273,12 @@ public class Schedule extends FormTimeInterval {
 	public Week getWeek(Date day) {
 		
 		Week w = Week.getByDate(this, day);
-		Log.d(this.toString(), TS.get() + this.toString()
-				+ " getWeek() = " + w );
 		return w;
 	}
 	
 	public Week getWeek(String formId) {
 
 		Week w = Week.getByFormId(this, formId);
-		Log.d(this.toString(), TS.get() + this.toString()
-				+ " getWeek() = " + w );
 		return w;
 	}
 
@@ -301,28 +295,5 @@ public class Schedule extends FormTimeInterval {
 	public final Set<GradeRec> getGradeRecSet() {
 		
 		return GradeRec.getSet(this);
-	}
-	
-	public String toString() {
-
-		String res = "Weeks:\n";
-
-		for (Week entry : getWeekSet()) {
-			res += entry.toString() + "\n";
-		}
-
-		res += "\nLessons:\n";
-
-		for (Lesson entry : getLessonSet()) {
-			res += entry.toString() + "\n";
-		}
-
-//		res += "\nGrade Records:\n";
-//
-//		for (GradeRec entry : getGradeRecSet()) {
-//			res += entry.toString() + "\n";
-//		}
-
-		return res;
 	}
 }
