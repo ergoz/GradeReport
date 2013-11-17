@@ -38,7 +38,8 @@ public class DiaryUpdateService extends IntentService {
 	public IBinder onBind(Intent arg0) {
 		
 	    Bundle extras = arg0.getExtras();
-	    Log.d("service","onBind");
+	    if (BuildConfig.DEBUG)
+	    	Log.d("service","onBind");
 
 	    if (extras != null)
 			mClients.add((Messenger) extras.get("MESSENGER"));
@@ -78,13 +79,16 @@ public class DiaryUpdateService extends IntentService {
 
 			public void run() {
 
-				Log.i(this.toString(), TS.get() + this.toString()
-						+ " About to update current week for current pupil.");
+				if (BuildConfig.DEBUG)
+					Log.d(this.toString(),
+							TS.get() + this.toString()
+									+ " About to update current week for current pupil.");
 				
 				updateActivityWithStatus(MSG_TASK_STARTED);				
 				GshisLoader.getInstance().getAllPupilsLessons(GshisLoader.getInstance().getCurrWeekStart());
 				
-				Log.i (this.toString(), TS.get() + "getNonCachedLessonsByDate (): finished");
+				if (BuildConfig.DEBUG)
+					Log.d (this.toString(), TS.get() + "getNonCachedLessonsByDate (): finished");
 				
 				if (!GshisLoader.getInstance().isLastNetworkCallFailed()) {
 					

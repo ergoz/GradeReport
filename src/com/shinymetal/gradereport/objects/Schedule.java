@@ -7,7 +7,6 @@ import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.util.Log;
 
 import com.shinymetal.gradereport.db.Database;
 

@@ -8,11 +8,21 @@
             android:title="Логин" >
         </EditTextPreference>
         <EditTextPreference
+            android:inputType="textPassword"
             android:key="password"
             android:summary="Пожалуйста, введите ваш пароль"
-            android:inputType="textPassword"
             android:title="Пароль" >
         </EditTextPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Синхронизация" >
+        <ListPreference
+            android:defaultValue="15"
+            android:entries="@array/syncArray"
+            android:entryValues="@array/syncValues"
+            android:key="syncInterval"
+            android:summary="Интервал синхронизации данных дневника"
+            android:title="Интервал" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

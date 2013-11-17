@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 
 import android.util.Log;
 
+import com.shinymetal.gradereport.BuildConfig;
 import com.shinymetal.gradereport.objects.GradeRec;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Lesson;
@@ -83,7 +84,10 @@ public class GshisHTMLParser {
 
 						p = new Pupil(pupil.text(), value);
 						long rowId = p.insert();
-						Log.i("GshisHTMLParser", TS.get() + " Pupil.insert() = " + rowId);
+						
+						if (BuildConfig.DEBUG)
+							Log.d("GshisHTMLParser", TS.get()
+									+ " Pupil.insert() = " + rowId);
 					}
 
 					if (pupil.hasAttr("selected")
@@ -200,7 +204,10 @@ public class GshisHTMLParser {
 						
 						selectedW = w;
 						long u = w.setLoaded().update();
-						Log.i("GshisHTMLParser", TS.get() + " Week.update() = " + u);
+						
+						if (BuildConfig.DEBUG)
+							Log.d("GshisHTMLParser", TS.get()
+									+ " Week.update() = " + u);
 					}
 				}
 			}

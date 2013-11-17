@@ -29,6 +29,8 @@
     <string name="unlicensed_dialog_title">Нет лицензии</string>
     <string name="unlicensed_dialog_retry_body">Невозможно проверить лицензию. Проверьте, что сетевое соединение доступно.</string>
     <string name="unlicensed_dialog_body">Это приложение не лицензировано. Пожалуйста, приобретите его в Android Market.</string>
+    <string name="error_cannot_fetch">Невозможно получить данные с сервера</string>
+    <string name="error_cannot_login">Неверный логин или пароль</string>
     <string name="label_retry">Повторить</string>
     <string name="label_buy">Купить</string>
     <string name="label_quit">Выход</string>

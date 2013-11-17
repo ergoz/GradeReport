@@ -54,8 +54,9 @@ public class LessonsListFragment extends Fragment implements UpdateableFragment 
 		Date day = GshisLoader.getInstance().getCurrWeekStart();
 		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
 
-		Log.i(this.toString(), TS.get() + "refresh (), ARG_SECTION_NUMBER="
-				+ wantDoW);
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get() + "refresh (), ARG_SECTION_NUMBER="
+					+ wantDoW);
 
 		switch (wantDoW) {
 		case 1:

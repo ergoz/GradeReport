@@ -24,12 +24,15 @@ import org.jsoup.nodes.Document;
 import android.database.Cursor;
 import android.util.Log;
 
+import com.shinymetal.gradereport.BuildConfig;
+import com.shinymetal.gradereport.R;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 
+@SuppressWarnings("unused")
 public class GshisLoader {
 	
 	protected final static String SITE_NAME = "http://schoolinfo.educom.ru";
@@ -38,8 +41,10 @@ public class GshisLoader {
 	protected final static String LESSONS_PAGE = "/Pupil/Lessons.aspx";
 	protected final static String DIARY_PAGE = "/Pupil/Diary.aspx";
 	protected final static String GRADES_PAGE = "/Pupil/Grades.aspx";
-	
+
+	// TODO: use getString(R.string.error_cannot_fetch) instead
 	protected final static String ERROR_CANNOT_LOAD_DATA = "Невозможно получить данные с сервера";
+	// TODO: use getString(R.string.error_cannot_login) instead
 	protected final static String ERROR_INV_CREDENTIALS = "Неверный логин или пароль";
 
 	protected String mCookieARRAffinity;
@@ -482,7 +487,8 @@ public class GshisLoader {
 	
 	public boolean getAllPupilsLessons (Date day) {
 		
-		Log.i (this.toString(), TS.get() + "getAllPupilsLessons () : started");
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get() + "getAllPupilsLessons () : started");
 		
 		String page;
 		
@@ -547,7 +553,8 @@ public class GshisLoader {
 						if (w.getLoaded() && w.getStart().before(curWeek) && !w.getStart().equals(Week.getWeekStart(day))) {
 
 							// too old & loaded, skipping
-							Log.i(this.toString(), TS.get()
+							if (BuildConfig.DEBUG)
+								Log.d(this.toString(), TS.get()
 									+ "getAllPupilsLessons () [2]: skipping week "
 									+ w + " for " + p.getFormText());
 							continue;
@@ -556,29 +563,39 @@ public class GshisLoader {
 						if (w.getStart().after(pastNextWeek)) {
 
 							// too far in future, skipping
-							Log.i(this.toString(), TS.get()
+							if (BuildConfig.DEBUG)
+								Log.d(this.toString(), TS.get()
 									+ "getAllPupilsLessons () [3]: skipping week "
 									+ w + " for " + p.getFormText());
 							continue;
 						}
 						
-						page = getLessons(p, s, w);						
-						Log.i (this.toString(), TS.get() + "getAllPupilsLessons () call getLessons () done ");
+						page = getLessons(p, s, w);
+						
+						if (BuildConfig.DEBUG)
+							Log.d(this.toString(),
+									TS.get() + "getAllPupilsLessons () call getLessons () done ");
 						
 						if (page == null) {
 							throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": getLessons () returned NULL");
 						}
 
-						parseLessonsPage(page);
+						parseLessonsPage(page);						
+						page = getLessonDetails(p, s, w);
 						
-						page = getLessonDetails(p, s, w);						
-						Log.i (this.toString(), TS.get() + "parseLessonsByDate () call getLessonsDetails () done");
+						if (BuildConfig.DEBUG)
+							Log.d(this.toString(),
+									TS.get()
+											+ "parseLessonsByDate () call getLessonsDetails () done");
 						
 						if (page == null) {
 							throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": getLessonsDetails () returned NULL");
 						}
 						
-						Log.i (this.toString(), TS.get() + "parseLessonsByDate () call parseLessonsDetailsPage () ...");
+						if (BuildConfig.DEBUG)
+							Log.d(this.toString(),
+									TS.get() + "parseLessonsByDate () call parseLessonsDetailsPage () ...");
+						
 						parseLessonsDetailsPage(page);
 					}
 				}
@@ -594,7 +611,9 @@ public class GshisLoader {
 			e.printStackTrace();
 		}
 
-		Log.i (this.toString(), TS.get() + "getAllPupilsLessons () : finished");
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get()
+					+ "getAllPupilsLessons () : finished");
 		return true;
 	}
 	
@@ -619,7 +638,8 @@ public class GshisLoader {
 	
 	public ArrayList<String> getPupilNames () {
 		
-		Log.i (this.toString(), TS.get() + "getPupilNames () : started");
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get() + "getPupilNames () : started");
 		
 		ArrayList<String> res = new ArrayList<String> (); 
 
@@ -627,7 +647,8 @@ public class GshisLoader {
 			res.add(p.getFormText());
 		}
 		
-		Log.i (this.toString(), TS.get() + "getPupilNames () : finished");
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get() + "getPupilNames () : finished");
 			
 		return res;
 	}

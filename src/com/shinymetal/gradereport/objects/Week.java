@@ -235,8 +235,6 @@ public class Week extends FormTimeInterval {
 				w.setLoaded();
 			
 			set.add(w);
-//			Log.d("Week.getSet ()", TS.get() + " Week.getSet () w = " + w
-//					+ " start=" + start + " stop=" + stop);
 			c.moveToNext();
 		}
 		return set;

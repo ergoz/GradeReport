@@ -76,12 +76,16 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	private boolean mServiceBusy = false;
 	public LicenseValidatorHelper mLicValidator = null;
 	
+	private SharedPreferences mPrefs;
+	long mSyncInterval;
+	
 	private static class IncomingHandler extends Handler {
         @Override
 		public void handleMessage(Message message) {
 
-			Log.i(this.toString(), TS.get() + "received Message what="
-					+ message.what);
+			if (BuildConfig.DEBUG)
+				Log.d(this.toString(), TS.get() + "received Message what="
+						+ message.what);
 
 			switch (message.what) {
 			case DiaryUpdateService.MSG_SET_INT_VALUE:
@@ -172,12 +176,18 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
 		Date firstRun = new Date();
+		mSyncInterval = Long.parseLong(mPrefs.getString("syncInterval", "15")) * 60000;
+				
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
 				firstRun.getTime() + 10,
-				AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
+				mSyncInterval, pendingIntent);
 		
-		Log.i (this.toString(), TS.get() + this.toString() + " Set alarmManager.setRepeating to: "
-				+ firstRun.toString());
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(),
+					TS.get() + this.toString()
+							+ " Set alarmManager.setRepeating to: "
+							+ firstRun.toString() + " interval: "
+							+ mSyncInterval);
 	}
     
 	@Override
@@ -189,12 +199,12 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		setContentView(R.layout.activity_diary);
 		instance = this;
 
-		Database.setContext(this);
+		Database.setContext(this.getApplicationContext());
 		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		
-		mGshisLoader.setLogin(prefs.getString("login", ""));
-		mGshisLoader.setPassword(prefs.getString("password", ""));
+		mGshisLoader.setLogin(mPrefs.getString("login", ""));
+		mGshisLoader.setPassword(mPrefs.getString("password", ""));
 
 		mSectionsPagerAdapter = new LessonsPagerAdapter(
 				getSupportFragmentManager());
@@ -207,20 +217,17 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 			
 			mLicState = savedInstanceState.getInt("mLicState");
 			mServiceBusy = savedInstanceState.getBoolean("mServiceBusy");
+			mSyncInterval = savedInstanceState.getLong("mSyncInterval");
 		}
 		
         setProgressBarIndeterminateVisibility(mServiceBusy);
-		
-		if (mLicState == Policy.RETRY)
-			mLicValidator = new LicenseValidatorHelper (this, this);
-		
-		setRecurringAlarm(this, false);
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	
 		savedInstanceState.putInt("mLicState", mLicState);
+		savedInstanceState.putLong("mSyncInterval", mSyncInterval);
 		savedInstanceState.putBoolean("mServiceBusy", mServiceBusy);
 	}
 	
@@ -232,7 +239,12 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 			unbindService(mConnection);
 			mUpdateService = null;
 		}
-		
+
+    	if (mLicValidator != null) {
+    		mLicValidator.onDestroy();
+    		mLicValidator = null;
+    	}
+
 		super.onPause();
 	}
 	
@@ -244,25 +256,26 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 			doBindService();
 		}
 		
+		long syncInterval = Long.parseLong(mPrefs.getString("syncInterval", "15")) * 60000;
+		boolean forceUpdate = syncInterval != mSyncInterval;
+
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get() + this.toString()
+					+ " OnResume(): mSyncInterval = " + mSyncInterval
+					+ " new interval = " + syncInterval + " update = "
+					+ forceUpdate);
+		
+		setRecurringAlarm(this, forceUpdate);
+
+		if (mLicState == Policy.RETRY)
+			mLicValidator = new LicenseValidatorHelper (this, this);
+
 		super.onResume();
 	}
 	
-	
-    @Override
-    protected void onDestroy() {
-
-    	if (mLicValidator != null) {
-    		mLicValidator.onDestroy();
-    		mLicValidator = null;
-    	}
-    	
-        super.onDestroy();
-    }
-    
     public void allow(int policyReason) {
     	
-    	mLicState = Policy.LICENSED;
-    	Log.i (this.toString(), TS.get() + "allow (): license valid");   	
+    	mLicState = Policy.LICENSED;  	
     }
     
     public void dontAllow(int policyReason) {
@@ -326,7 +339,9 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
         // while setting up or calling the license checker library.
         // Please examine the error code and fix the error.
         
-    	Log.i (this.toString(), TS.get() + "applicationError (): " + errorCode);    	
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get() + "applicationError (): "
+					+ errorCode);    	
     }
 	
     @Override
@@ -484,12 +499,16 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	                == Configuration.ORIENTATION_LANDSCAPE) {
 
 	        	fragment = new LessonsNestedFragment();
-	        	Log.i (this.toString(), TS.get() + this.toString() + " getItem () LANDSCAPE");
+				if (BuildConfig.DEBUG)
+					Log.d(this.toString(), TS.get() + this.toString()
+							+ " getItem () LANDSCAPE");
 	        	
 	        } else {
 
 	        	fragment = new LessonsExpListFragment();
-	        	Log.i (this.toString(), TS.get() + this.toString() + " getItem () PORTRAIT");
+	        	if (BuildConfig.DEBUG)
+					Log.d(this.toString(), TS.get() + this.toString()
+							+ " getItem () PORTRAIT");
 	        }
 	        
 			Bundle args = new Bundle();
@@ -502,11 +521,9 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		@Override
 	    public int getItemPosition(Object object)
 	    {
-			Log.i (this.toString(), TS.get() + this.toString() + " getItemPosition () started");
-			
-//			if (object instanceof UpdateableFragment) {
-//	            return POSITION_NONE;
-//			}
+			if (BuildConfig.DEBUG)
+				Log.d(this.toString(), TS.get() + this.toString()
+						+ " getItemPosition () started");
 			
 	        return POSITION_UNCHANGED;
 	    }

@@ -15,7 +15,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Intent dailyUpdater = new Intent(context, DiaryUpdateService.class);
         context.startService(dailyUpdater);
         
-		Log.i(this.toString(), TS.get() + this.toString()
-				+ " Called context.startService from AlarmReceiver.onReceive");		
+        if (BuildConfig.DEBUG)        
+        	Log.d(this.toString(), TS.get() + this.toString()
+        			+ " Called context.startService from AlarmReceiver.onReceive");		
 	}
 }

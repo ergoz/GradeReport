@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
@@ -34,6 +35,7 @@ public class LessonsExpListFragment extends Fragment implements
 		return mAdapter;
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -68,9 +70,10 @@ public class LessonsExpListFragment extends Fragment implements
 
 		Date day = GshisLoader.getInstance().getCurrWeekStart();
 		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
-
-		Log.i(this.toString(), TS.get() + "refresh (), ARG_SECTION_NUMBER="
-				+ wantDoW);
+		
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get() + "refresh (), ARG_SECTION_NUMBER="
+					+ wantDoW);
 
 		switch (wantDoW) {
 		case 1:
