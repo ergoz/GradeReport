@@ -3,6 +3,7 @@ package com.shinymetal.gradereport.db;
 import com.shinymetal.gradereport.objects.GradeRec;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.objects.MarkRec;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
 import com.shinymetal.gradereport.objects.Week;
@@ -10,12 +11,15 @@ import com.shinymetal.gradereport.objects.Week;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 public class Database {
 	
-    private static final String DATABASE_NAME = "gradereport";    
-    private static final int DATABASE_VERSION = 6;
+    private static final String DATABASE_NAME = "gradereport";
+    
+    private static final int DB_VERSION_INITIAL = 6;
+    private static final int DB_VERSION_W_GRADES = 7;
+    
+    private static final int DATABASE_VERSION = DB_VERSION_INITIAL;
     
     private static volatile Context mContext = null;
 
@@ -83,24 +87,24 @@ public class Database {
 			mDatabase.execSQL(GradeSemester.TABLE_CREATE);
 			mDatabase.execSQL(Lesson.TABLE_CREATE);
 			mDatabase.execSQL(GradeRec.TABLE_CREATE);			 
-			mDatabase.execSQL(GradeRec.MarkRec.TABLE_CREATE);
+			mDatabase.execSQL(MarkRec.TABLE_CREATE);
 		}
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-            Log.w(this.toString(), "Upgrading database from version " + oldVersion + " to "
-                    + newVersion + ", which will destroy all old data");
-            
-            db.execSQL("DROP TABLE IF EXISTS " + GradeRec.MarkRec.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + GradeRec.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + Lesson.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + GradeSemester.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + Week.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + Schedule.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + Pupil.TABLE_NAME);
+            if (oldVersion <= DB_VERSION_INITIAL && newVersion >= DB_VERSION_W_GRADES) {
 
-            onCreate(db);
+            	db.execSQL("DROP TABLE IF EXISTS " + MarkRec.TABLE_NAME);
+                db.execSQL("DROP TABLE IF EXISTS " + GradeRec.TABLE_NAME);
+                db.execSQL("DROP TABLE IF EXISTS " + GradeSemester.TABLE_NAME);
+
+                db.execSQL(GradeSemester.TABLE_CREATE);
+    			db.execSQL(GradeRec.TABLE_CREATE);			 
+    			db.execSQL(MarkRec.TABLE_CREATE);
+            }
+            
+			mDatabase = db;
 		}
 	}
 }

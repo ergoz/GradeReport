@@ -30,6 +30,22 @@ public class Week extends FormTimeInterval {
 			+ STOP_NAME + " INTEGER, "
 			+ LOADED_NAME + " INTEGER, "
 			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + SCHEDULEID_NAME + "));";
+	
+
+	private final static String SELECTION_GET_BY_DATE = START_NAME
+			+ " <= ? AND " + STOP_NAME + " >= ? AND " + SCHEDULEID_NAME
+			+ " = ?";
+	private final static String[] COLUMNS_GET_BY_DATE = new String[] {
+			FORMID_NAME, FORMTEXT_NAME, START_NAME, STOP_NAME, LOADED_NAME,
+			ID_NAME };
+	private final static String SELECTION_GET_BY_FORM_ID = FORMID_NAME
+			+ " = ? AND " + SCHEDULEID_NAME + " = ?";
+	private final static String[] COLUMNS_GET_BY_FORM_ID = new String[] {
+			FORMTEXT_NAME, START_NAME, STOP_NAME, LOADED_NAME, ID_NAME };
+	private final static String SELECTION_GET_SET = SCHEDULEID_NAME + " = ?";
+	private final static String[] COLUMNS_GET_SET = new String[] {
+			FORMTEXT_NAME, FORMID_NAME, START_NAME, STOP_NAME, LOADED_NAME,
+			ID_NAME };
 
 	private boolean mLoaded;
 	
@@ -141,16 +157,17 @@ public class Week extends FormTimeInterval {
 			
 			return mLastWeek;
 		}
-
-		String selection = START_NAME + " <= ? AND " + STOP_NAME + " >= ? AND "
-				+ SCHEDULEID_NAME + " = ?";
+        
         String[] args = new String[] { "" + date, "" + date, "" + schedule.getRowId() };
-        String[] columns = new String[] {FORMID_NAME, FORMTEXT_NAME, START_NAME, STOP_NAME, LOADED_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_DATE, SELECTION_GET_BY_DATE, args, null, null, null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
 		
 		Week w = new Week();
 		
@@ -167,6 +184,7 @@ public class Week extends FormTimeInterval {
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
 
+		c.close();
 		return mLastWeek = w;
 	}
 
@@ -178,15 +196,18 @@ public class Week extends FormTimeInterval {
 			
 			return mLastWeek;
 		}
-
-		String selection = FORMID_NAME + " = ? AND " + SCHEDULEID_NAME + " = ?";
+        
         String[] args = new String[] { formId, "" + schedule.getRowId() };
-        String[] columns = new String[] {FORMTEXT_NAME, START_NAME, STOP_NAME, LOADED_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME,
+				COLUMNS_GET_BY_FORM_ID, SELECTION_GET_BY_FORM_ID, args, null,
+				null, null);
         c.moveToFirst();
-        if (c.getCount() <= 0)
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
         	return null;
+        }
         
         Week w = new Week();
 		
@@ -203,18 +224,17 @@ public class Week extends FormTimeInterval {
 		if (c.getInt(c.getColumnIndex(LOADED_NAME)) > 0)
 			w.setLoaded();
 		
+		c.close();
 		return mLastWeek = w;
 	}
 
 	public static Set<Week> getSet(Schedule schedule) {
 		
-		Set<Week> set = new HashSet<Week> (); 
-		
-		String selection = SCHEDULEID_NAME + " = ?";
+		Set<Week> set = new HashSet<Week> ();		
         String[] args = new String[] { "" + schedule.getRowId() };
-        String[] columns = new String[] {FORMTEXT_NAME, FORMID_NAME, START_NAME, STOP_NAME, LOADED_NAME, ID_NAME};
 
-        Cursor c = Database.getReadable().query(TABLE_NAME, columns, selection, args, null, null, null);
+		Cursor c = Database.getReadable().query(TABLE_NAME, COLUMNS_GET_SET,
+				SELECTION_GET_SET, args, null, null, null);
 
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
@@ -237,6 +257,8 @@ public class Week extends FormTimeInterval {
 			set.add(w);
 			c.moveToNext();
 		}
+		
+		c.close();
 		return set;
 	}
 }

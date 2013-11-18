@@ -1,3 +1,7 @@
 
 + start updates on system boot
++ select proper week day in DiaryActivity.onCreate()
++ remember list selection
++ ignore non-fatal network errors
++ footer with last update status
 + grade reports

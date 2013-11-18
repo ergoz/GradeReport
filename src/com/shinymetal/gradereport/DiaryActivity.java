@@ -530,7 +530,7 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 
 		@Override
 		public int getCount() {
-			// Show 6 total pages.
+			// Show 6 mTotal pages.
 			return 6;
 		}
 

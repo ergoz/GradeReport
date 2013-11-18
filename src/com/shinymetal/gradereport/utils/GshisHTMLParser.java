@@ -17,6 +17,7 @@ import com.shinymetal.gradereport.BuildConfig;
 import com.shinymetal.gradereport.objects.GradeRec;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Lesson;
+import com.shinymetal.gradereport.objects.MarkRec;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
 import com.shinymetal.gradereport.objects.TS;
@@ -457,7 +458,7 @@ public class GshisHTMLParser {
 					if (semester.hasAttr("selected")
 							&& semester.attr("selected").equals("selected")) {
 
-						sem.setLoaded();			
+						sem.setLoaded().update();			
 						selG = sem;
 					}
 				}
@@ -541,7 +542,7 @@ public class GshisHTMLParser {
 						for (Element span : spans) {
 							
 							if (containsPrintableChars(span.text()) && containsPrintableChars(span.attr("title")))							
-								rec.addMarcRec(rec.new MarkRec (span.text(), span.attr("title")));
+								rec.addMarcRec(new MarkRec (span.text(), span.attr("title")));
 						}
 					}
 				}

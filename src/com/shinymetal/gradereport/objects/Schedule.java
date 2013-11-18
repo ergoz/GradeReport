@@ -211,7 +211,7 @@ public class Schedule extends FormTimeInterval {
 
 	public Schedule addGradeRec(GradeRec gr) {
 
-		GradeRec.insert(this);
+		gr.insert(this);
 		return this;
 	}
 
@@ -243,6 +243,11 @@ public class Schedule extends FormTimeInterval {
 		
 		return Lesson.getCursorAllByDate(this, start, cal.getTime());
 	}
+	
+	public Cursor getCursorGradesByDate(Date date) {
+	
+		return GradeRec.getCursorByStart(this, date);
+	}	
 	
 	public Lesson getLessonByNumber(Date date, int number) {
 		
@@ -281,11 +286,15 @@ public class Schedule extends FormTimeInterval {
 		return w;
 	}
 
+	public final Set<GradeSemester> getSemesterSet() {
+		
+		return GradeSemester.getSet(this);
+	}
+
 	public final Set<Week> getWeekSet() {
 		
 		return Week.getSet(this);
 	}
-	
 	public final Set<Lesson> getLessonSet() {
 		
 		return Lesson.getSet(this);

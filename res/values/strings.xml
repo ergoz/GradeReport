@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Дневник ГШИС</string>
-    <string name="diary_name">Табель</string>
+    <string name="diary_name">Дневник</string>
     <string name="pref_name">Настройки</string>
     <string name="shiny_metal">ShinyMetal</string>
     <string name="action_settings">Настройки</string>
