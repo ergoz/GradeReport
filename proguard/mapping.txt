@@ -2125,10 +2125,13 @@ com.shinymetal.gradereport.objects.TS -> com.shinymetal.gradereport.b.f:
     java.lang.String getTimestamp() -> b
     java.lang.String get() -> a
 com.shinymetal.gradereport.objects.Week -> com.shinymetal.gradereport.b.g:
-    boolean mLoaded -> a
-    com.shinymetal.gradereport.objects.Week mLastWeek -> b
-    long mScheduleId -> c
-    long mRowId -> d
+    java.lang.String[] COLUMNS_GET_BY_DATE -> a
+    java.lang.String[] COLUMNS_GET_BY_FORM_ID -> b
+    java.lang.String[] COLUMNS_GET_SET -> c
+    boolean mLoaded -> d
+    com.shinymetal.gradereport.objects.Week mLastWeek -> e
+    long mScheduleId -> f
+    long mRowId -> g
     void setStart(java.util.Date) -> a
     void setStop(java.util.Date) -> b
     com.shinymetal.gradereport.objects.Week setLoaded() -> e

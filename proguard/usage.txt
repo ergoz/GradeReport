@@ -1453,10 +1453,11 @@ com.shinymetal.gradereport.UpdateableAdapter
 com.shinymetal.gradereport.UpdateableFragment
 com.shinymetal.gradereport.db.Database:
     private static final java.lang.String DATABASE_NAME
+    private static final int DB_VERSION_INITIAL
+    private static final int DB_VERSION_W_GRADES
     private static final int DATABASE_VERSION
     15:15:public Database()
 com.shinymetal.gradereport.objects.GradeRec
-com.shinymetal.gradereport.objects.GradeRec$MarkRec
 com.shinymetal.gradereport.objects.GradeSemester
 com.shinymetal.gradereport.objects.Lesson:
     private static final java.lang.String ID_NAME
@@ -1481,6 +1482,7 @@ com.shinymetal.gradereport.objects.Lesson:
     public static final java.lang.String SELECTION_GET_SET
     190:221:public static com.shinymetal.gradereport.objects.Lesson getByStart(com.shinymetal.gradereport.objects.Schedule,java.util.Date)
     325:356:public static java.util.Set getSet(com.shinymetal.gradereport.objects.Schedule)
+com.shinymetal.gradereport.objects.MarkRec
 com.shinymetal.gradereport.objects.Pupil:
     private static final java.lang.String ID_NAME
     private static final java.lang.String FORMID_NAME
@@ -1515,9 +1517,11 @@ com.shinymetal.gradereport.objects.Schedule:
     209:209:public com.shinymetal.gradereport.objects.GradeSemester getSemester(java.lang.String)
     214:215:public com.shinymetal.gradereport.objects.Schedule addGradeRec(com.shinymetal.gradereport.objects.GradeRec)
     220:220:public com.shinymetal.gradereport.objects.Lesson getLessonByStart(java.util.Date)
-    274:275:public com.shinymetal.gradereport.objects.Week getWeek(java.util.Date)
-    291:291:public final java.util.Set getLessonSet()
-    296:296:public final java.util.Set getGradeRecSet()
+    249:249:public android.database.Cursor getCursorGradesByDate(java.util.Date)
+    279:280:public com.shinymetal.gradereport.objects.Week getWeek(java.util.Date)
+    291:291:public final java.util.Set getSemesterSet()
+    300:300:public final java.util.Set getLessonSet()
+    305:305:public final java.util.Set getGradeRecSet()
 com.shinymetal.gradereport.objects.Week:
     private static final java.lang.String ID_NAME
     private static final java.lang.String FORMID_NAME
@@ -1528,15 +1532,18 @@ com.shinymetal.gradereport.objects.Week:
     private static final java.lang.String LOADED_NAME
     public static final java.lang.String TABLE_NAME
     public static final java.lang.String TABLE_CREATE
-    135:170:public static synchronized com.shinymetal.gradereport.objects.Week getByDate(com.shinymetal.gradereport.objects.Schedule,java.util.Date)
+    private static final java.lang.String SELECTION_GET_BY_DATE
+    private static final java.lang.String SELECTION_GET_BY_FORM_ID
+    private static final java.lang.String SELECTION_GET_SET
+    151:188:public static synchronized com.shinymetal.gradereport.objects.Week getByDate(com.shinymetal.gradereport.objects.Schedule,java.util.Date)
 com.shinymetal.gradereport.utils.GshisHTMLParser:
     public static final java.lang.String whitespace_chars
     public static final java.lang.String whitespace_charclass
     public static final java.lang.String not_whitespace_charclass
-    25:25:public GshisHTMLParser()
-    402:410:public static boolean containsPrintableChars(java.lang.String)
-    427:470:public static com.shinymetal.gradereport.objects.GradeSemester getActiveGradeSemester(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule)
-    476:556:public static void getGrades(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester)
+    26:26:public GshisHTMLParser()
+    403:411:public static boolean containsPrintableChars(java.lang.String)
+    428:471:public static com.shinymetal.gradereport.objects.GradeSemester getActiveGradeSemester(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule)
+    477:557:public static void getGrades(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester)
 com.shinymetal.gradereport.utils.GshisLoader:
     protected static final java.lang.String SITE_NAME
     protected static final java.lang.String LOGIN_STEP_1

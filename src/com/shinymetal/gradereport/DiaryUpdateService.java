@@ -2,6 +2,7 @@ package com.shinymetal.gradereport;
 
 import java.util.ArrayList;
 
+import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.GshisLoader;
 
@@ -74,6 +75,9 @@ public class DiaryUpdateService extends IntentService {
 
 		GshisLoader.getInstance().setLogin(prefs.getString("login", ""));
 		GshisLoader.getInstance().setPassword(prefs.getString("password", ""));
+		
+		// this will only overwrite context if it's null
+		Database.setContext(getApplicationContext());
 
 		Thread update = new Thread(new Runnable() {
 
