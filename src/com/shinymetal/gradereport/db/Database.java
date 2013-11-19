@@ -1,16 +1,19 @@
 package com.shinymetal.gradereport.db;
 
+import com.shinymetal.gradereport.BuildConfig;
 import com.shinymetal.gradereport.objects.GradeRec;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Lesson;
 import com.shinymetal.gradereport.objects.MarkRec;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
+import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class Database {
 	
@@ -25,6 +28,10 @@ public class Database {
 
     
     public static void setContext(Context context) {
+    	
+    	if (BuildConfig.DEBUG)
+			Log.d("Database",
+					TS.get() + "Database setContext () " + context);
 
     	if (mContext == null)
     		mContext = context;

@@ -56,8 +56,8 @@ public class GshisLoader {
 	protected String mDiaryVIEWSTATE;
 	protected String mGradesVIEWSTATE;
 	
-	protected String mLogin;
-	protected String mPassword;
+	protected volatile String mLogin;
+	protected volatile String mPassword;
 	
 	private static volatile GshisLoader instance;
 	
@@ -402,7 +402,69 @@ public class GshisLoader {
 
 		return String.valueOf(tmp);
 	}
-	
+
+	protected String getGrades(Pupil p, Schedule s, GradeSemester sem)
+			throws MalformedURLException, IOException {
+		
+		if (mCookieASPXAUTH.length() <= 0
+				|| mCookieASPNET_SessionId.length() <= 0) {
+			return null;
+		}
+
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + GRADES_PAGE);
+
+		String urlParameters = "";
+
+		/*
+		 * Do NOT add ctl00$sm, __EVENTTARGET, __EVENTARGUMENT, __LASTFOCUS,
+		 * __ASYNCPOST, this will break everything for unknown reason!
+		 * 
+		 */
+		urlParameters += encodePOSTVar("__VIEWSTATE", mGradesVIEWSTATE);
+		urlParameters += encodePOSTVar("ctl00$learnYear$drdLearnYears",
+				s.getFormId());
+		urlParameters += encodePOSTVar("ctl00$topMenu$pupil$drdPupils",
+				p.getFormId());
+		urlParameters += encodePOSTVar("ctl00$topMenu$tbUserId", p.getFormId());
+		urlParameters += encodePOSTVar(
+				"ctl00$leftMenu$accordion_AccordionExtender_ClientState", "");
+		urlParameters += encodePOSTVar("ctl00$body$drdTerms",
+				sem.getFormId());
+
+		uc.setRequestMethod("POST");
+		uc.setRequestProperty("Cookie", "ARRAffinity=" + mCookieARRAffinity
+				+ "; ASP.NET_SessionId=" + mCookieASPNET_SessionId
+				+ "; .ASPXAUTH=" + mCookieASPXAUTH);
+
+		uc.setRequestProperty("Origin", SITE_NAME);
+		uc.setRequestProperty("Referer", SITE_NAME + DIARY_PAGE);
+		uc.setRequestProperty("Content-Type",
+				"application/x-www-form-urlencoded; charset=utf-8");
+
+		uc.setRequestProperty("Content-Length",
+				"" + Integer.toString(urlParameters.getBytes().length));
+
+		uc.setUseCaches(false);
+		uc.setDoInput(true);
+		uc.setDoOutput(true);
+
+		// Send request
+		DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		String line = null;
+		StringBuffer tmp = new StringBuffer();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				uc.getInputStream(), "UTF-8"));
+		while ((line = in.readLine()) != null) {
+			tmp.append(line + "\n");
+		}
+
+		return String.valueOf(tmp);
+	}
+
 	protected GshisLoader() {
 
 		mIsLoggedIn = false;
@@ -465,11 +527,19 @@ public class GshisLoader {
 		if (mCurrentPupilName == null) {
 				
 			ArrayList<String> names = getPupilNames();
-			if (names.size() > 0) mCurrentPupilName = names.get(0);
+			if (names.size() > 0)
+				mCurrentPupilName = names.get(0);
+			else
+				Log.e(this.toString(), TS.get() + this.toString()
+						+ " getCachedLessonsByDate() : PupilNames set is empty!");
 		}
 			
 		if ((uName = mCurrentPupilName) == null)
 			return null;
+		
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get()
+				+ "getCursorLessonsByDate () : pupil = " + uName);
 
 		try {
 			return Pupil.getByFormName(uName).getScheduleByDate(day)
@@ -607,6 +677,26 @@ public class GshisLoader {
 									TS.get() + "parseLessonsByDate () call parseLessonsDetailsPage () ...");
 						
 						parseLessonsDetailsPage(page);
+					}
+					
+					for (GradeSemester sem : s.getSemesterSet()) {
+					
+						if (sem.getLoaded() && !(sem.getStart().getTime() <= day.getTime() && sem.getStop().getTime() >= day.getTime() )) {
+
+							// not current and already loaded, skip
+							if (BuildConfig.DEBUG)
+								Log.d(this.toString(), TS.get()
+									+ "getAllPupilsLessons () [3]: skipping semester "
+									+ sem + " for " + p.getFormText());
+							continue;							
+						}
+						
+						page = getGrades(p, s, sem);
+						if (page == null) {
+							throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": getGrades () returned NULL");
+						}
+						
+						parseGradesPage(page);
 					}
 				}
 			}

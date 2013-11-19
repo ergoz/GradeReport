@@ -9,33 +9,20 @@ import com.google.android.vending.licensing.LicenseCheckerCallback;
 import com.google.android.vending.licensing.Policy;
 
 import com.shinymetal.gradereport.R;
-import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 import com.shinymetal.gradereport.utils.GshisLoader;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -44,12 +31,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 
-public class DiaryActivity extends FragmentActivity implements LicenseCheckerCallback {
+public class DiaryActivity extends AbstractActivity implements LicenseCheckerCallback {
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -60,151 +46,21 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
 	private LessonsPagerAdapter mSectionsPagerAdapter;
-
-	/**
-	 * The {@link ViewPager} that will host the section contents.
-	 */
 	private ViewPager mViewPager;
 	private DatePickerFragment mDateSetFragment;
 			
 	private Spinner mPupilSpinner;
 	
 	private static volatile DiaryActivity instance;	
-	private static final GshisLoader mGshisLoader = GshisLoader.getInstance();	
-	
 	private static int mLicState = Policy.RETRY;
-	private boolean mServiceBusy = false;
 	public LicenseValidatorHelper mLicValidator = null;
 	
-	private SharedPreferences mPrefs;
-	long mSyncInterval;
-	
-	private static class IncomingHandler extends Handler {
-        @Override
-		public void handleMessage(Message message) {
-
-			if (BuildConfig.DEBUG)
-				Log.d(this.toString(), TS.get() + "received Message what="
-						+ message.what);
-
-			switch (message.what) {
-			case DiaryUpdateService.MSG_SET_INT_VALUE:
-
-				switch (message.arg1) {
-				
-				case DiaryUpdateService.MSG_TASK_STARTED:
-					instance.setProgressBarIndeterminateVisibility(instance.mServiceBusy = true);
-					break;
-				
-				case DiaryUpdateService.MSG_TASK_COMPLETED:
-					instance.mServiceBusy = false;
-					instance.recreate();
-					break;
-
-				case DiaryUpdateService.MSG_TASK_FAILED:
-					instance.setProgressBarIndeterminateVisibility(instance.mServiceBusy = false);
-					instance.showAlertDialog(mGshisLoader
-							.getLastNetworkFailureReason());
-					break;
-				}
-
-				break;
-			}
-		}
-	}
-	
-	private IncomingHandler mHandler = new IncomingHandler ();	
-	private DiaryUpdateService mUpdateService;
-	
-	public ServiceConnection mConnection = new ServiceConnection() {
-
-	    public void onServiceConnected(ComponentName className, IBinder binder) {
-	    	
-	        mUpdateService = ((DiaryUpdateService.DiaryUpdateBinder) binder).getService();
-	    }
-
-	    public void onServiceDisconnected(ComponentName className) {
-
-	        mUpdateService = null;
-	    }
-	};
-		
-	public void doBindService() {
-	    Intent intent = null;
-	    intent = new Intent(this, DiaryUpdateService.class);
-	    // Create a new Messenger for the communication back
-	    // From the Service to the Activity
-	    Messenger messenger = new Messenger(mHandler);
-	    intent.putExtra("MESSENGER", messenger);
-
-	    bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-	}
-	
-	public Handler getHandler() {
-		return mHandler;
-	}
-    
-    public void showAlertDialog (String text) {
-    	
-    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.title_error)); 
-        builder.setMessage(text);
-        builder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int arg1) {
-            }
-        });
-        
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-    
-	private void setRecurringAlarm(Context context, boolean forceUpdate) {
-		
-		boolean alarmUp = (PendingIntent.getBroadcast(context, 0, 
-		        new Intent(context, AlarmReceiver.class), 
-		        PendingIntent.FLAG_NO_CREATE) != null);
-		
-		if (alarmUp && !forceUpdate)
-			return;
-		
-		Intent downloader = new Intent(context, AlarmReceiver.class);
-		downloader.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
-				downloader, PendingIntent.FLAG_UPDATE_CURRENT);
-		
-		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-		Date firstRun = new Date();
-		mSyncInterval = Long.parseLong(mPrefs.getString("syncInterval", "15")) * 60000;
-				
-		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-				firstRun.getTime() + 10,
-				mSyncInterval, pendingIntent);
-		
-		if (BuildConfig.DEBUG)
-			Log.d(this.toString(),
-					TS.get() + this.toString()
-							+ " Set alarmManager.setRepeating to: "
-							+ firstRun.toString() + " interval: "
-							+ mSyncInterval);
-	}
-    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		
 		setContentView(R.layout.activity_diary);
 		instance = this;
-
-		Database.setContext(this.getApplicationContext());
-		
-		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-		
-		mGshisLoader.setLogin(mPrefs.getString("login", ""));
-		mGshisLoader.setPassword(mPrefs.getString("password", ""));
 
 		mSectionsPagerAdapter = new LessonsPagerAdapter(
 				getSupportFragmentManager());
@@ -212,33 +68,16 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
-
-		if (savedInstanceState != null) {
-			
-			mLicState = savedInstanceState.getInt("mLicState");
-			mServiceBusy = savedInstanceState.getBoolean("mServiceBusy");
-			mSyncInterval = savedInstanceState.getLong("mSyncInterval");
-		}
-		
-        setProgressBarIndeterminateVisibility(mServiceBusy);
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	
-		savedInstanceState.putInt("mLicState", mLicState);
-		savedInstanceState.putLong("mSyncInterval", mSyncInterval);
-		savedInstanceState.putBoolean("mServiceBusy", mServiceBusy);
+		 super.onSaveInstanceState(savedInstanceState);
 	}
 	
 	@Override
 	public void onPause() {
-		
-		if (mUpdateService != null) {
-			
-			unbindService(mConnection);
-			mUpdateService = null;
-		}
 
     	if (mLicValidator != null) {
     		mLicValidator.onDestroy();
@@ -251,22 +90,6 @@ public class DiaryActivity extends FragmentActivity implements LicenseCheckerCal
 	@Override
 	public void onResume() {
 		
-		if (mUpdateService == null) {
-			
-			doBindService();
-		}
-		
-		long syncInterval = Long.parseLong(mPrefs.getString("syncInterval", "15")) * 60000;
-		boolean forceUpdate = syncInterval != mSyncInterval;
-
-		if (BuildConfig.DEBUG)
-			Log.d(this.toString(), TS.get() + this.toString()
-					+ " OnResume(): mSyncInterval = " + mSyncInterval
-					+ " new interval = " + syncInterval + " update = "
-					+ forceUpdate);
-		
-		setRecurringAlarm(this, forceUpdate);
-
 		if (mLicState == Policy.RETRY)
 			mLicValidator = new LicenseValidatorHelper (this, this);
 

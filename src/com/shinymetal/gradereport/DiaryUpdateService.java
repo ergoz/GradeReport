@@ -29,6 +29,10 @@ public class DiaryUpdateService extends IntentService {
 	
 	static final int MSG_SET_INT_VALUE = 1;
 	
+	protected volatile boolean mServiceBusy = false;
+	
+	public boolean isBusy () { return mServiceBusy; }
+	
 	public class DiaryUpdateBinder extends Binder {
 		DiaryUpdateService getService() {
 	        return DiaryUpdateService.this;
@@ -40,7 +44,7 @@ public class DiaryUpdateService extends IntentService {
 		
 	    Bundle extras = arg0.getExtras();
 	    if (BuildConfig.DEBUG)
-	    	Log.d("service","onBind");
+	    	Log.d("service", "onBind");
 
 	    if (extras != null)
 			mClients.add((Messenger) extras.get("MESSENGER"));
@@ -73,11 +77,13 @@ public class DiaryUpdateService extends IntentService {
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		GshisLoader.getInstance().setLogin(prefs.getString("login", ""));
-		GshisLoader.getInstance().setPassword(prefs.getString("password", ""));
+		GshisLoader.getInstance().setLogin(prefs.getString(getString(R.string.pref_login_key), ""));
+		GshisLoader.getInstance().setPassword(prefs.getString(getString(R.string.pref_password_key), ""));
 		
 		// this will only overwrite context if it's null
 		Database.setContext(getApplicationContext());
+		
+		mServiceBusy = true;
 
 		Thread update = new Thread(new Runnable() {
 
@@ -94,6 +100,7 @@ public class DiaryUpdateService extends IntentService {
 				if (BuildConfig.DEBUG)
 					Log.d (this.toString(), TS.get() + "getNonCachedLessonsByDate (): finished");
 				
+				mServiceBusy = false;
 				if (!GshisLoader.getInstance().isLastNetworkCallFailed()) {
 					
 					updateActivityWithStatus(MSG_TASK_COMPLETED);
