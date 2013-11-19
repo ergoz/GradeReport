@@ -10,7 +10,7 @@ import android.util.Log;
 public class AlarmReceiver extends BroadcastReceiver {
 
 	@Override
-	public void onReceive(Context context, Intent arg1) {
+	public void onReceive(Context context, Intent intent) {
 
 		Intent dailyUpdater = new Intent(context, DiaryUpdateService.class);
         context.startService(dailyUpdater);

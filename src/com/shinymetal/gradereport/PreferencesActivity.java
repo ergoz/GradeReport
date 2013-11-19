@@ -30,7 +30,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnPrefere
 			
 			addPreferencesFromResource(R.xml.preferences);
 
-			Preference pref = findPreference(getString(R.string.pref_password_key));
+			Preference pref = findPreference(getString(R.string.pref_sync_key));
 			pref.setOnPreferenceChangeListener(instance);
 		}
 	}
@@ -53,7 +53,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnPrefere
 		if (BuildConfig.DEBUG)
 			Log.d(this.toString(), TS.get()	+ "onPause () : start");
 		
-		if (mRescheduleService) {			
+		if (mRescheduleService) {
+			
+			if (BuildConfig.DEBUG)
+				Log.d(this.toString(), TS.get()	+ "onPause () : reschedule service");
 			
 			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
@@ -84,9 +87,15 @@ public class PreferencesActivity extends PreferenceActivity implements OnPrefere
 
 	@Override
 	public boolean onPreferenceChange(Preference pref, Object newValue) {
+		
+		if (BuildConfig.DEBUG)
+			Log.d(this.toString(), TS.get()	+ "onPreferenceChange () : start");
 
 		// Check that the string is an integer
 		if (newValue != null && newValue.toString().length() > 0) {
+			
+			if (BuildConfig.DEBUG)
+				Log.d(this.toString(), TS.get()	+ "onPreferenceChange () : reschedule needed");
 		
 			mRescheduleService = true;
 			return true;

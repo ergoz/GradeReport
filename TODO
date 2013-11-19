@@ -1,5 +1,5 @@
 
-+ start updates on system boot
++ start updates on system boot - DONE?
 + select proper week day in DiaryActivity.onCreate()
 + remember list selection
 + ignore non-fatal network errors

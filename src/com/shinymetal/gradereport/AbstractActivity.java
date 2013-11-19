@@ -36,7 +36,7 @@ public class AbstractActivity extends FragmentActivity {
 
 			if (BuildConfig.DEBUG)
 				Log.d(this.toString(), TS.get() + "received Message what="
-						+ message.what);
+						+ message.what + " arg1 = " + message.arg1);
 
 			switch (message.what) {
 			case DiaryUpdateService.MSG_SET_INT_VALUE:
@@ -49,6 +49,10 @@ public class AbstractActivity extends FragmentActivity {
 				
 				case DiaryUpdateService.MSG_TASK_COMPLETED:
 					instance.recreate();
+					break;
+					
+				case DiaryUpdateService.MSG_TASK_IDLE:
+					instance.setProgressBarIndeterminateVisibility(false);
 					break;
 
 				case DiaryUpdateService.MSG_TASK_FAILED:
@@ -72,7 +76,6 @@ public class AbstractActivity extends FragmentActivity {
 	    public void onServiceConnected(ComponentName className, IBinder binder) {
 	    	
 	        mUpdateService = ((DiaryUpdateService.DiaryUpdateBinder) binder).getService();
-	        setProgressBarIndeterminateVisibility(mUpdateService.isBusy());
 	    }
 
 	    public void onServiceDisconnected(ComponentName className) {

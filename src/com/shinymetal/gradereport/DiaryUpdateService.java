@@ -23,16 +23,15 @@ public class DiaryUpdateService extends IntentService {
 	private final IBinder mBinder = new DiaryUpdateBinder();
 	private ArrayList<Messenger> mClients = new ArrayList<Messenger>(); 
 	
-	static final int MSG_TASK_STARTED = 100;
-	static final int MSG_TASK_COMPLETED = 101;
-	static final int MSG_TASK_FAILED = 102;
+	public static final int MSG_TASK_STARTED = 100;
+	public static final int MSG_TASK_COMPLETED = 101;
+	public static final int MSG_TASK_FAILED = 102;
+	public static final int MSG_TASK_IDLE = 103;
 	
-	static final int MSG_SET_INT_VALUE = 1;
+	public static final int MSG_SET_INT_VALUE = 1;
 	
-	protected volatile boolean mServiceBusy = false;
-	
-	public boolean isBusy () { return mServiceBusy; }
-	
+	protected static boolean mServiceBusy = false;
+		
 	public class DiaryUpdateBinder extends Binder {
 		DiaryUpdateService getService() {
 	        return DiaryUpdateService.this;
@@ -44,10 +43,24 @@ public class DiaryUpdateService extends IntentService {
 		
 	    Bundle extras = arg0.getExtras();
 	    if (BuildConfig.DEBUG)
-	    	Log.d("service", "onBind");
+	    	Log.d(this.toString(), TS.get() + " onBind () : started");
 
-	    if (extras != null)
-			mClients.add((Messenger) extras.get("MESSENGER"));
+	    if (extras != null) {
+	    	
+	    	Messenger m = (Messenger) extras.get("MESSENGER"); 
+	    	
+	    	try {
+
+				m.send(Message.obtain(null, MSG_SET_INT_VALUE,
+						mServiceBusy ? MSG_TASK_STARTED : MSG_TASK_IDLE, 0));
+
+				mClients.add(m);
+
+			} catch (RemoteException e) {
+				
+				e.printStackTrace();
+			}    	
+	    }
 
 	    return mBinder;
 	}
