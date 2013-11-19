@@ -427,6 +427,7 @@ public class GshisHTMLParser {
 		
 		boolean found = false;
 		GradeSemester selG = null;
+		SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
 		
 		Elements semesterSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_body_drdTerms");
@@ -442,13 +443,10 @@ public class GshisHTMLParser {
 
 					if ((sem = sch.getSemester(semester.attr("value"))) == null ) {
 						
-						String sBegin = value.substring(12, value.indexOf("-") - 1);
-						String sEnd = value.substring(value.indexOf("-") + 2, value.length() - 2);
-						SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
 						sem = new GradeSemester ();
 
-						sem.setStart(fmt.parse(sBegin));
-						sem.setStart(fmt.parse(sEnd));
+						sem.setStart(fmt.parse(value.substring(12, value.indexOf("-") - 1)));
+						sem.setStop(fmt.parse(value.substring(value.indexOf("-") + 2, value.length() - 2)));
 						sem.setFormText(semester.text());
 						sem.setFormId(semester.attr("value"));
 
@@ -530,28 +528,53 @@ public class GshisHTMLParser {
 						thCount++;
 					}
 				}
-				
-				Elements tds = tr.getElementsByTag("td");
-				for (Element td : tds) {
-					
-					if (td.hasAttr("class")
-							&& td.attr("class").equals(
-									"grade-with-type")) {
 
-						Elements spans = td.getElementsByTag("span");
-						for (Element span : spans) {
-							
-							if (containsPrintableChars(span.text()) && containsPrintableChars(span.attr("title")))							
-								rec.addMarcRec(new MarkRec (span.text(), span.attr("title")));
-						}
-					}
-				}
-				
 				rec.setStart(s.getStart());
 				rec.setStop(s.getStop());
 				
-				if (containsPrintableChars(rec.getFormText()))
-					sch.addGradeRec(rec);
+				if (containsPrintableChars(rec.getFormText())) {
+
+					GradeRec exR = sch.getGradeRecByDateText (rec.getStart(), rec.getFormText());
+					if (exR != null) {
+						
+						exR.setAbsent(rec.getAbsent());
+						exR.setAverage(rec.getAverage());
+						exR.setReleased(rec.getReleased());
+						exR.setSick(rec.getSick());
+						exR.setTotal(rec.getTotal());
+						
+						exR.update();
+						rec = exR;
+					}
+					else
+						sch.addGradeRec(rec);
+
+					Elements tds = tr.getElementsByTag("td");
+					for (Element td : tds) {
+
+						if (td.hasAttr("class")
+								&& td.attr("class").equals("grade-with-type")) {
+
+							Elements spans = td.getElementsByTag("span");
+							for (Element span : spans) {
+
+								if (containsPrintableChars(span.text())
+										&& containsPrintableChars(span.attr("title"))) {
+									
+									MarkRec mr = rec.getMarkRecByComment(span.attr("title")); 
+									if (mr != null) {
+										
+										// TODO: compare marks, new event if differ
+										mr.setMarks(span.text());
+										mr.update();
+									}
+									else								
+										rec.addMarcRec(new MarkRec(span.text(), span.attr("title")));
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}

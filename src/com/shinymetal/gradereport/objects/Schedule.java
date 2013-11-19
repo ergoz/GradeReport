@@ -304,4 +304,9 @@ public class Schedule extends FormTimeInterval {
 		
 		return GradeRec.getSet(this);
 	}
+	
+	public GradeRec getGradeRecByDateText(Date day, String text) {
+		
+		return GradeRec.getByDateText(this, day, text);
+	}
 }

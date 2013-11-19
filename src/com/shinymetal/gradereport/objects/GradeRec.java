@@ -42,6 +42,8 @@ public class GradeRec extends FormTimeInterval {
 		SCHEDULEID_NAME, START_NAME, STOP_NAME, ABSENT_NAME, RELEASED_NAME, SICK_NAME, AVERAGE_NAME, TOTAL_NAME };
 	public static final String SELECTION_UPDATE = ID_NAME + " = ?";
 	public static final String SELECTION_GET_ALL_BY_DATE = SCHEDULEID_NAME + " = ? AND " + START_NAME + " = ?";
+	public static final String SELECTION_GET_BY_DATE_TEXT = SCHEDULEID_NAME
+			+ " = ? AND " + START_NAME + " = ? AND " + FORMTEXT_NAME + " = ?";
 
 	protected int mAbsent;
 	protected int mReleased;
@@ -203,6 +205,26 @@ public class GradeRec extends FormTimeInterval {
 		return gr;
 	}
 
+	public static GradeRec getByDateText(Schedule schedule, Date day, String text) {
+		
+		long date = day.getTime();
+        String[] args = new String[] { "" + schedule.getRowId(), "" + date, text};
+		
+		Cursor c = Database.getReadable().query(TABLE_NAME, COLUMNS_GET_ALL,
+				SELECTION_GET_BY_DATE_TEXT, args, null, null, null);
+	
+		c.moveToFirst();
+        if (c.getCount() <= 0) {
+        	
+        	c.close();
+        	return null;
+        }
+        
+        GradeRec rec = getFromCursor(c);
+        c.close();
+        return rec;
+	}
+	
 	public static Set<GradeRec> getSet(Schedule schedule) {
 
 		Set<GradeRec> set = new HashSet<GradeRec> (); 

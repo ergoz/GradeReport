@@ -158,8 +158,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection(/*new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080))*/);
+		return (HttpURLConnection) new URL(url).openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080)));
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
@@ -533,6 +533,16 @@ public class GshisLoader {
 
 			if (mDiaryVIEWSTATE == null || mDiaryVIEWSTATE.length() <= 0)
 				throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": DiaryVIEWSTATE is NULL");
+			
+
+			if ((page = getPageByURL(GRADES_PAGE)) == null) {
+				return false;
+			}
+
+			parseGradesPage(page);
+
+			if (mGradesVIEWSTATE == null || mGradesVIEWSTATE.length() <= 0)
+				throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": GradesVIEWSTATE is NULL");
 
 			Date curWeek = Week.getWeekStart(new Date ());
 			

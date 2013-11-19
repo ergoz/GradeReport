@@ -19,7 +19,7 @@ public class Database {
     private static final int DB_VERSION_INITIAL = 6;
     private static final int DB_VERSION_W_GRADES = 7;
     
-    private static final int DATABASE_VERSION = DB_VERSION_INITIAL;
+    private static final int DATABASE_VERSION = DB_VERSION_W_GRADES;
     
     private static volatile Context mContext = null;
 
