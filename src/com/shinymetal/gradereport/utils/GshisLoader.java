@@ -25,6 +25,7 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.shinymetal.gradereport.BuildConfig;
+import com.shinymetal.gradereport.GradesActivity;
 import com.shinymetal.gradereport.R;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Pupil;
@@ -254,7 +255,7 @@ public class GshisLoader {
 
 	protected String getPageByURL(String pageUrl) throws MalformedURLException, IOException {
 
-		if (mCookieASPXAUTH.length() <= 0
+		if (mCookieASPXAUTH == null || mCookieASPXAUTH.length() <= 0
 				|| mCookieASPNET_SessionId.length() <= 0) {
 			return null;
 		}
@@ -553,6 +554,23 @@ public class GshisLoader {
 		return null;
 	}
 	
+	public Cursor getCursorGradesBySemester(String uName, int wantSem) {
+
+		Pupil p = Pupil.getByFormName(uName);
+		if (p == null)
+			return null;
+
+		Schedule s = p.getScheduleByDate(getCurrWeekStart());
+		if (s == null)
+			return null;
+
+		GradeSemester sem = s.getSemesterByNumber(wantSem);
+		if (sem == null)
+			return null;
+
+		return s.getCursorGradesByDate(sem.getStart());
+	}
+	
 	public boolean getAllPupilsLessons (Date day) {
 		
 		if (BuildConfig.DEBUG)
@@ -678,14 +696,20 @@ public class GshisLoader {
 					}
 					
 					for (GradeSemester sem : s.getSemesterSet()) {
+						
+						// not current and already loaded, skip
+						if (BuildConfig.DEBUG)
+							Log.d(this.toString(), TS.get()
+								+ "getAllPupilsLessons (): day = " + day
+								+ " Sem start = " + sem.getStart() + " stop = " + sem.getStop() + " loaded = " + sem.getLoaded());
 					
 						if (sem.getLoaded() && !(sem.getStart().getTime() <= day.getTime() && sem.getStop().getTime() >= day.getTime() )) {
 
 							// not current and already loaded, skip
 							if (BuildConfig.DEBUG)
 								Log.d(this.toString(), TS.get()
-									+ "getAllPupilsLessons () [3]: skipping semester "
-									+ sem + " for " + p.getFormText());
+									+ "getAllPupilsLessons (): skipping semester "
+									+ sem.getStart() + " for " + p.getFormText());
 							continue;							
 						}
 						

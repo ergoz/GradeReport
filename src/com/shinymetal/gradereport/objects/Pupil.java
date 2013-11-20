@@ -22,7 +22,8 @@ public class Pupil extends FormSelectableField {
 			+ ID_NAME + " INTEGER PRIMARY KEY ASC, "
 			+ FORMID_NAME + " TEXT, "
 			+ FORMTEXT_NAME	+ " TEXT, "
-			+ USERNAME_NAME + " TEXT);";
+			+ USERNAME_NAME + " TEXT, "
+			+ " UNIQUE (" + FORMID_NAME + ", " + USERNAME_NAME + "));";
 	
 	private final static String SELECTION_GET_BY_FORM_ID = FORMID_NAME + " = ? AND " + USERNAME_NAME + " = ?";
 	private final static String[] COLUMNS_GET_BY_FORM_ID = new String[] {FORMTEXT_NAME, ID_NAME};

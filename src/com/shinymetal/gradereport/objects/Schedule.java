@@ -22,11 +22,11 @@ public class Schedule extends FormTimeInterval {
 	public final static String TABLE_NAME = "SCHEDULE";
 	public final static String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
 			+ ID_NAME + " INTEGER PRIMARY KEY ASC, "
-			+ FORMID_NAME + " TEXT, "
+			+ FORMID_NAME + " TEXT NOT NULL, "
 			+ PUPILID_NAME + " INTEGER REFERENCES PUPIL (ID), "
-			+ FORMTEXT_NAME + " TEXT, "
-			+ START_NAME + " INTEGER, "
-			+ STOP_NAME + " INTEGER, "
+			+ FORMTEXT_NAME + " TEXT NOT NULL, "
+			+ START_NAME + " INTEGER NOT NULL, "
+			+ STOP_NAME + " INTEGER NOT NULL, "
 			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + PUPILID_NAME + "));";
 	
 	private final static String SELECTION_UPDATE = ID_NAME + " = ?";

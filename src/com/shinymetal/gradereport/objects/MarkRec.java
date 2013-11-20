@@ -17,10 +17,12 @@ public class MarkRec {
 	private final static String MARKS_NAME = "MARKS";
 	private final static String COMMENT_NAME = "COMMENT";
 
-	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME
-			+ " (" + ID_NAME + " INTEGER PRIMARY KEY ASC, " + GRADEID_NAME
-			+ " INTEGER REFERENCES GRADE (ID), " + MARKS_NAME + " TEXT, "
-			+ COMMENT_NAME + " TEXT, " + " UNIQUE ( " + GRADEID_NAME + ", "
+	public static final String TABLE_CREATE = "CREATE TABLE "
+			+ TABLE_NAME + " (" + ID_NAME + " INTEGER PRIMARY KEY ASC, "
+			+ GRADEID_NAME + " INTEGER REFERENCES GRADE (ID), "
+			+ MARKS_NAME + " TEXT NOT NULL, "
+			+ COMMENT_NAME + " TEXT NOT NULL, "
+			+ " UNIQUE ( " + GRADEID_NAME + ", "
 			+ COMMENT_NAME + "));";
 	
 	private final static String SELECTION_GET_ALL = GRADEID_NAME + " = ?";

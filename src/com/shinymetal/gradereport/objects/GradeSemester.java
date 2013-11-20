@@ -23,12 +23,12 @@ public class GradeSemester extends FormTimeInterval {
 	
 	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
 			+ ID_NAME + " INTEGER PRIMARY KEY ASC, "
-			+ FORMID_NAME + " TEXT, "
+			+ FORMID_NAME + " TEXT NOT NULL, "
 			+ SCHEDULEID_NAME + " INTEGER REFERENCES SCHEDULE (ID), "
-			+ FORMTEXT_NAME + " TEXT, "
-			+ START_NAME + " INTEGER, "
-			+ STOP_NAME + " INTEGER, "
-			+ LOADED_NAME + " INTEGER, "
+			+ FORMTEXT_NAME + " TEXT NOT NULL, "
+			+ START_NAME + " INTEGER NOT NULL, "
+			+ STOP_NAME + " INTEGER NOT NULL, "
+			+ LOADED_NAME + " INTEGER NOT NULL, "
 			+ " UNIQUE ( " + START_NAME + ", " + STOP_NAME + ", " + SCHEDULEID_NAME + "));";
 	
 	private final static String SELECTION_GET_BY_FORM_ID = FORMID_NAME + " = ? AND " + SCHEDULEID_NAME + " = ?";        
@@ -236,6 +236,7 @@ public class GradeSemester extends FormTimeInterval {
 				return gr;
 			}
 
+			count++;
 			c.moveToNext();
 		}
 		

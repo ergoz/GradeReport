@@ -3,6 +3,7 @@
 
     <string name="app_name">Дневник ГШИС</string>
     <string name="diary_name">Дневник</string>
+    <string name="grades_name">Оценки</string>
     <string name="pref_name">Настройки</string>
     <string name="pref_login_key">login</string>
     <string name="pref_password_key">password</string>
@@ -24,6 +25,11 @@
     <string name="label_submit">Выбрать</string>
     <string name="label_cancel">Отмена</string>
     <string name="label_ok">Ок</string>
+    <string name="label_absent">Н</string>
+    <string name="label_released">ОСВ</string>
+    <string name="label_sick">Б</string>
+    <string name="label_average">Средний балл</string>
+    <string name="label_total">Итог</string>
     <string name="title_error">Ошибка</string>
     <string name="title_section1">Понедельник</string>
     <string name="title_section2">Вторник</string>

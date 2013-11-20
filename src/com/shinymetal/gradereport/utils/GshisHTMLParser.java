@@ -456,8 +456,12 @@ public class GshisHTMLParser {
 					if (semester.hasAttr("selected")
 							&& semester.attr("selected").equals("selected")) {
 
-						sem.setLoaded().update();			
+						long u = sem.setLoaded().update();			
 						selG = sem;
+						
+						if (BuildConfig.DEBUG)
+							Log.d("GshisHTMLParser", TS.get()
+									+ " Semester.update() = " + u);
 					}
 				}
 			}
@@ -537,17 +541,35 @@ public class GshisHTMLParser {
 					GradeRec exR = sch.getGradeRecByDateText (rec.getStart(), rec.getFormText());
 					if (exR != null) {
 						
+						if (BuildConfig.DEBUG)
+							Log.d("GshisHTMLParser",
+									TS.get()
+											+ " before update GradeRec, start = "
+											+ exR.getStart() + " stop = "
+											+ exR.getStop() + " text = "
+											+ exR.getFormText());
+						
 						exR.setAbsent(rec.getAbsent());
 						exR.setAverage(rec.getAverage());
 						exR.setReleased(rec.getReleased());
 						exR.setSick(rec.getSick());
 						exR.setTotal(rec.getTotal());
 						
-						exR.update();
+						long u = exR.update();						
 						rec = exR;
+						
+						if (BuildConfig.DEBUG)
+							Log.d("GshisHTMLParser", TS.get()
+									+ " GradeRec.update() = " + u);
 					}
 					else
+					{
+						if (BuildConfig.DEBUG)
+							Log.d("GshisHTMLParser", TS.get()
+									+ " insert GradeRec = " + rec);
+						
 						sch.addGradeRec(rec);
+					}
 
 					Elements tds = tr.getElementsByTag("td");
 					for (Element td : tds) {
@@ -566,10 +588,21 @@ public class GshisHTMLParser {
 										
 										// TODO: compare marks, new event if differ
 										mr.setMarks(span.text());
-										mr.update();
+										long u = mr.update();										
+
+										if (BuildConfig.DEBUG)
+											Log.d("GshisHTMLParser", TS.get()
+													+ " MarkRec.update() = " + u + " rec = " + rec);
 									}
-									else								
-										rec.addMarcRec(new MarkRec(span.text(), span.attr("title")));
+									else {
+										
+										mr = new MarkRec(span.text(), span.attr("title"));
+										rec.addMarcRec(mr);
+
+										if (BuildConfig.DEBUG)
+											Log.d("GshisHTMLParser", TS.get()
+													+ " insert MarkRec Comment = " + mr.getComment() + " Marks = " + mr.getMarks());
+									}
 								}
 							}
 						}

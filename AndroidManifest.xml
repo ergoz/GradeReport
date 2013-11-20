@@ -34,6 +34,10 @@
             android:label="@string/diary_name" >
         </activity>
         <activity
+            android:name="com.shinymetal.gradereport.GradesActivity"
+            android:label="@string/grades_name" >
+        </activity>
+        <activity
             android:name="com.shinymetal.gradereport.PreferencesActivity"
             android:label="@string/pref_name" >
         </activity>

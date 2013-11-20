@@ -27,9 +27,9 @@ public class GradeRec extends FormTimeInterval {
 	public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " ("
 			+ ID_NAME + " INTEGER PRIMARY KEY ASC, "
 			+ SCHEDULEID_NAME + " INTEGER REFERENCES SCHEDULE (ID), "
-			+ FORMTEXT_NAME + " TEXT, "
-			+ START_NAME + " INTEGER, "
-			+ STOP_NAME + " INTEGER, "			
+			+ FORMTEXT_NAME + " TEXT NOT NULL, "
+			+ START_NAME + " INTEGER NOT NULL, "
+			+ STOP_NAME + " INTEGER NOT NULL, "			
 			+ ABSENT_NAME + " INTEGER, "
 			+ RELEASED_NAME + " INTEGER, "
 			+ SICK_NAME + " INTEGER, "
@@ -39,7 +39,7 @@ public class GradeRec extends FormTimeInterval {
 	
 	private final static String SELECTION_GET_ALL = SCHEDULEID_NAME + " = ?";
 	private final static String[] COLUMNS_GET_ALL = new String[] { ID_NAME,
-		SCHEDULEID_NAME, START_NAME, STOP_NAME, ABSENT_NAME, RELEASED_NAME, SICK_NAME, AVERAGE_NAME, TOTAL_NAME };
+		SCHEDULEID_NAME, FORMTEXT_NAME, START_NAME, STOP_NAME, ABSENT_NAME, RELEASED_NAME, SICK_NAME, AVERAGE_NAME, TOTAL_NAME };
 	public static final String SELECTION_UPDATE = ID_NAME + " = ?";
 	public static final String SELECTION_GET_ALL_BY_DATE = SCHEDULEID_NAME + " = ? AND " + START_NAME + " = ?";
 	public static final String SELECTION_GET_BY_DATE_TEXT = SCHEDULEID_NAME
