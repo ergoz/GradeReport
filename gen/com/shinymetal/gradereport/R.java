@@ -14,9 +14,6 @@ public final class R {
     }
     public static final class attr {
     }
-    public static final class color {
-        public static final int red=0x7f080000;
-    }
     public static final class dimen {
         /**  Default screen margins, per the Android Design guidelines. 
 
@@ -38,27 +35,27 @@ public final class R {
         public static final int splash=0x7f020007;
     }
     public static final class id {
-        public static final int ScrollViewDetail=0x7f0b0006;
-        public static final int action_next_week=0x7f0b0010;
-        public static final int action_previous_week=0x7f0b000f;
-        public static final int action_reload=0x7f0b0012;
-        public static final int action_select_date=0x7f0b0011;
-        public static final int action_select_pupil=0x7f0b0013;
-        public static final int action_settings=0x7f0b0014;
-        public static final int fragment_detail=0x7f0b0005;
-        public static final int fragment_list=0x7f0b0004;
-        public static final int imgLogo=0x7f0b0002;
-        public static final int itemComment=0x7f0b000a;
-        public static final int itemDetail=0x7f0b000d;
-        public static final int itemHeader=0x7f0b000b;
-        public static final int itemHomework=0x7f0b0008;
-        public static final int itemMarks=0x7f0b0009;
-        public static final int itemName=0x7f0b000c;
-        public static final int itemTheme=0x7f0b0007;
-        public static final int pager=0x7f0b0000;
-        public static final int pager_title_strip=0x7f0b0001;
-        public static final int pupilSpinner=0x7f0b000e;
-        public static final int section_label=0x7f0b0003;
+        public static final int ScrollViewDetail=0x7f0a0006;
+        public static final int action_next_week=0x7f0a0010;
+        public static final int action_previous_week=0x7f0a000f;
+        public static final int action_reload=0x7f0a0012;
+        public static final int action_select_date=0x7f0a0011;
+        public static final int action_select_pupil=0x7f0a0013;
+        public static final int action_settings=0x7f0a0014;
+        public static final int fragment_detail=0x7f0a0005;
+        public static final int fragment_list=0x7f0a0004;
+        public static final int imgLogo=0x7f0a0002;
+        public static final int itemComment=0x7f0a000a;
+        public static final int itemDetail=0x7f0a000d;
+        public static final int itemHeader=0x7f0a000b;
+        public static final int itemHomework=0x7f0a0008;
+        public static final int itemMarks=0x7f0a0009;
+        public static final int itemName=0x7f0a000c;
+        public static final int itemTheme=0x7f0a0007;
+        public static final int pager=0x7f0a0000;
+        public static final int pager_title_strip=0x7f0a0001;
+        public static final int pupilSpinner=0x7f0a000e;
+        public static final int section_label=0x7f0a0003;
     }
     public static final class layout {
         public static final int activity_diary=0x7f030000;
@@ -73,7 +70,7 @@ public final class R {
         public static final int pupil_dialog=0x7f030009;
     }
     public static final class menu {
-        public static final int main=0x7f0a0000;
+        public static final int main=0x7f090000;
     }
     public static final class string {
         public static final int action_next_week=0x7f07000b;
@@ -135,11 +132,11 @@ public final class R {
     
  API 14 theme customizations can go here. 
          */
-        public static final int AppBaseTheme=0x7f090000;
+        public static final int AppBaseTheme=0x7f080000;
         /**  Application theme. 
  All customizations that are NOT specific to a particular API-level can go here. 
          */
-        public static final int AppTheme=0x7f090001;
+        public static final int AppTheme=0x7f080001;
     }
     public static final class xml {
         public static final int preferences=0x7f040000;

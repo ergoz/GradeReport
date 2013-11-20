@@ -25,6 +25,9 @@ public class LessonsListAdapter extends
 
 	private final Date mDay;
 	private Cursor mCursor;
+	
+	// used to keep selected position in ListView
+	private int mSelectedPos = -1;	// init value for not-selected
 
 	public LessonsListAdapter(DiaryActivity activity, Date day) {
 
@@ -32,6 +35,18 @@ public class LessonsListAdapter extends
 		mDay = day;
 		
 		mCursor = GshisLoader.getInstance().getCursorLessonsByDate(mDay);
+	}
+	
+	public void setSelectedPosition(int pos) {
+		
+		mSelectedPos = pos;
+		// inform the view of this change
+		notifyDataSetChanged();
+	}
+
+	public int getSelectedPosition() {
+		
+		return mSelectedPos;
 	}
 
 	public void onUpdateTaskComplete() {
@@ -85,6 +100,14 @@ public class LessonsListAdapter extends
 			LayoutInflater inflater = (LayoutInflater) mActivity
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.lessons_list, null);
+		}
+
+		if (mSelectedPos == position) {
+			convertView.setBackgroundColor(mActivity.getResources().getColor(
+					android.R.color.holo_blue_dark));
+		} else {
+			convertView.setBackgroundColor(mActivity.getResources().getColor(
+					android.R.color.transparent));
 		}
 
 		TextView itemNameView = (TextView) convertView

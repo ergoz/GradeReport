@@ -37,6 +37,5 @@
     <string name="label_retry">Повторить</string>
     <string name="label_buy">Купить</string>
     <string name="label_quit">Выход</string>
-    <color name="red">#ff0000</color>
 
 </resources>

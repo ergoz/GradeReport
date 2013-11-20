@@ -25,6 +25,9 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 			"HH:mm ", Locale.ENGLISH);
 	
 	private Cursor mCursor;
+	
+	// used to keep selected position in ListView
+	private int mSelectedPos = -1;	// init value for not-selected
 
 	public LessonsExpListAdapter(DiaryActivity activity, Date day) {
 
@@ -32,6 +35,19 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		mDay = day;
 		
 		mCursor = GshisLoader.getInstance().getCursorLessonsByDate(mDay);
+	}
+	
+	public void setSelectedPosition(int pos) {
+		
+        mSelectedPos = pos;
+        
+//		 inform the view of this change
+//		notifyDataSetChanged();
+	}
+
+	public int getSelectedPosition() {
+		
+		return mSelectedPos;
 	}
 	
 	public void onUpdateTaskComplete () {

@@ -53,6 +53,8 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 	
 	private static volatile DiaryActivity instance;	
 	private static int mLicState = Policy.RETRY;
+	private int mCurPage = 0;
+
 	public LicenseValidatorHelper mLicValidator = null;
 	
 	@Override
@@ -68,12 +70,23 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
+		
+		if (savedInstanceState != null) {
+						
+			mCurPage = savedInstanceState.getInt("mCurPage");
+			mViewPager.setCurrentItem(mCurPage, false);
+			
+			mLicState = savedInstanceState.getInt("mLicState");
+		}
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	
-		 super.onSaveInstanceState(savedInstanceState);
+		savedInstanceState.putInt("mCurPage", mCurPage = mViewPager.getCurrentItem());
+		savedInstanceState.putInt("mLicState", mLicState);
+		
+		super.onSaveInstanceState(savedInstanceState);
 	}
 	
 	@Override

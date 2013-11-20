@@ -105,9 +105,11 @@ public class LessonsListFragment extends Fragment implements UpdateableFragment 
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-
+				
 				Fragment f = instance.getParentFragment();
 				Lesson l = (Lesson) mAdapter.getItem(position - 1);
+				
+				mAdapter.setSelectedPosition(position - 1);
 
 				if (f != null && f instanceof LessonsNestedFragment) {
 

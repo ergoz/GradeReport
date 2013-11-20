@@ -1,6 +1,6 @@
 
 + start updates on system boot - DONE?
-+ select proper week day in DiaryActivity.onCreate()
++ select proper week day in DiaryActivity.onCreate() - DONE
 + remember list selection
 + ignore non-fatal network errors
 + footer with last update status

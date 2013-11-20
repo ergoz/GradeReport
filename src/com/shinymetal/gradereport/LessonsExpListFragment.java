@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.TextView;
 
 import com.shinymetal.gradereport.objects.TS;
@@ -25,6 +26,7 @@ public class LessonsExpListFragment extends Fragment implements
  
 	protected static final String ARG_SECTION_NUMBER = "section_number";
 	protected LessonsExpListAdapter mAdapter;
+	protected ExpandableListView mExpListView;
 
 	public LessonsExpListFragment() {
 
@@ -40,10 +42,8 @@ public class LessonsExpListFragment extends Fragment implements
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		View rootView = inflater.inflate(R.layout.fragment_exp_lessons, container,
-				false);
-		ExpandableListView expListView = (ExpandableListView) rootView
-				.findViewById(R.id.section_label);
+		View rootView = inflater.inflate(R.layout.fragment_exp_lessons, container, false);
+		mExpListView = (ExpandableListView) rootView.findViewById(R.id.section_label);
 		
 		int width = (int) (getResources().getDisplayMetrics().widthPixels - TypedValue
 				.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, getResources()
@@ -55,18 +55,18 @@ public class LessonsExpListFragment extends Fragment implements
 		float scale = getResources().getDisplayMetrics().density;
 		
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-			expListView.setIndicatorBounds(
+			mExpListView.setIndicatorBounds(
 					width - (int) (50 * scale),
 					width - (int) (10 * scale));
 		} else {
-			expListView.setIndicatorBoundsRelative(
+			mExpListView.setIndicatorBoundsRelative(
 					width - (int) (50 * scale),
 					width - (int) (10 * scale));
 		}
 
 		View header = getLayoutInflater(savedInstanceState).inflate(
 				R.layout.lessons_header, null);
-		expListView.addHeaderView(header);
+		mExpListView.addHeaderView(header);
 
 		Date day = GshisLoader.getInstance().getCurrWeekStart();
 		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
@@ -112,8 +112,22 @@ public class LessonsExpListFragment extends Fragment implements
 			}
 
 		day = cal.getTime();
+		
+		mExpListView.setOnGroupExpandListener(new OnGroupExpandListener() {
+
+	        @Override
+	        public void onGroupExpand(int groupPosition) {
+
+	            if (groupPosition != mAdapter.getSelectedPosition()) {
+	            	mExpListView.collapseGroup(mAdapter.getSelectedPosition());
+
+	            }
+	            mAdapter.setSelectedPosition(groupPosition);
+	        }
+	    });
+
 		mAdapter = new LessonsExpListAdapter((DiaryActivity) getActivity(), day);
-		expListView.setAdapter(mAdapter);
+		mExpListView.setAdapter(mAdapter);
 
 		((TextView) header.findViewById(R.id.itemHeader))
 				.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH)
