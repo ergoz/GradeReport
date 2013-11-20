@@ -204,6 +204,11 @@ public class Schedule extends FormTimeInterval {
 		return GradeSemester.getByDate(this, day);
 	}
 	
+	public GradeSemester getSemesterByNumber(int number) {
+
+		return GradeSemester.getByNumber(this, number);
+	}
+	
 	public GradeSemester getSemester(String formId) {
 
 		return GradeSemester.getByFormId(this, formId);

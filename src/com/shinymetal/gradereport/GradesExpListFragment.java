@@ -1,39 +1,29 @@
 package com.shinymetal.gradereport;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import com.shinymetal.gradereport.objects.GradeSemester;
+import com.shinymetal.gradereport.objects.Pupil;
+import com.shinymetal.gradereport.objects.Schedule;
+import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.TextView;
+import android.widget.ExpandableListView.OnGroupExpandListener;
 
-import com.shinymetal.gradereport.objects.TS;
-import com.shinymetal.gradereport.utils.GshisLoader;
-
-public class LessonsExpListFragment extends Fragment implements
+public class GradesExpListFragment extends Fragment implements
 		UpdateableFragment {
- 
+	
 	protected static final String ARG_SECTION_NUMBER = "section_number";
-	protected LessonsExpListAdapter mAdapter;
+	protected GradesExpListAdapter mAdapter;
 	protected ExpandableListView mExpListView;
 	
-	static final SimpleDateFormat mDateFmt = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
-
-	public LessonsExpListFragment() {
-
-	}
-
 	public UpdateableAdapter getAdapter() {
 
 		return mAdapter;
@@ -70,51 +60,7 @@ public class LessonsExpListFragment extends Fragment implements
 				R.layout.lessons_header, null);
 		mExpListView.addHeaderView(header);
 
-		Date day = GshisLoader.getInstance().getCurrWeekStart();
-		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
-		
-		if (BuildConfig.DEBUG)
-			Log.d(this.toString(), TS.get() + "refresh (), ARG_SECTION_NUMBER="
-					+ wantDoW);
-
-		switch (wantDoW) {
-		case 1:
-			wantDoW = Calendar.MONDAY;
-			break;
-		case 2:
-			wantDoW = Calendar.TUESDAY;
-			break;
-		case 3:
-			wantDoW = Calendar.WEDNESDAY;
-			break;
-		case 4:
-			wantDoW = Calendar.THURSDAY;
-			break;
-		case 5:
-			wantDoW = Calendar.FRIDAY;
-			break;
-		case 6:
-			wantDoW = Calendar.SATURDAY;
-			break;
-		default:
-			wantDoW = Calendar.SUNDAY;
-			break;
-		}
-
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(day);
-
-		if (wantDoW < cal.get(Calendar.DAY_OF_WEEK)) {
-			while (cal.get(Calendar.DAY_OF_WEEK) != wantDoW) {
-				cal.add(Calendar.DATE, -1);
-			}
-		} else if (wantDoW > cal.get(Calendar.DAY_OF_WEEK))
-			while (cal.get(Calendar.DAY_OF_WEEK) != wantDoW) {
-				cal.add(Calendar.DATE, 1);
-			}
-
-		day = cal.getTime();
-		
+		int wantSem = getArguments().getInt(ARG_SECTION_NUMBER);
 		mExpListView.setOnGroupExpandListener(new OnGroupExpandListener() {
 
 	        @Override
@@ -127,13 +73,21 @@ public class LessonsExpListFragment extends Fragment implements
 	            mAdapter.setSelectedPosition(groupPosition);
 	        }
 	    });
-
-		mAdapter = new LessonsExpListAdapter((DiaryActivity) getActivity(), day);
+		
+		Pupil p = Pupil.getByFormName(((GradesActivity) getActivity()).getPupilName());
+		GradeSemester sem = null;
+		if (p != null) {
+			
+			Schedule s = p.getScheduleByDate(GshisLoader.getInstance().getCurrWeekStart());
+			if (s != null ) sem = s.getSemesterByNumber(wantSem);
+		}
+		
+		mAdapter = new GradesExpListAdapter((GradesActivity) getActivity(), sem);
 		mExpListView.setAdapter(mAdapter);
-
+		
 		((TextView) header.findViewById(R.id.itemHeader))
-				.setText(mDateFmt.format(day));
-
+				.setText("TODO: DATE HERE");
+		
 		return rootView;
 	}
 }

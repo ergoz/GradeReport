@@ -1,7 +1,8 @@
 
 + start updates on system boot - DONE?
 + select proper week day in DiaryActivity.onCreate() - DONE
-+ remember list selection
++ remember list selection ???
 + ignore non-fatal network errors
 + footer with last update status
-+ grade reports
++ grade reports - started to implement ExpListAdapter
++ pass current user between activities

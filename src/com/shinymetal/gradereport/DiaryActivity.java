@@ -47,9 +47,9 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 	 */
 	private LessonsPagerAdapter mSectionsPagerAdapter;
 	private ViewPager mViewPager;
-	private DatePickerFragment mDateSetFragment;
-			
+	private DatePickerFragment mDateSetFragment;			
 	private Spinner mPupilSpinner;
+	private String mPupilName;
 	
 	private static volatile DiaryActivity instance;	
 	private static int mLicState = Policy.RETRY;
@@ -77,14 +77,32 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 			mViewPager.setCurrentItem(mCurPage, false);
 			
 			mLicState = savedInstanceState.getInt("mLicState");
+			mPupilName = savedInstanceState.getString("mPupilName");
+		}
+		else
+		{
+			// TODO: put pupil name in the intent
+			ArrayList<String> names = mGshisLoader.getPupilNames();
+			mPupilName = names.size() > 0 ? names.get(0) : null;
 		}
 	}
 	
+	public String getPupilName() {
+		
+		return mPupilName;
+	}
+
+	public void setPupilName(String mPupilName) {
+		
+		this.mPupilName = mPupilName;
+	}
+
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	
 		savedInstanceState.putInt("mCurPage", mCurPage = mViewPager.getCurrentItem());
 		savedInstanceState.putInt("mLicState", mLicState);
+		savedInstanceState.putString("mPupilName", mPupilName);
 		
 		super.onSaveInstanceState(savedInstanceState);
 	}
@@ -105,7 +123,7 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 		
 		if (mLicState == Policy.RETRY)
 			mLicValidator = new LicenseValidatorHelper (this, this);
-
+		
 		super.onResume();
 	}
 	
@@ -216,7 +234,7 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 						public void onClick(final DialogInterface dialog,
 								final int which) {
 					
-							GshisLoader.getInstance().selectPupilByName(mPupilSpinner.getSelectedItem().toString());
+							mPupilName = mPupilSpinner.getSelectedItem().toString();
 						}
 					});
 		    alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.label_cancel),
@@ -256,6 +274,15 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 			
 		case R.id.action_reload:
 			setRecurringAlarm(this, true);
+			return true;
+			
+		case R.id.action_grades:
+			// TODO: put pupil name in the intent
+			Intent i = new Intent(DiaryActivity.this, GradesActivity.class);
+            startActivity(i);
+
+            // close this activity
+            finish();
 			return true;
 		}
 		return true;

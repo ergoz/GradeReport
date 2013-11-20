@@ -25,23 +25,27 @@ public final class R {
         public static final int activity_vertical_margin=0x7f060001;
     }
     public static final class drawable {
-        public static final int ic_action_go_to_today=0x7f020000;
-        public static final int ic_action_next_item=0x7f020001;
-        public static final int ic_action_person=0x7f020002;
-        public static final int ic_action_previous_item=0x7f020003;
-        public static final int ic_action_refresh=0x7f020004;
-        public static final int ic_action_settings=0x7f020005;
-        public static final int ic_launcher=0x7f020006;
-        public static final int splash=0x7f020007;
+        public static final int ic_4_collections_view_as_list=0x7f020000;
+        public static final int ic_5_content_event=0x7f020001;
+        public static final int ic_action_go_to_today=0x7f020002;
+        public static final int ic_action_next_item=0x7f020003;
+        public static final int ic_action_person=0x7f020004;
+        public static final int ic_action_previous_item=0x7f020005;
+        public static final int ic_action_refresh=0x7f020006;
+        public static final int ic_action_settings=0x7f020007;
+        public static final int ic_launcher=0x7f020008;
+        public static final int splash=0x7f020009;
     }
     public static final class id {
         public static final int ScrollViewDetail=0x7f0a0006;
-        public static final int action_next_week=0x7f0a0010;
-        public static final int action_previous_week=0x7f0a000f;
-        public static final int action_reload=0x7f0a0012;
-        public static final int action_select_date=0x7f0a0011;
-        public static final int action_select_pupil=0x7f0a0013;
-        public static final int action_settings=0x7f0a0014;
+        public static final int action_diary=0x7f0a0011;
+        public static final int action_grades=0x7f0a0016;
+        public static final int action_next_week=0x7f0a0015;
+        public static final int action_previous_week=0x7f0a0014;
+        public static final int action_reload=0x7f0a0010;
+        public static final int action_select_date=0x7f0a000f;
+        public static final int action_select_pupil=0x7f0a0012;
+        public static final int action_settings=0x7f0a0013;
         public static final int fragment_detail=0x7f0a0005;
         public static final int fragment_list=0x7f0a0004;
         public static final int imgLogo=0x7f0a0002;
@@ -61,7 +65,7 @@ public final class R {
         public static final int activity_diary=0x7f030000;
         public static final int activity_preferences=0x7f030001;
         public static final int activity_splash=0x7f030002;
-        public static final int fragment_exp_lessons=0x7f030003;
+        public static final int fragment_exp_list=0x7f030003;
         public static final int fragment_lessons=0x7f030004;
         public static final int fragment_nested=0x7f030005;
         public static final int lessons_detail=0x7f030006;
@@ -70,9 +74,12 @@ public final class R {
         public static final int pupil_dialog=0x7f030009;
     }
     public static final class menu {
-        public static final int main=0x7f090000;
+        public static final int grades=0x7f090000;
+        public static final int main=0x7f090001;
     }
     public static final class string {
+        public static final int action_diary=0x7f07000e;
+        public static final int action_grades=0x7f07000d;
         public static final int action_next_week=0x7f07000b;
         public static final int action_previous_week=0x7f07000a;
         public static final int action_reload=0x7f07000c;
@@ -81,34 +88,38 @@ public final class R {
         public static final int action_settings=0x7f070007;
         public static final int app_name=0x7f070000;
         public static final int diary_name=0x7f070001;
-        public static final int error_cannot_fetch=0x7f07001f;
-        public static final int error_cannot_login=0x7f070020;
-        public static final int label_buy=0x7f070022;
-        public static final int label_cancel=0x7f070013;
-        public static final int label_comment=0x7f070010;
-        public static final int label_homework=0x7f07000e;
-        public static final int label_loading_data=0x7f070011;
-        public static final int label_marks=0x7f07000f;
-        public static final int label_ok=0x7f070014;
-        public static final int label_quit=0x7f070023;
-        public static final int label_retry=0x7f070021;
-        public static final int label_submit=0x7f070012;
-        public static final int label_theme=0x7f07000d;
+        public static final int error_cannot_fetch=0x7f070025;
+        public static final int error_cannot_login=0x7f070026;
+        public static final int label_buy=0x7f070028;
+        public static final int label_cancel=0x7f070015;
+        public static final int label_comment=0x7f070012;
+        public static final int label_homework=0x7f070010;
+        public static final int label_loading_data=0x7f070013;
+        public static final int label_marks=0x7f070011;
+        public static final int label_ok=0x7f070016;
+        public static final int label_quit=0x7f070029;
+        public static final int label_retry=0x7f070027;
+        public static final int label_submit=0x7f070014;
+        public static final int label_theme=0x7f07000f;
         public static final int pref_login_key=0x7f070003;
         public static final int pref_name=0x7f070002;
         public static final int pref_password_key=0x7f070004;
         public static final int pref_sync_key=0x7f070005;
         public static final int shiny_metal=0x7f070006;
-        public static final int title_error=0x7f070015;
-        public static final int title_section1=0x7f070016;
-        public static final int title_section2=0x7f070017;
-        public static final int title_section3=0x7f070018;
-        public static final int title_section4=0x7f070019;
-        public static final int title_section5=0x7f07001a;
-        public static final int title_section6=0x7f07001b;
-        public static final int unlicensed_dialog_body=0x7f07001e;
-        public static final int unlicensed_dialog_retry_body=0x7f07001d;
-        public static final int unlicensed_dialog_title=0x7f07001c;
+        public static final int title_error=0x7f070017;
+        public static final int title_section1=0x7f070018;
+        public static final int title_section2=0x7f070019;
+        public static final int title_section3=0x7f07001a;
+        public static final int title_section4=0x7f07001b;
+        public static final int title_section5=0x7f07001c;
+        public static final int title_section6=0x7f07001d;
+        public static final int title_section_gr1=0x7f07001e;
+        public static final int title_section_gr2=0x7f07001f;
+        public static final int title_section_gr3=0x7f070020;
+        public static final int title_section_gr4=0x7f070021;
+        public static final int unlicensed_dialog_body=0x7f070024;
+        public static final int unlicensed_dialog_retry_body=0x7f070023;
+        public static final int unlicensed_dialog_title=0x7f070022;
     }
     public static final class style {
         /** 

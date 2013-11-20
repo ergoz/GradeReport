@@ -14,6 +14,8 @@
     <string name="action_previous_week">Пред. неделя</string>
     <string name="action_next_week">След. неделя</string>
     <string name="action_reload">Обновить</string>
+    <string name="action_grades">Оценки</string>
+    <string name="action_diary">Дневник</string>
     <string name="label_theme">Тема</string>
     <string name="label_homework">Дом. задание</string>
     <string name="label_marks">Оценки</string>
@@ -29,6 +31,10 @@
     <string name="title_section4">Четверг</string>
     <string name="title_section5">Пятница</string>
     <string name="title_section6">Суббота</string>
+    <string name="title_section_gr1">Четверть I</string>
+    <string name="title_section_gr2">Четверть II</string>
+    <string name="title_section_gr3">Четверть III</string>
+    <string name="title_section_gr4">Четверть IV</string>
     <string name="unlicensed_dialog_title">Нет лицензии</string>
     <string name="unlicensed_dialog_retry_body">Невозможно проверить лицензию. Проверьте, что сетевое соединение доступно.</string>
     <string name="unlicensed_dialog_body">Это приложение не лицензировано. Пожалуйста, приобретите его в Android Market.</string>

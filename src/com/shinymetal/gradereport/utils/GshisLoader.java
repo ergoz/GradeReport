@@ -520,21 +520,19 @@ public class GshisLoader {
 		mGradesVIEWSTATE = null;
 	}
 	
-	public Cursor getCursorLessonsByDate(Date day) {
+	public Cursor getCursorLessonsByDate(Date day, String uName) {
 		
-		String uName;
-		
-		if (mCurrentPupilName == null) {
+		if (uName == null) {
 				
 			ArrayList<String> names = getPupilNames();
 			if (names.size() > 0)
-				mCurrentPupilName = names.get(0);
+				uName = names.get(0);
 			else
 				Log.e(this.toString(), TS.get() + this.toString()
 						+ " getCachedLessonsByDate() : PupilNames set is empty!");
 		}
 			
-		if ((uName = mCurrentPupilName) == null)
+		if (uName == null)
 			return null;
 		
 		if (BuildConfig.DEBUG)
@@ -751,10 +749,5 @@ public class GshisLoader {
 			Log.d(this.toString(), TS.get() + "getPupilNames () : finished");
 			
 		return res;
-	}
-	
-	public void selectPupilByName (String name) {
-
-		mCurrentPupilName = name;
 	}
 }
