@@ -159,8 +159,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080)));
+		return (HttpURLConnection) new URL(url).openConnection(/*new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080))*/);
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
