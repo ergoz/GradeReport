@@ -71,20 +71,27 @@ android.support.v4.widget.SlidingPaneLayout: void setShadowDrawable(android.grap
 android.support.v4.widget.SlidingPaneLayout: void setShadowResource(int)
 android.support.v4.widget.SlidingPaneLayout$SavedState
 android.support.v4.widget.SlidingPaneLayout$SavedState: android.os.Parcelable$Creator CREATOR
+com.shinymetal.gradereport.AbstractActivity: AbstractActivity()
 com.shinymetal.gradereport.AlarmReceiver
 com.shinymetal.gradereport.AlarmReceiver: AlarmReceiver()
+com.shinymetal.gradereport.BootEventReceiver
+com.shinymetal.gradereport.BootEventReceiver: BootEventReceiver()
 com.shinymetal.gradereport.DiaryActivity
 com.shinymetal.gradereport.DiaryActivity: DiaryActivity()
 com.shinymetal.gradereport.DiaryActivity: boolean onOptionsItemSelected(android.view.MenuItem)
 com.shinymetal.gradereport.DiaryUpdateService
 com.shinymetal.gradereport.DiaryUpdateService: DiaryUpdateService()
+com.shinymetal.gradereport.GradesActivity
+com.shinymetal.gradereport.GradesActivity: GradesActivity()
+com.shinymetal.gradereport.GradesActivity: boolean onOptionsItemSelected(android.view.MenuItem)
 com.shinymetal.gradereport.PreferencesActivity
 com.shinymetal.gradereport.PreferencesActivity: PreferencesActivity()
 com.shinymetal.gradereport.R$array: int syncArray
 com.shinymetal.gradereport.R$array: int syncValues
-com.shinymetal.gradereport.R$color: int red
 com.shinymetal.gradereport.R$dimen: int activity_horizontal_margin
 com.shinymetal.gradereport.R$dimen: int activity_vertical_margin
+com.shinymetal.gradereport.R$drawable: int ic_4_collections_view_as_list
+com.shinymetal.gradereport.R$drawable: int ic_5_content_event
 com.shinymetal.gradereport.R$drawable: int ic_action_go_to_today
 com.shinymetal.gradereport.R$drawable: int ic_action_next_item
 com.shinymetal.gradereport.R$drawable: int ic_action_person
@@ -94,6 +101,8 @@ com.shinymetal.gradereport.R$drawable: int ic_action_settings
 com.shinymetal.gradereport.R$drawable: int ic_launcher
 com.shinymetal.gradereport.R$drawable: int splash
 com.shinymetal.gradereport.R$id: int ScrollViewDetail
+com.shinymetal.gradereport.R$id: int action_diary
+com.shinymetal.gradereport.R$id: int action_grades
 com.shinymetal.gradereport.R$id: int action_next_week
 com.shinymetal.gradereport.R$id: int action_previous_week
 com.shinymetal.gradereport.R$id: int action_reload
@@ -103,13 +112,18 @@ com.shinymetal.gradereport.R$id: int action_settings
 com.shinymetal.gradereport.R$id: int fragment_detail
 com.shinymetal.gradereport.R$id: int fragment_list
 com.shinymetal.gradereport.R$id: int imgLogo
+com.shinymetal.gradereport.R$id: int itemAbsent
+com.shinymetal.gradereport.R$id: int itemAverage
 com.shinymetal.gradereport.R$id: int itemComment
 com.shinymetal.gradereport.R$id: int itemDetail
 com.shinymetal.gradereport.R$id: int itemHeader
 com.shinymetal.gradereport.R$id: int itemHomework
 com.shinymetal.gradereport.R$id: int itemMarks
 com.shinymetal.gradereport.R$id: int itemName
+com.shinymetal.gradereport.R$id: int itemReleased
+com.shinymetal.gradereport.R$id: int itemSick
 com.shinymetal.gradereport.R$id: int itemTheme
+com.shinymetal.gradereport.R$id: int itemTotal
 com.shinymetal.gradereport.R$id: int pager
 com.shinymetal.gradereport.R$id: int pager_title_strip
 com.shinymetal.gradereport.R$id: int pupilSpinner
@@ -117,14 +131,19 @@ com.shinymetal.gradereport.R$id: int section_label
 com.shinymetal.gradereport.R$layout: int activity_diary
 com.shinymetal.gradereport.R$layout: int activity_preferences
 com.shinymetal.gradereport.R$layout: int activity_splash
-com.shinymetal.gradereport.R$layout: int fragment_exp_lessons
+com.shinymetal.gradereport.R$layout: int fragment_exp_list
 com.shinymetal.gradereport.R$layout: int fragment_lessons
 com.shinymetal.gradereport.R$layout: int fragment_nested
+com.shinymetal.gradereport.R$layout: int grades_detail
+com.shinymetal.gradereport.R$layout: int grades_list
 com.shinymetal.gradereport.R$layout: int lessons_detail
 com.shinymetal.gradereport.R$layout: int lessons_header
 com.shinymetal.gradereport.R$layout: int lessons_list
 com.shinymetal.gradereport.R$layout: int pupil_dialog
+com.shinymetal.gradereport.R$menu: int grades
 com.shinymetal.gradereport.R$menu: int main
+com.shinymetal.gradereport.R$string: int action_diary
+com.shinymetal.gradereport.R$string: int action_grades
 com.shinymetal.gradereport.R$string: int action_next_week
 com.shinymetal.gradereport.R$string: int action_previous_week
 com.shinymetal.gradereport.R$string: int action_reload
@@ -135,6 +154,9 @@ com.shinymetal.gradereport.R$string: int app_name
 com.shinymetal.gradereport.R$string: int diary_name
 com.shinymetal.gradereport.R$string: int error_cannot_fetch
 com.shinymetal.gradereport.R$string: int error_cannot_login
+com.shinymetal.gradereport.R$string: int grades_name
+com.shinymetal.gradereport.R$string: int label_absent
+com.shinymetal.gradereport.R$string: int label_average
 com.shinymetal.gradereport.R$string: int label_buy
 com.shinymetal.gradereport.R$string: int label_cancel
 com.shinymetal.gradereport.R$string: int label_comment
@@ -143,10 +165,16 @@ com.shinymetal.gradereport.R$string: int label_loading_data
 com.shinymetal.gradereport.R$string: int label_marks
 com.shinymetal.gradereport.R$string: int label_ok
 com.shinymetal.gradereport.R$string: int label_quit
+com.shinymetal.gradereport.R$string: int label_released
 com.shinymetal.gradereport.R$string: int label_retry
+com.shinymetal.gradereport.R$string: int label_sick
 com.shinymetal.gradereport.R$string: int label_submit
 com.shinymetal.gradereport.R$string: int label_theme
+com.shinymetal.gradereport.R$string: int label_total
+com.shinymetal.gradereport.R$string: int pref_login_key
 com.shinymetal.gradereport.R$string: int pref_name
+com.shinymetal.gradereport.R$string: int pref_password_key
+com.shinymetal.gradereport.R$string: int pref_sync_key
 com.shinymetal.gradereport.R$string: int shiny_metal
 com.shinymetal.gradereport.R$string: int title_error
 com.shinymetal.gradereport.R$string: int title_section1
@@ -155,6 +183,10 @@ com.shinymetal.gradereport.R$string: int title_section3
 com.shinymetal.gradereport.R$string: int title_section4
 com.shinymetal.gradereport.R$string: int title_section5
 com.shinymetal.gradereport.R$string: int title_section6
+com.shinymetal.gradereport.R$string: int title_section_gr1
+com.shinymetal.gradereport.R$string: int title_section_gr2
+com.shinymetal.gradereport.R$string: int title_section_gr3
+com.shinymetal.gradereport.R$string: int title_section_gr4
 com.shinymetal.gradereport.R$string: int unlicensed_dialog_body
 com.shinymetal.gradereport.R$string: int unlicensed_dialog_retry_body
 com.shinymetal.gradereport.R$string: int unlicensed_dialog_title

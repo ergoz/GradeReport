@@ -1777,14 +1777,13 @@ com.google.android.vending.licensing.LicenseChecker -> com.a.a.a.a.i:
     java.util.Queue mPendingChecks -> j
     java.security.PublicKey generatePublicKey(java.lang.String) -> a
     void checkAccess(com.google.android.vending.licensing.LicenseCheckerCallback) -> a
-    void runChecks() -> b
+    void runChecks() -> a
     void finishCheck(com.google.android.vending.licensing.LicenseValidator) -> a
     void onServiceConnected(android.content.ComponentName,android.os.IBinder) -> onServiceConnected
     void onServiceDisconnected(android.content.ComponentName) -> onServiceDisconnected
     void handleServiceConnectionError(com.google.android.vending.licensing.LicenseValidator) -> b
-    void cleanupService() -> c
-    void onDestroy() -> a
-    int generateNonce() -> d
+    void cleanupService() -> b
+    int generateNonce() -> c
     java.lang.String getVersionCode(android.content.Context,java.lang.String) -> a
     void access$0(com.google.android.vending.licensing.LicenseChecker,com.google.android.vending.licensing.LicenseValidator) -> a
     void access$1(com.google.android.vending.licensing.LicenseChecker,com.google.android.vending.licensing.LicenseValidator) -> b
@@ -1885,95 +1884,163 @@ com.google.android.vending.licensing.util.Base64 -> com.a.a.a.a.a.a:
     byte[] decode(byte[],int,int) -> a
     byte[] decode(byte[],int,int,byte[]) -> a
 com.google.android.vending.licensing.util.Base64DecoderException -> com.a.a.a.a.a.b:
-com.shinymetal.gradereport.AlarmReceiver -> com.shinymetal.gradereport.AlarmReceiver:
-    void onReceive(android.content.Context,android.content.Intent) -> onReceive
-com.shinymetal.gradereport.DiaryActivity -> com.shinymetal.gradereport.DiaryActivity:
-    com.shinymetal.gradereport.DiaryActivity$LessonsPagerAdapter mSectionsPagerAdapter -> q
-    android.support.v4.view.ViewPager mViewPager -> r
-    com.shinymetal.gradereport.DiaryActivity$DatePickerFragment mDateSetFragment -> s
-    android.widget.Spinner mPupilSpinner -> t
-    com.shinymetal.gradereport.DiaryActivity instance -> u
-    com.shinymetal.gradereport.utils.GshisLoader mGshisLoader -> v
-    int mLicState -> w
-    boolean mServiceBusy -> x
-    com.shinymetal.gradereport.LicenseValidatorHelper mLicValidator -> n
-    android.content.SharedPreferences mPrefs -> y
-    long mSyncInterval -> o
-    com.shinymetal.gradereport.DiaryActivity$IncomingHandler mHandler -> z
-    com.shinymetal.gradereport.DiaryUpdateService mUpdateService -> A
+com.shinymetal.gradereport.AbstractActivity -> com.shinymetal.gradereport.a:
+    com.shinymetal.gradereport.AbstractActivity instance -> n
+    com.shinymetal.gradereport.utils.GshisLoader mGshisLoader -> o
+    com.shinymetal.gradereport.LicenseValidatorHelper mLicValidator -> q
+    com.shinymetal.gradereport.AbstractActivity$IncomingHandler mHandler -> r
+    com.shinymetal.gradereport.DiaryUpdateService mUpdateService -> s
     android.content.ServiceConnection mConnection -> p
-    void doBindService() -> f
-    android.os.Handler getHandler() -> g
+    android.os.Handler getHandler() -> f
+    void dontAllow(int) -> a
+    void doBindService() -> g
     void showAlertDialog(java.lang.String) -> b
     void setRecurringAlarm(android.content.Context,boolean) -> a
     void onCreate(android.os.Bundle) -> onCreate
     void onSaveInstanceState(android.os.Bundle) -> onSaveInstanceState
     void onPause() -> onPause
     void onResume() -> onResume
-    void allow(int) -> a
-    void dontAllow(int) -> b
-    void applicationError(int) -> c
-    boolean onOptionsItemSelected(android.view.MenuItem) -> onOptionsItemSelected
-    boolean onCreateOptionsMenu(android.view.Menu) -> onCreateOptionsMenu
-    void access$0(com.shinymetal.gradereport.DiaryActivity,com.shinymetal.gradereport.DiaryUpdateService) -> a
-    com.shinymetal.gradereport.DiaryActivity access$1() -> h
-    void access$2(com.shinymetal.gradereport.DiaryActivity,boolean) -> a
-    com.shinymetal.gradereport.utils.GshisLoader access$3() -> i
-    android.support.v4.view.ViewPager access$4(com.shinymetal.gradereport.DiaryActivity) -> a
-    android.widget.Spinner access$5(com.shinymetal.gradereport.DiaryActivity) -> b
-com.shinymetal.gradereport.DiaryActivity$1 -> com.shinymetal.gradereport.a:
-    com.shinymetal.gradereport.DiaryActivity this$0 -> a
+    void access$0(com.shinymetal.gradereport.AbstractActivity,com.shinymetal.gradereport.DiaryUpdateService) -> a
+    com.shinymetal.gradereport.LicenseValidatorHelper access$1(com.shinymetal.gradereport.AbstractActivity) -> a
+    void access$2(com.shinymetal.gradereport.AbstractActivity,com.shinymetal.gradereport.LicenseValidatorHelper) -> a
+com.shinymetal.gradereport.AbstractActivity$1 -> com.shinymetal.gradereport.b:
+    com.shinymetal.gradereport.AbstractActivity this$0 -> a
     void onServiceConnected(android.content.ComponentName,android.os.IBinder) -> onServiceConnected
     void onServiceDisconnected(android.content.ComponentName) -> onServiceDisconnected
-com.shinymetal.gradereport.DiaryActivity$2 -> com.shinymetal.gradereport.b:
-    com.shinymetal.gradereport.DiaryActivity this$0 -> a
-    void onClick(android.content.DialogInterface,int) -> onClick
-com.shinymetal.gradereport.DiaryActivity$3 -> com.shinymetal.gradereport.c:
+com.shinymetal.gradereport.AbstractActivity$2 -> com.shinymetal.gradereport.c:
     boolean mRetry -> a
-    com.shinymetal.gradereport.DiaryActivity this$0 -> b
+    com.shinymetal.gradereport.AbstractActivity this$0 -> b
     void onClick(android.content.DialogInterface,int) -> onClick
-com.shinymetal.gradereport.DiaryActivity$4 -> com.shinymetal.gradereport.d:
+com.shinymetal.gradereport.AbstractActivity$3 -> com.shinymetal.gradereport.d:
+    com.shinymetal.gradereport.AbstractActivity this$0 -> a
+    void onClick(android.content.DialogInterface,int) -> onClick
+com.shinymetal.gradereport.AbstractActivity$4 -> com.shinymetal.gradereport.e:
+    com.shinymetal.gradereport.AbstractActivity this$0 -> a
+    void onClick(android.content.DialogInterface,int) -> onClick
+com.shinymetal.gradereport.AbstractActivity$IncomingHandler -> com.shinymetal.gradereport.f:
+    void handleMessage(android.os.Message) -> handleMessage
+com.shinymetal.gradereport.AlarmReceiver -> com.shinymetal.gradereport.AlarmReceiver:
+    void onReceive(android.content.Context,android.content.Intent) -> onReceive
+com.shinymetal.gradereport.BootEventReceiver -> com.shinymetal.gradereport.BootEventReceiver:
+    void onReceive(android.content.Context,android.content.Intent) -> onReceive
+com.shinymetal.gradereport.DiaryActivity -> com.shinymetal.gradereport.DiaryActivity:
+    com.shinymetal.gradereport.DiaryActivity$LessonsPagerAdapter mSectionsPagerAdapter -> q
+    android.support.v4.view.ViewPager mViewPager -> r
+    com.shinymetal.gradereport.DiaryActivity$DatePickerFragment mDateSetFragment -> s
+    android.widget.Spinner mPupilSpinner -> t
+    java.lang.String mPupilName -> u
+    com.shinymetal.gradereport.DiaryActivity instance -> v
+    int mCurPage -> w
+    void onCreate(android.os.Bundle) -> onCreate
+    java.lang.String getPupilName() -> h
+    void onSaveInstanceState(android.os.Bundle) -> onSaveInstanceState
+    boolean onOptionsItemSelected(android.view.MenuItem) -> onOptionsItemSelected
+    boolean onCreateOptionsMenu(android.view.Menu) -> onCreateOptionsMenu
+    android.support.v4.view.ViewPager access$0(com.shinymetal.gradereport.DiaryActivity) -> a
+    com.shinymetal.gradereport.DiaryActivity access$1() -> i
+    android.widget.Spinner access$2(com.shinymetal.gradereport.DiaryActivity) -> b
+    void access$3(com.shinymetal.gradereport.DiaryActivity,java.lang.String) -> a
+com.shinymetal.gradereport.DiaryActivity$1 -> com.shinymetal.gradereport.g:
     com.shinymetal.gradereport.DiaryActivity this$0 -> a
     void onClick(android.content.DialogInterface,int) -> onClick
-com.shinymetal.gradereport.DiaryActivity$5 -> com.shinymetal.gradereport.e:
+com.shinymetal.gradereport.DiaryActivity$2 -> com.shinymetal.gradereport.h:
     com.shinymetal.gradereport.DiaryActivity this$0 -> a
     void onClick(android.content.DialogInterface,int) -> onClick
-com.shinymetal.gradereport.DiaryActivity$6 -> com.shinymetal.gradereport.f:
-    com.shinymetal.gradereport.DiaryActivity this$0 -> a
-    void onClick(android.content.DialogInterface,int) -> onClick
-com.shinymetal.gradereport.DiaryActivity$DatePickerFragment -> com.shinymetal.gradereport.g:
+com.shinymetal.gradereport.DiaryActivity$DatePickerFragment -> com.shinymetal.gradereport.i:
     android.app.Dialog onCreateDialog(android.os.Bundle) -> c
     void onDateSet(android.widget.DatePicker,int,int,int) -> onDateSet
-com.shinymetal.gradereport.DiaryActivity$DatePickerFragment$1 -> com.shinymetal.gradereport.h:
+com.shinymetal.gradereport.DiaryActivity$DatePickerFragment$1 -> com.shinymetal.gradereport.j:
     com.shinymetal.gradereport.DiaryActivity$DatePickerFragment this$1 -> a
     void run() -> run
-com.shinymetal.gradereport.DiaryActivity$IncomingHandler -> com.shinymetal.gradereport.i:
-    void handleMessage(android.os.Message) -> handleMessage
-com.shinymetal.gradereport.DiaryActivity$LessonsPagerAdapter -> com.shinymetal.gradereport.j:
+com.shinymetal.gradereport.DiaryActivity$LessonsPagerAdapter -> com.shinymetal.gradereport.k:
     com.shinymetal.gradereport.DiaryActivity this$0 -> a
     android.support.v4.app.Fragment getItem(int) -> a
     int getItemPosition(java.lang.Object) -> a
     int getCount() -> b
     java.lang.CharSequence getPageTitle(int) -> c
 com.shinymetal.gradereport.DiaryUpdateService -> com.shinymetal.gradereport.DiaryUpdateService:
-    android.os.IBinder mBinder -> a
-    java.util.ArrayList mClients -> b
+    android.os.IBinder mBinder -> b
+    java.util.ArrayList mClients -> c
+    boolean mServiceBusy -> a
     android.os.IBinder onBind(android.content.Intent) -> onBind
     void updateActivityWithStatus(int) -> a
     void onHandleIntent(android.content.Intent) -> onHandleIntent
-com.shinymetal.gradereport.DiaryUpdateService$1 -> com.shinymetal.gradereport.k:
+com.shinymetal.gradereport.DiaryUpdateService$1 -> com.shinymetal.gradereport.l:
     com.shinymetal.gradereport.DiaryUpdateService this$0 -> a
     void run() -> run
-com.shinymetal.gradereport.DiaryUpdateService$DiaryUpdateBinder -> com.shinymetal.gradereport.l:
+com.shinymetal.gradereport.DiaryUpdateService$DiaryUpdateBinder -> com.shinymetal.gradereport.m:
     com.shinymetal.gradereport.DiaryUpdateService this$0 -> a
     com.shinymetal.gradereport.DiaryUpdateService getService() -> a
-com.shinymetal.gradereport.LessonDetailsFragment -> com.shinymetal.gradereport.m:
+com.shinymetal.gradereport.GradesActivity -> com.shinymetal.gradereport.GradesActivity:
+    com.shinymetal.gradereport.GradesActivity$GradesPagerAdapter mSectionsPagerAdapter -> q
+    android.support.v4.view.ViewPager mViewPager -> r
+    com.shinymetal.gradereport.GradesActivity$DatePickerFragment mDateSetFragment -> s
+    android.widget.Spinner mPupilSpinner -> t
+    java.lang.String mPupilName -> u
+    int mCurPage -> v
+    com.shinymetal.gradereport.GradesActivity instance -> w
+    void onCreate(android.os.Bundle) -> onCreate
+    java.lang.String getPupilName() -> h
+    void onSaveInstanceState(android.os.Bundle) -> onSaveInstanceState
+    boolean onOptionsItemSelected(android.view.MenuItem) -> onOptionsItemSelected
+    boolean onCreateOptionsMenu(android.view.Menu) -> onCreateOptionsMenu
+    android.support.v4.view.ViewPager access$0(com.shinymetal.gradereport.GradesActivity) -> a
+    com.shinymetal.gradereport.GradesActivity access$1() -> i
+    android.widget.Spinner access$2(com.shinymetal.gradereport.GradesActivity) -> b
+    void access$3(com.shinymetal.gradereport.GradesActivity,java.lang.String) -> a
+com.shinymetal.gradereport.GradesActivity$1 -> com.shinymetal.gradereport.n:
+    com.shinymetal.gradereport.GradesActivity this$0 -> a
+    void onClick(android.content.DialogInterface,int) -> onClick
+com.shinymetal.gradereport.GradesActivity$2 -> com.shinymetal.gradereport.o:
+    com.shinymetal.gradereport.GradesActivity this$0 -> a
+    void onClick(android.content.DialogInterface,int) -> onClick
+com.shinymetal.gradereport.GradesActivity$DatePickerFragment -> com.shinymetal.gradereport.p:
+    android.app.Dialog onCreateDialog(android.os.Bundle) -> c
+    void onDateSet(android.widget.DatePicker,int,int,int) -> onDateSet
+com.shinymetal.gradereport.GradesActivity$DatePickerFragment$1 -> com.shinymetal.gradereport.q:
+    com.shinymetal.gradereport.GradesActivity$DatePickerFragment this$1 -> a
+    void run() -> run
+com.shinymetal.gradereport.GradesActivity$GradesPagerAdapter -> com.shinymetal.gradereport.r:
+    com.shinymetal.gradereport.GradesActivity this$0 -> a
+    android.support.v4.app.Fragment getItem(int) -> a
+    int getItemPosition(java.lang.Object) -> a
+    int getCount() -> b
+    java.lang.CharSequence getPageTitle(int) -> c
+com.shinymetal.gradereport.GradesExpListAdapter -> com.shinymetal.gradereport.s:
+    com.shinymetal.gradereport.GradesActivity mActivity -> a
+    android.database.Cursor mGradesCursor -> b
+    java.util.SortedMap mMarksCursors -> c
+    int mSemester -> d
+    int mSelectedPos -> e
+    int getSelectedPosition() -> a
+    void setSelectedPosition(int) -> a
+    java.lang.Object getChild(int,int) -> getChild
+    long getChildId(int,int) -> getChildId
+    android.view.View getChildView(int,int,boolean,android.view.View,android.view.ViewGroup) -> getChildView
+    int getChildrenCount(int) -> getChildrenCount
+    java.lang.Object getGroup(int) -> getGroup
+    int getGroupCount() -> getGroupCount
+    long getGroupId(int) -> getGroupId
+    android.view.View getGroupView(int,boolean,android.view.View,android.view.ViewGroup) -> getGroupView
+    boolean hasStableIds() -> hasStableIds
+    boolean isChildSelectable(int,int) -> isChildSelectable
+com.shinymetal.gradereport.GradesExpListFragment -> com.shinymetal.gradereport.t:
+    com.shinymetal.gradereport.GradesExpListAdapter mAdapter -> a
+    android.widget.ExpandableListView mExpListView -> b
     android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle) -> a
-com.shinymetal.gradereport.LessonsExpListAdapter -> com.shinymetal.gradereport.n:
+com.shinymetal.gradereport.GradesExpListFragment$1 -> com.shinymetal.gradereport.u:
+    com.shinymetal.gradereport.GradesExpListFragment this$0 -> a
+    void onGroupExpand(int) -> onGroupExpand
+com.shinymetal.gradereport.LessonDetailsFragment -> com.shinymetal.gradereport.v:
+    android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle) -> a
+com.shinymetal.gradereport.LessonsExpListAdapter -> com.shinymetal.gradereport.w:
     com.shinymetal.gradereport.DiaryActivity mActivity -> a
     java.util.Date mDay -> b
     java.text.SimpleDateFormat mFormat -> c
     android.database.Cursor mCursor -> d
+    int mSelectedPos -> e
+    void setSelectedPosition(int) -> a
+    int getSelectedPosition() -> a
     int getGroupCount() -> getGroupCount
     int getChildrenCount(int) -> getChildrenCount
     java.lang.Object getGroup(int) -> getGroup
@@ -1984,47 +2051,66 @@ com.shinymetal.gradereport.LessonsExpListAdapter -> com.shinymetal.gradereport.n
     android.view.View getGroupView(int,boolean,android.view.View,android.view.ViewGroup) -> getGroupView
     android.view.View getChildView(int,int,boolean,android.view.View,android.view.ViewGroup) -> getChildView
     boolean isChildSelectable(int,int) -> isChildSelectable
-com.shinymetal.gradereport.LessonsExpListFragment -> com.shinymetal.gradereport.o:
+com.shinymetal.gradereport.LessonsExpListFragment -> com.shinymetal.gradereport.x:
     com.shinymetal.gradereport.LessonsExpListAdapter mAdapter -> a
+    android.widget.ExpandableListView mExpListView -> b
+    java.text.SimpleDateFormat mDateFmt -> c
     android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle) -> a
-com.shinymetal.gradereport.LessonsListAdapter -> com.shinymetal.gradereport.p:
+com.shinymetal.gradereport.LessonsExpListFragment$1 -> com.shinymetal.gradereport.y:
+    com.shinymetal.gradereport.LessonsExpListFragment this$0 -> a
+    void onGroupExpand(int) -> onGroupExpand
+com.shinymetal.gradereport.LessonsListAdapter -> com.shinymetal.gradereport.z:
     com.shinymetal.gradereport.DiaryActivity mActivity -> a
     java.text.SimpleDateFormat mFormat -> b
     java.util.Date mDay -> c
     android.database.Cursor mCursor -> d
+    int mSelectedPos -> e
+    void setSelectedPosition(int) -> a
     int getCount() -> getCount
     java.lang.Object getItem(int) -> getItem
     long getItemId(int) -> getItemId
     boolean hasStableIds() -> hasStableIds
     android.view.View getView(int,android.view.View,android.view.ViewGroup) -> getView
-com.shinymetal.gradereport.LessonsListFragment -> com.shinymetal.gradereport.q:
+com.shinymetal.gradereport.LessonsListFragment -> com.shinymetal.gradereport.aa:
     com.shinymetal.gradereport.LessonsListAdapter mAdapter -> a
     com.shinymetal.gradereport.LessonsListFragment instance -> b
     android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle) -> a
     com.shinymetal.gradereport.LessonsListFragment access$0(com.shinymetal.gradereport.LessonsListFragment) -> a
-com.shinymetal.gradereport.LessonsListFragment$1 -> com.shinymetal.gradereport.r:
+com.shinymetal.gradereport.LessonsListFragment$1 -> com.shinymetal.gradereport.ab:
     com.shinymetal.gradereport.LessonsListFragment this$0 -> a
     void onItemClick(android.widget.AdapterView,android.view.View,int,long) -> onItemClick
-com.shinymetal.gradereport.LessonsNestedFragment -> com.shinymetal.gradereport.s:
+com.shinymetal.gradereport.LessonsNestedFragment -> com.shinymetal.gradereport.ac:
     com.shinymetal.gradereport.LessonsListFragment mLessonsFragment -> a
     com.shinymetal.gradereport.LessonDetailsFragment mLessonsDetailsFragment -> b
     com.shinymetal.gradereport.LessonDetailsFragment getDetailsFragment() -> a
     android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle) -> a
-com.shinymetal.gradereport.LicenseValidatorHelper -> com.shinymetal.gradereport.t:
+com.shinymetal.gradereport.LicenseValidatorHelper -> com.shinymetal.gradereport.ad:
     byte[] SALT -> a
-    com.google.android.vending.licensing.LicenseCheckerCallback mLicenseCheckerCallback -> b
-    com.google.android.vending.licensing.LicenseChecker mChecker -> c
-    java.lang.String mDeviceId -> d
+    com.google.android.vending.licensing.LicenseChecker mChecker -> b
+    java.lang.String mDeviceId -> c
+    int mLicState -> d
+    boolean mInProgress -> e
+    com.shinymetal.gradereport.LicenseValidatorHelper instance -> f
+    com.shinymetal.gradereport.LicenseValidatorHelper getInstance(android.content.Context) -> a
     void retry() -> a
-    void onDestroy() -> b
+    int getLicState() -> b
+    boolean isInProgress() -> c
+    void allow(int) -> a
+    void dontAllow(int) -> b
+    void applicationError(int) -> c
 com.shinymetal.gradereport.PreferencesActivity -> com.shinymetal.gradereport.PreferencesActivity:
+    com.shinymetal.gradereport.PreferencesActivity instance -> a
+    boolean mRescheduleService -> b
     void onCreate(android.os.Bundle) -> onCreate
-com.shinymetal.gradereport.PreferencesActivity$MyPreferenceFragment -> com.shinymetal.gradereport.u:
+    void onPause() -> onPause
+    boolean onPreferenceChange(android.preference.Preference,java.lang.Object) -> onPreferenceChange
+    com.shinymetal.gradereport.PreferencesActivity access$0() -> a
+com.shinymetal.gradereport.PreferencesActivity$MyPreferenceFragment -> com.shinymetal.gradereport.ae:
     void onCreate(android.os.Bundle) -> onCreate
 com.shinymetal.gradereport.SplashActivity -> com.shinymetal.gradereport.SplashActivity:
     int SPLASH_TIME_OUT -> a
     void onCreate(android.os.Bundle) -> onCreate
-com.shinymetal.gradereport.SplashActivity$1 -> com.shinymetal.gradereport.v:
+com.shinymetal.gradereport.SplashActivity$1 -> com.shinymetal.gradereport.af:
     com.shinymetal.gradereport.SplashActivity this$0 -> a
     void run() -> run
 com.shinymetal.gradereport.db.Database -> com.shinymetal.gradereport.a.a:
@@ -2053,7 +2139,51 @@ com.shinymetal.gradereport.objects.FormTimeInterval -> com.shinymetal.graderepor
     void setStart(java.util.Date) -> a
     java.util.Date getStop() -> d
     void setStop(java.util.Date) -> b
-com.shinymetal.gradereport.objects.Lesson -> com.shinymetal.gradereport.b.c:
+com.shinymetal.gradereport.objects.GradeRec -> com.shinymetal.gradereport.b.c:
+    java.lang.String[] COLUMNS_GET_ALL -> f
+    int mAbsent -> a
+    int mReleased -> b
+    int mSick -> c
+    float mAverage -> d
+    int mTotal -> e
+    long mScheduleId -> g
+    long mRowId -> h
+    com.shinymetal.gradereport.objects.GradeRec addMarcRec(com.shinymetal.gradereport.objects.MarkRec) -> a
+    java.lang.String toString() -> toString
+    int getAbsent() -> e
+    void setAbsent(int) -> a
+    int getReleased() -> f
+    void setReleased(int) -> b
+    int getSick() -> g
+    void setSick(int) -> c
+    float getAverage() -> h
+    void setAverage(float) -> a
+    int getTotal() -> i
+    void setTotal(int) -> d
+    long insert(com.shinymetal.gradereport.objects.Schedule) -> a
+    long update() -> j
+    android.database.Cursor getCursorByStart(com.shinymetal.gradereport.objects.Schedule,java.util.Date) -> a
+    com.shinymetal.gradereport.objects.GradeRec getFromCursor(android.database.Cursor) -> a
+    com.shinymetal.gradereport.objects.GradeRec getByDateText(com.shinymetal.gradereport.objects.Schedule,java.util.Date,java.lang.String) -> a
+    android.database.Cursor getCursorMarks() -> k
+    com.shinymetal.gradereport.objects.MarkRec getMarkRecByComment(java.lang.String) -> c
+    long getRowId() -> l
+com.shinymetal.gradereport.objects.GradeSemester -> com.shinymetal.gradereport.b.d:
+    java.lang.String[] COLUMNS_GET_BY_FORM_ID -> b
+    java.lang.String[] COLUMNS_GET_BY_DATE -> c
+    java.lang.String[] COLUMNS_GET_SET -> d
+    boolean mLoaded -> a
+    com.shinymetal.gradereport.objects.GradeSemester mLastSemester -> e
+    long mScheduleId -> f
+    long mRowId -> g
+    com.shinymetal.gradereport.objects.GradeSemester setLoaded() -> e
+    boolean getLoaded() -> f
+    long insert(com.shinymetal.gradereport.objects.Schedule) -> a
+    com.shinymetal.gradereport.objects.GradeSemester getByFormId(com.shinymetal.gradereport.objects.Schedule,java.lang.String) -> a
+    long update() -> g
+    java.util.Set getSet(com.shinymetal.gradereport.objects.Schedule) -> b
+    com.shinymetal.gradereport.objects.GradeSemester getByNumber(com.shinymetal.gradereport.objects.Schedule,int) -> a
+com.shinymetal.gradereport.objects.Lesson -> com.shinymetal.gradereport.b.e:
     java.lang.String[] COLUMNS_GET_BY_START -> a
     java.lang.String[] COLUMNS_GET_ALL_BY_DATE -> b
     java.lang.String[] COLUMNS_GET_BY_NUMBER -> c
@@ -2085,7 +2215,24 @@ com.shinymetal.gradereport.objects.Lesson -> com.shinymetal.gradereport.b.c:
     android.database.Cursor getCursorAllByDate(com.shinymetal.gradereport.objects.Schedule,java.util.Date,java.util.Date) -> a
     com.shinymetal.gradereport.objects.Lesson getFromCursor(android.database.Cursor) -> a
     com.shinymetal.gradereport.objects.Lesson getByNumber(com.shinymetal.gradereport.objects.Schedule,java.util.Date,java.util.Date,int) -> a
-com.shinymetal.gradereport.objects.Pupil -> com.shinymetal.gradereport.b.d:
+com.shinymetal.gradereport.objects.MarkRec -> com.shinymetal.gradereport.b.f:
+    java.lang.String[] COLUMNS_GET_ALL -> a
+    java.lang.String[] COLUMNS_GET_BY_COMMENT -> b
+    java.lang.String mMarks -> c
+    java.lang.String mComment -> d
+    long mGradeId -> e
+    long mRowId -> f
+    java.lang.String getMarks() -> a
+    void setMarks(java.lang.String) -> a
+    java.lang.String getComment() -> b
+    void setComment(java.lang.String) -> b
+    long update() -> c
+    long insert(com.shinymetal.gradereport.objects.GradeRec) -> a
+    android.database.Cursor getCursor(com.shinymetal.gradereport.objects.GradeRec) -> b
+    com.shinymetal.gradereport.objects.MarkRec getFromCursor(android.database.Cursor) -> a
+    com.shinymetal.gradereport.objects.MarkRec getByComment(com.shinymetal.gradereport.objects.GradeRec,java.lang.String) -> a
+    java.util.Set getSet(com.shinymetal.gradereport.objects.GradeRec) -> c
+com.shinymetal.gradereport.objects.Pupil -> com.shinymetal.gradereport.b.g:
     java.lang.String[] COLUMNS_GET_BY_FORM_ID -> a
     java.lang.String[] COLUMNS_GET_BY_FORM_NAME -> b
     java.lang.String[] COLUMNS_GET_SET -> c
@@ -2100,7 +2247,7 @@ com.shinymetal.gradereport.objects.Pupil -> com.shinymetal.gradereport.b.d:
     com.shinymetal.gradereport.objects.Schedule getScheduleByFormId(java.lang.String) -> e
     java.lang.String toString() -> toString
     com.shinymetal.gradereport.objects.Schedule getScheduleByDate(java.util.Date) -> a
-com.shinymetal.gradereport.objects.Schedule -> com.shinymetal.gradereport.b.e:
+com.shinymetal.gradereport.objects.Schedule -> com.shinymetal.gradereport.b.h:
     java.lang.String[] COLUMNS_GET_BY_FORM_ID -> a
     java.lang.String[] COLUMNS_GET_SET -> b
     java.lang.String[] COLUMNS_GET_BY_SCHOOL_YEAR -> c
@@ -2112,19 +2259,26 @@ com.shinymetal.gradereport.objects.Schedule -> com.shinymetal.gradereport.b.e:
     com.shinymetal.gradereport.objects.Schedule getByFormId(com.shinymetal.gradereport.objects.Pupil,java.lang.String) -> a
     com.shinymetal.gradereport.objects.Schedule getByDate(com.shinymetal.gradereport.objects.Pupil,java.util.Date) -> a
     com.shinymetal.gradereport.objects.Schedule addLesson(com.shinymetal.gradereport.objects.Lesson) -> a
+    com.shinymetal.gradereport.objects.Schedule addSemester(com.shinymetal.gradereport.objects.GradeSemester) -> a
+    com.shinymetal.gradereport.objects.GradeSemester getSemesterByNumber(int) -> a
+    com.shinymetal.gradereport.objects.GradeSemester getSemester(java.lang.String) -> c
+    com.shinymetal.gradereport.objects.Schedule addGradeRec(com.shinymetal.gradereport.objects.GradeRec) -> a
     boolean existsLessonByStart(java.util.Date) -> c
     android.database.Cursor getCursorLessonsByDate(java.util.Date) -> d
+    android.database.Cursor getCursorGradesByDate(java.util.Date) -> e
     com.shinymetal.gradereport.objects.Lesson getLessonByNumber(java.util.Date,int) -> a
     com.shinymetal.gradereport.objects.Schedule addWeek(com.shinymetal.gradereport.objects.Week) -> a
-    com.shinymetal.gradereport.objects.Week getWeek(java.lang.String) -> c
-    java.util.Set getWeekSet() -> f
-com.shinymetal.gradereport.objects.TS -> com.shinymetal.gradereport.b.f:
+    com.shinymetal.gradereport.objects.Week getWeek(java.lang.String) -> d
+    java.util.Set getSemesterSet() -> f
+    java.util.Set getWeekSet() -> g
+    com.shinymetal.gradereport.objects.GradeRec getGradeRecByDateText(java.util.Date,java.lang.String) -> a
+com.shinymetal.gradereport.objects.TS -> com.shinymetal.gradereport.b.i:
     long startDate -> a
     long startNanoseconds -> b
     java.text.SimpleDateFormat dateFormat -> c
     java.lang.String getTimestamp() -> b
     java.lang.String get() -> a
-com.shinymetal.gradereport.objects.Week -> com.shinymetal.gradereport.b.g:
+com.shinymetal.gradereport.objects.Week -> com.shinymetal.gradereport.b.j:
     java.lang.String[] COLUMNS_GET_BY_DATE -> a
     java.lang.String[] COLUMNS_GET_BY_FORM_ID -> b
     java.lang.String[] COLUMNS_GET_SET -> c
@@ -2152,7 +2306,10 @@ com.shinymetal.gradereport.utils.GshisHTMLParser -> com.shinymetal.gradereport.c
     void getLessons(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> b
     void getLessonsDetails(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> c
     java.lang.String fetchLongCellString(org.jsoup.nodes.Element) -> a
+    boolean containsPrintableChars(java.lang.String) -> a
     java.lang.String fetchLongCellStringNoWhitespaces(org.jsoup.nodes.Element) -> b
+    com.shinymetal.gradereport.objects.GradeSemester getActiveGradeSemester(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> d
+    void getGrades(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester) -> a
     java.lang.String fixDuplicateString(java.lang.String,java.lang.String,int) -> a
     java.lang.String getVIEWSTATE(org.jsoup.nodes.Document) -> b
 com.shinymetal.gradereport.utils.GshisLoader -> com.shinymetal.gradereport.c.b:
@@ -2162,14 +2319,15 @@ com.shinymetal.gradereport.utils.GshisLoader -> com.shinymetal.gradereport.c.b:
     java.lang.String mAuthVIEWSTATE -> d
     java.lang.String mLessonsVIEWSTATE -> e
     java.lang.String mDiaryVIEWSTATE -> f
-    java.lang.String mLogin -> g
-    java.lang.String mPassword -> h
-    com.shinymetal.gradereport.utils.GshisLoader instance -> n
-    boolean mIsLoggedIn -> i
-    boolean mIsLastNetworkCallFailed -> j
-    java.lang.String mLastNetworkFailureReason -> k
-    java.util.Date mCurrWeekStart -> l
-    java.lang.String mCurrentPupilName -> m
+    java.lang.String mGradesVIEWSTATE -> g
+    java.lang.String mLogin -> h
+    java.lang.String mPassword -> i
+    com.shinymetal.gradereport.utils.GshisLoader instance -> o
+    boolean mIsLoggedIn -> j
+    boolean mIsLastNetworkCallFailed -> k
+    java.lang.String mLastNetworkFailureReason -> l
+    java.util.Date mCurrWeekStart -> m
+    java.lang.String mCurrentPupilName -> n
     java.util.Date getCurrWeekStart() -> a
     void setCurrWeekStart(java.util.Date) -> a
     void setLogin(java.lang.String) -> a
@@ -2177,23 +2335,25 @@ com.shinymetal.gradereport.utils.GshisLoader -> com.shinymetal.gradereport.c.b:
     void setPassword(java.lang.String) -> b
     com.shinymetal.gradereport.objects.Week parseLessonsPage(java.lang.String) -> c
     void parseLessonsDetailsPage(java.lang.String) -> d
+    void parseGradesPage(java.lang.String) -> e
     java.lang.String getCookieByName(java.net.HttpURLConnection,java.lang.String) -> a
-    java.net.HttpURLConnection getHttpURLConnection(java.lang.String) -> e
+    java.net.HttpURLConnection getHttpURLConnection(java.lang.String) -> f
     java.lang.String encodePOSTVar(java.lang.String,java.lang.String) -> a
     boolean loginGetAuthVIEWSTATE() -> c
     boolean loginGetASPXAUTH() -> d
     boolean loginGetSessionId() -> e
-    java.lang.String getPageByURL(java.lang.String) -> f
+    java.lang.String getPageByURL(java.lang.String) -> g
     java.lang.String getLessons(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.Week) -> a
     java.lang.String getLessonDetails(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.Week) -> b
+    java.lang.String getGrades(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester) -> a
     com.shinymetal.gradereport.utils.GshisLoader getInstance() -> f
     boolean loginSequence() -> g
-    android.database.Cursor getCursorLessonsByDate(java.util.Date) -> b
-    boolean getAllPupilsLessons(java.util.Date) -> c
+    android.database.Cursor getCursorLessonsByDate(java.util.Date,java.lang.String) -> a
+    android.database.Cursor getCursorGradesBySemester(java.lang.String,int) -> a
+    boolean getAllPupilsLessons(java.util.Date) -> b
     boolean isLastNetworkCallFailed() -> h
     java.lang.String getLastNetworkFailureReason() -> i
     java.util.ArrayList getPupilNames() -> j
-    void selectPupilByName(java.lang.String) -> g
 org.jsoup.Connection -> org.jsoup.Connection:
     org.jsoup.Connection url(java.net.URL) -> url
     org.jsoup.Connection url(java.lang.String) -> url
