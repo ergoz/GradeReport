@@ -69,7 +69,7 @@ public class GradeRec extends FormTimeInterval {
 		
 		String res = getFormText() + ": ";		
 		res += mTotal + " ( abs: " + mAbsent + ", rel: " + mReleased;
-		res += ", mSick: " + mSick + ", av: " + mAverage + ") m:";
+		res += ", mSick: " + mSick + ", av: " + mAverage + ", t: " + mTotal + ") m:";
 		
 		for (MarkRec rec : MarkRec.getSet(this))
 			res += " " + rec.getMarks () + " (" + rec.getComment () + ")"; 
@@ -196,7 +196,7 @@ public class GradeRec extends FormTimeInterval {
 		if ((fieldPos = c.getColumnIndex(SICK_NAME)) != -1)
 			gr.setSick(c.getInt(fieldPos));
 		
-		if ((fieldPos = c.getColumnIndex(AVERAGE_NAME)) != -1)
+		if ((fieldPos = c.getColumnIndex(AVERAGE_NAME)) != -1)			
 			gr.setAverage(c.getFloat(fieldPos));
 		
 		if ((fieldPos = c.getColumnIndex(TOTAL_NAME)) != -1)

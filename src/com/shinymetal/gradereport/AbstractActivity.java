@@ -2,6 +2,7 @@ package com.shinymetal.gradereport;
 
 import java.util.Date;
 
+import com.google.android.vending.licensing.Policy;
 import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.GshisLoader;
@@ -14,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,6 +30,8 @@ public class AbstractActivity extends FragmentActivity {
 	
 	protected static volatile AbstractActivity instance;	
 	protected static final GshisLoader mGshisLoader = GshisLoader.getInstance();
+	
+	private LicenseValidatorHelper mLicValidator = null;
 		
 	protected static class IncomingHandler extends Handler {
 		
@@ -70,6 +74,53 @@ public class AbstractActivity extends FragmentActivity {
 	private DiaryUpdateService mUpdateService;
 	
 	public Handler getHandler() { return mHandler; }
+	
+    public void dontAllow(int policyReason) {
+    	
+    	final boolean bRetry = policyReason == Policy.RETRY;
+    	
+    	if (isFinishing()) {
+    		// Don't update UI if Activity is finishing.
+    		return;
+    	}
+    	
+        // Should not allow access. In most cases, the app should assume
+        // the user has access unless it encounters this. If it does,
+        // the app should inform the user of their unlicensed ways
+        // and then either shut down the app or limit the user to a
+        // restricted set of features.
+        // In this example, we show a dialog that takes the user to Market.
+        // If the reason for the lack of license is that the service is
+        // unavailable or there is another problem, we display a
+        // retry button on the dialog and a different message.
+    	
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setTitle(R.string.unlicensed_dialog_title);
+    	builder.setMessage(bRetry ? R.string.unlicensed_dialog_retry_body : R.string.unlicensed_dialog_body);
+        builder.setPositiveButton(bRetry ? R.string.label_retry : R.string.label_buy, new DialogInterface.OnClickListener() {
+            boolean mRetry = bRetry;
+            public void onClick(DialogInterface dialog, int which) {
+                if ( mRetry ) {
+
+                	if (instance.mLicValidator != null) {
+                		instance.mLicValidator.retry();
+                	} else {
+                		instance.mLicValidator = LicenseValidatorHelper.getInstance(instance.getApplicationContext());
+                	}
+                } else {
+                    Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(
+                            "http://market.android.com/details?id=" + getPackageName()));
+                        startActivity(marketIntent);                        
+                }
+            }
+        });
+        
+        builder.setNegativeButton(R.string.label_quit, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).create();
+    }
 	
 	public ServiceConnection mConnection = new ServiceConnection() {
 
@@ -156,6 +207,8 @@ public class AbstractActivity extends FragmentActivity {
 		// this is required to get proper list of pupils in fragments
 		mGshisLoader.setLogin(PreferenceManager.getDefaultSharedPreferences(
 				this).getString(getString(R.string.pref_login_key), ""));
+		
+		mLicValidator = LicenseValidatorHelper.getInstance(this.getApplicationContext());
 	}
 
 	@Override
@@ -186,6 +239,13 @@ public class AbstractActivity extends FragmentActivity {
 		}
 		
 		setRecurringAlarm(this, false);
+		
+		if (mLicValidator == null)
+			mLicValidator = LicenseValidatorHelper.getInstance(this.getApplicationContext());
+		
+		if (!mLicValidator.isInProgress() && mLicValidator.getLicState() != Policy.LICENSED)
+			dontAllow(mLicValidator.getLicState());
+
 		super.onResume();
 	}
 }

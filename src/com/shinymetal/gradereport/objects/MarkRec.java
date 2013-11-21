@@ -95,7 +95,7 @@ public class MarkRec {
 
 		return Database.getReadable().query(TABLE_NAME,
 				COLUMNS_GET_ALL, SELECTION_GET_ALL, args, null,
-				null, COMMENT_NAME);
+				null, ID_NAME);
 	}
 	
 	public static MarkRec getFromCursor(Cursor c) {

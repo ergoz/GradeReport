@@ -159,8 +159,8 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection(/*new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080))*/);
+		return (HttpURLConnection) new URL(url).openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+				"192.168.112.14", 8080)));
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
@@ -703,7 +703,8 @@ public class GshisLoader {
 								+ "getAllPupilsLessons (): day = " + day
 								+ " Sem start = " + sem.getStart() + " stop = " + sem.getStop() + " loaded = " + sem.getLoaded());
 					
-						if (sem.getLoaded() && !(sem.getStart().getTime() <= day.getTime() && sem.getStop().getTime() >= day.getTime() )) {
+//						if (sem.getLoaded() && !(sem.getStart().getTime() <= day.getTime() && sem.getStop().getTime() >= day.getTime() )) {
+						if (sem.getStart().getTime() > day.getTime()) {
 
 							// not current and already loaded, skip
 							if (BuildConfig.DEBUG)
@@ -726,8 +727,7 @@ public class GshisLoader {
 		} catch (Exception e) {
 
 			mIsLastNetworkCallFailed = true;
-			if ((mLastNetworkFailureReason = e.getMessage()) == null)
-				mLastNetworkFailureReason = e.toString();
+			mLastNetworkFailureReason = e.toString() + " " + e.getMessage();
 
 			mIsLoggedIn = false;
 			e.printStackTrace();

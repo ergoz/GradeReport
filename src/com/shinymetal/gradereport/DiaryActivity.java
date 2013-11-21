@@ -5,9 +5,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import com.google.android.vending.licensing.LicenseCheckerCallback;
-import com.google.android.vending.licensing.Policy;
-
 import com.shinymetal.gradereport.R;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
@@ -19,7 +16,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -35,7 +31,7 @@ import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 
-public class DiaryActivity extends AbstractActivity implements LicenseCheckerCallback {
+public class DiaryActivity extends AbstractActivity{
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -52,11 +48,9 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 	private String mPupilName;
 	
 	private static volatile DiaryActivity instance;	
-	private static int mLicState = Policy.RETRY;
+
 	private int mCurPage = 0;
 
-	public LicenseValidatorHelper mLicValidator = null;
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -75,8 +69,6 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 						
 			mCurPage = savedInstanceState.getInt("mCurPage");
 			mViewPager.setCurrentItem(mCurPage, false);
-			
-			mLicState = savedInstanceState.getInt("mLicState");
 			mPupilName = savedInstanceState.getString("mPupilName");
 		}
 		else
@@ -101,104 +93,12 @@ public class DiaryActivity extends AbstractActivity implements LicenseCheckerCal
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	
 		savedInstanceState.putInt("mCurPage", mCurPage = mViewPager.getCurrentItem());
-		savedInstanceState.putInt("mLicState", mLicState);
 		savedInstanceState.putString("mPupilName", mPupilName);
 		
 		super.onSaveInstanceState(savedInstanceState);
 	}
-	
+
 	@Override
-	public void onPause() {
-
-    	if (mLicValidator != null) {
-    		mLicValidator.onDestroy();
-    		mLicValidator = null;
-    	}
-
-		super.onPause();
-	}
-	
-	@Override
-	public void onResume() {
-		
-		if (mLicState == Policy.RETRY)
-			mLicValidator = new LicenseValidatorHelper (this, this);
-		
-		super.onResume();
-	}
-	
-    public void allow(int policyReason) {
-    	
-    	mLicState = Policy.LICENSED;  	
-    }
-    
-    public void dontAllow(int policyReason) {
-    	
-    	mLicState = policyReason;
-    	final boolean bRetry = policyReason == Policy.RETRY;
-    	
-    	if (isFinishing()) {
-    		// Don't update UI if Activity is finishing.
-    		return;
-    	}
-    	
-        // Should not allow access. In most cases, the app should assume
-        // the user has access unless it encounters this. If it does,
-        // the app should inform the user of their unlicensed ways
-        // and then either shut down the app or limit the user to a
-        // restricted set of features.
-        // In this example, we show a dialog that takes the user to Market.
-        // If the reason for the lack of license is that the service is
-        // unavailable or there is another problem, we display a
-        // retry button on the dialog and a different message.
-    	
-    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    	builder.setTitle(R.string.unlicensed_dialog_title);
-    	builder.setMessage(bRetry ? R.string.unlicensed_dialog_retry_body : R.string.unlicensed_dialog_body);
-        builder.setPositiveButton(bRetry ? R.string.label_retry : R.string.label_buy, new DialogInterface.OnClickListener() {
-            boolean mRetry = bRetry;
-            public void onClick(DialogInterface dialog, int which) {
-                if ( mRetry ) {
-
-                	if (instance.mLicValidator != null) {
-                		instance.mLicValidator.retry();
-                	} else {
-                		instance.mLicValidator = new LicenseValidatorHelper (instance, instance);
-                	}
-                } else {
-                    Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(
-                            "http://market.android.com/details?id=" + getPackageName()));
-                        startActivity(marketIntent);                        
-                }
-            }
-        });
-        
-        builder.setNegativeButton(R.string.label_quit, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        }).create();
-    }
-    
-    public void applicationError(int errorCode) {
-    	
-    	mLicState = Policy.RETRY;
-    	
-    	if (isFinishing()) {
-    		// Don't update UI if Activity is finishing.
-    		return;
-    	}
-    	
-        // This is a polite way of saying the developer made a mistake
-        // while setting up or calling the license checker library.
-        // Please examine the error code and fix the error.
-        
-		if (BuildConfig.DEBUG)
-			Log.d(this.toString(), TS.get() + "applicationError (): "
-					+ errorCode);    	
-    }
-	
-    @Override
 	public boolean onOptionsItemSelected (MenuItem item) {
     	
     	Calendar cal = null;

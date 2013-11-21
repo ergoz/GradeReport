@@ -3,14 +3,12 @@ package com.shinymetal.gradereport;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
-import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,17 +83,17 @@ public class GradesExpListFragment extends Fragment implements
 		GradeSemester sem = null;
 		if (p != null) {
 			
-			if (BuildConfig.DEBUG)
-				Log.d(this.toString(),
-						TS.get() + " onCreateView (): p = " + p );
+//			if (BuildConfig.DEBUG)
+//				Log.d(this.toString(),
+//						TS.get() + " onCreateView (): p = " + p );
 			
 			Schedule s = p.getScheduleByDate(GshisLoader.getInstance().getCurrWeekStart());
 			if (s != null ) {
 				sem = s.getSemesterByNumber(wantSem - 1);
 				
-				if (BuildConfig.DEBUG)
-					Log.d(this.toString(),
-							TS.get() + " onCreateView (): sem = " + sem );
+//				if (BuildConfig.DEBUG)
+//					Log.d(this.toString(),
+//							TS.get() + " onCreateView (): sem = " + sem );
 			
 				if (sem != null)
 					((TextView) header.findViewById(R.id.itemHeader)).setText(sem.getFormText());

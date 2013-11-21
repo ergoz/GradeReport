@@ -89,18 +89,6 @@ public class GradesActivity extends AbstractActivity {
 	}
 
 	@Override
-	public void onPause() {
-
-		super.onPause();
-	}
-
-	@Override
-	public void onResume() {
-
-		super.onResume();
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
 		switch (item.getItemId()) {

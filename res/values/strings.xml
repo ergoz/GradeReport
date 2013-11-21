@@ -28,7 +28,7 @@
     <string name="label_absent">Н</string>
     <string name="label_released">ОСВ</string>
     <string name="label_sick">Б</string>
-    <string name="label_average">Средний балл</string>
+    <string name="label_average">Ср</string>
     <string name="label_total">Итог</string>
     <string name="title_error">Ошибка</string>
     <string name="title_section1">Понедельник</string>
