@@ -555,6 +555,9 @@ public class GshisLoader {
 	}
 	
 	public Cursor getCursorGradesBySemester(String uName, int wantSem) {
+		
+		if (uName == null)
+			return null;
 
 		Pupil p = Pupil.getByFormName(uName);
 		if (p == null)

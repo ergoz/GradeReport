@@ -86,6 +86,9 @@ public class Pupil extends FormSelectableField {
 	
 	public static synchronized Pupil getByFormName(String name) {
 		
+		if (name == null)
+			return null;
+		
 		// Elementary caching
 		if (mLastPupil != null && mLastPupil.getFormText().equals(name))
 			return mLastPupil;
