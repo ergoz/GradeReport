@@ -1523,7 +1523,7 @@ com.shinymetal.gradereport.objects.Lesson:
     public static final java.lang.String SELECTION_GET_ALL_BY_DATE
     public static final java.lang.String SELECTION_GET_BY_NUMBER
     public static final java.lang.String SELECTION_GET_SET
-    190:221:public static com.shinymetal.gradereport.objects.Lesson getByStart(com.shinymetal.gradereport.objects.Schedule,java.util.Date)
+    178:185:public static boolean existsByStart(com.shinymetal.gradereport.objects.Schedule,java.util.Date)
     325:356:public static java.util.Set getSet(com.shinymetal.gradereport.objects.Schedule)
 com.shinymetal.gradereport.objects.MarkRec:
     public static final java.lang.String TABLE_NAME
@@ -1544,8 +1544,8 @@ com.shinymetal.gradereport.objects.Pupil:
     private static final java.lang.String SELECTION_GET_BY_FORM_ID
     private static final java.lang.String SELECTION_GET_BY_FORM_NAME
     private static final java.lang.String SELECTION_GET_SET
-    140:140:public final java.util.Set getScheduleSet()
-    156:156:public com.shinymetal.gradereport.objects.Schedule getScheduleBySchoolYear(java.lang.String)
+    143:143:public final java.util.Set getScheduleSet()
+    159:159:public com.shinymetal.gradereport.objects.Schedule getScheduleBySchoolYear(java.lang.String)
 com.shinymetal.gradereport.objects.Schedule:
     private static final java.lang.String ID_NAME
     private static final java.lang.String FORMID_NAME
@@ -1564,7 +1564,7 @@ com.shinymetal.gradereport.objects.Schedule:
     109:133:public static final java.util.Set getSet(com.shinymetal.gradereport.objects.Pupil)
     138:159:public static com.shinymetal.gradereport.objects.Schedule getBySchoolYear(com.shinymetal.gradereport.objects.Pupil,java.lang.String)
     204:204:public com.shinymetal.gradereport.objects.GradeSemester getSemester(java.util.Date)
-    225:225:public com.shinymetal.gradereport.objects.Lesson getLessonByStart(java.util.Date)
+    230:230:public boolean existsLessonByStart(java.util.Date)
     284:285:public com.shinymetal.gradereport.objects.Week getWeek(java.util.Date)
     305:305:public final java.util.Set getLessonSet()
     310:310:public final java.util.Set getGradeRecSet()
@@ -1597,4 +1597,4 @@ com.shinymetal.gradereport.utils.GshisLoader:
     protected static final java.lang.String ERROR_CANNOT_LOAD_DATA
     protected static final java.lang.String ERROR_INV_CREDENTIALS
     516:522:public void reset()
-    752:758:public java.lang.String getPupilIdByName(java.lang.String)
+    755:761:public java.lang.String getPupilIdByName(java.lang.String)

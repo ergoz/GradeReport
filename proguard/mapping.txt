@@ -2211,7 +2211,7 @@ com.shinymetal.gradereport.objects.Lesson -> com.shinymetal.gradereport.b.e:
     java.lang.String toString() -> toString
     long insert(com.shinymetal.gradereport.objects.Schedule) -> a
     long update() -> k
-    boolean existsByStart(com.shinymetal.gradereport.objects.Schedule,java.util.Date) -> a
+    com.shinymetal.gradereport.objects.Lesson getByStart(com.shinymetal.gradereport.objects.Schedule,java.util.Date) -> a
     android.database.Cursor getCursorAllByDate(com.shinymetal.gradereport.objects.Schedule,java.util.Date,java.util.Date) -> a
     com.shinymetal.gradereport.objects.Lesson getFromCursor(android.database.Cursor) -> a
     com.shinymetal.gradereport.objects.Lesson getByNumber(com.shinymetal.gradereport.objects.Schedule,java.util.Date,java.util.Date,int) -> a
@@ -2263,7 +2263,7 @@ com.shinymetal.gradereport.objects.Schedule -> com.shinymetal.gradereport.b.h:
     com.shinymetal.gradereport.objects.GradeSemester getSemesterByNumber(int) -> a
     com.shinymetal.gradereport.objects.GradeSemester getSemester(java.lang.String) -> c
     com.shinymetal.gradereport.objects.Schedule addGradeRec(com.shinymetal.gradereport.objects.GradeRec) -> a
-    boolean existsLessonByStart(java.util.Date) -> c
+    com.shinymetal.gradereport.objects.Lesson getLessonByStart(java.util.Date) -> c
     android.database.Cursor getCursorLessonsByDate(java.util.Date) -> d
     android.database.Cursor getCursorGradesByDate(java.util.Date) -> e
     com.shinymetal.gradereport.objects.Lesson getLessonByNumber(java.util.Date,int) -> a
