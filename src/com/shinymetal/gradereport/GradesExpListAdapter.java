@@ -32,7 +32,8 @@ public class GradesExpListAdapter extends BaseExpandableListAdapter implements U
 		mActivity = activity;
 		mSemester = sem;
 		
-		mGradesCursor = GshisLoader.getInstance().getCursorGradesBySemester(
+		mGradesCursor = GshisLoader.getInstance(
+				mActivity.getApplicationContext()).getCursorGradesBySemester(
 				mActivity.getPupilName(), mSemester);
 		mMarksCursors = new TreeMap<Integer, Cursor> ();
 	}
@@ -50,7 +51,8 @@ public class GradesExpListAdapter extends BaseExpandableListAdapter implements U
 				mMarksCursors.remove(e.getKey());
 			}
 		
-		mGradesCursor = GshisLoader.getInstance().getCursorGradesBySemester(
+		mGradesCursor = GshisLoader.getInstance(
+				mActivity.getApplicationContext()).getCursorGradesBySemester(
 				mActivity.getPupilName(), mSemester);
 	}
 

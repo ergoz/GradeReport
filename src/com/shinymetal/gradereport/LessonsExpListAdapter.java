@@ -34,7 +34,8 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		mActivity = activity;
 		mDay = day;
 		
-		mCursor = GshisLoader.getInstance().getCursorLessonsByDate(mDay, mActivity.getPupilName());
+		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 	}
 	
 	public void setSelectedPosition(int pos) {
@@ -52,7 +53,8 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		if (mCursor != null && !mCursor.isClosed())
 			mCursor.close();
 
-		mCursor = GshisLoader.getInstance().getCursorLessonsByDate(mDay, mActivity.getPupilName());
+		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 		notifyDataSetChanged();
 	}
 

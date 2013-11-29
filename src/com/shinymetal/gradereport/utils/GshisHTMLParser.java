@@ -2,8 +2,10 @@ package com.shinymetal.gradereport.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +27,7 @@ import com.shinymetal.gradereport.objects.Week;
 
 public class GshisHTMLParser {
 
-	public final static String whitespace_chars = "" /*
+	private final static String WHITESCPACE_CHARS = "" /*
 											 * dummy empty string for
 											 * homogeneity
 											 */
@@ -57,15 +59,21 @@ public class GshisHTMLParser {
 			+ "\\u3000" // IDEOGRAPHIC SPACE
 	;
 	/* A \s that actually works for Java’s native character set: Unicode */
-	public final static String whitespace_charclass = "[" + whitespace_chars + "]";
+	private final static String WHITESPACE_CHARCLASS = "[" + WHITESCPACE_CHARS + "]";
 	/* A \S that actually works for Java’s native character set: Unicode */
-	public final static String not_whitespace_charclass = "[^" + whitespace_chars
-			+ "]";
+	@SuppressWarnings("unused")
+	private final static String NOT_WHITESPACE_CHARCLASS = "[^" + WHITESCPACE_CHARS	+ "]";
 	
-	public final static Pattern whitespaces_only = Pattern.compile("^" + whitespace_charclass +"+$");
-	public final static Pattern subjects_name = Pattern.compile("^[0-9]{1}\\." + whitespace_charclass + "{1}.*");
+	private final static Pattern WHITESPACES_ONLY = Pattern.compile("^" + WHITESPACE_CHARCLASS +"+$");
+	private final static Pattern SUBJECT_NAME = Pattern.compile("^[0-9]{1}\\." + WHITESPACE_CHARCLASS + "{1}.*");	
+	private static ArrayList<MarkRec> mNewMarks = new ArrayList<MarkRec> ();
 	
-	public static Pupil getSelectedPupil(Document doc) throws ParseException {
+	public final static ArrayList<MarkRec> getNewMarks() {
+		
+		return mNewMarks;
+	}
+	
+	public static Pupil getSelectedPupil(String login, Document doc) throws ParseException {
 
 		boolean found = false;
 		Pupil p, selectedP = null;
@@ -81,10 +89,10 @@ public class GshisHTMLParser {
 					String value = pupil.attr("value");
 
 					found = true;
-					if ((p = Pupil.getByFormId(value)) == null) {
+					if ((p = Pupil.getByFormId(login, value)) == null) {
 
 						p = new Pupil(pupil.text(), value);
-						long rowId = p.insert();
+						long rowId = p.insert(login);
 						
 						if (BuildConfig.DEBUG)
 							Log.d("GshisHTMLParser", TS.get()
@@ -128,6 +136,7 @@ public class GshisHTMLParser {
 
 						final SimpleDateFormat f = new SimpleDateFormat(
 								"yyyy dd.MM", Locale.ENGLISH);
+						f.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
 						schedule = new Schedule(value, year.text());
 
 						Date start = f.parse(year.text().substring(0,
@@ -164,6 +173,9 @@ public class GshisHTMLParser {
 		boolean found = false;
 		Week selectedW = null;
 		
+		SimpleDateFormat f = new SimpleDateFormat("yyyy dd.MM", Locale.ENGLISH);
+		f.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+		
 		Elements weekSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_body_week_drdWeeks");
 		for (Element weekSelector : weekSelectors) {
@@ -191,9 +203,7 @@ public class GshisHTMLParser {
 									s.getFormText().length());
 						}
 
-						w.setStart(new SimpleDateFormat("yyyy dd.MM", Locale.ENGLISH).parse(year
-								+ " " + wBegin));
-
+						w.setStart(f.parse(year	+ " " + wBegin));
 						w.setFormText(week.text());
 						w.setFormId(week.attr("value"));
 
@@ -223,6 +233,8 @@ public class GshisHTMLParser {
 	public static void getLessons(Document doc, Schedule s) throws ParseException {
 
 		final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.ENGLISH);
+		format.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+		
 		Elements lessonCells = doc.getElementsByAttribute("number");
 		
 		for (Element lessonCell : lessonCells) {
@@ -336,6 +348,7 @@ public class GshisHTMLParser {
 
 		final SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy",
 				Locale.ENGLISH);
+		fmt.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
 		
 		Elements tableCells = doc.getElementsByAttributeValue("class",
 				"table diary");
@@ -343,8 +356,8 @@ public class GshisHTMLParser {
 
 			int tdCount = 0;
 			Date date = null;
-			Lesson l, lPrev = null; // lPrev to handle duplicate lesson bug
-			int sameLesson = 0;      // Also to handle duplicate lesson bug
+			Lesson l, lPrev = null; // lPrev to handle duplicate lesson
+			int sameLesson = 0;      // Also to handle duplicate lesson
 
 			Elements trs = tableCell.getElementsByTag("tr");
 			for (Element tr : trs) {
@@ -419,7 +432,7 @@ public class GshisHTMLParser {
 						}
 						tdCount++;
 
-					} else if (subjects_name.matcher(td.text()).find()) {
+					} else if (SUBJECT_NAME.matcher(td.text()).find()) {
 
 						tdCount = 2;
 						int number = Integer.parseInt(td.text().substring(0, 1)); 
@@ -427,8 +440,7 @@ public class GshisHTMLParser {
 
 						if (lPrev != null && l != null
 								&& l.getStart().equals(lPrev.getStart())
-								&& l.getNumber() == lPrev.getNumber()
-								&& l.getFormId().equals(lPrev.getFormId())) {
+								&& l.getNumber() == lPrev.getNumber()) {
 
 							// We hit the same lesson bug
 							sameLesson++;
@@ -463,7 +475,7 @@ public class GshisHTMLParser {
 		if (str == null || str.length() <= 0)
 			return false;
 
-		Matcher matcher = whitespaces_only.matcher(str.replaceAll("&nbsp;", " "));
+		Matcher matcher = WHITESPACES_ONLY.matcher(str.replaceAll("&nbsp;", " "));
 
 		if (matcher.find())
 			return false;
@@ -474,7 +486,7 @@ public class GshisHTMLParser {
 	public static String fetchLongCellStringNoWhitespaces(Element e) {
 
 		String s = fetchLongCellString(e).replaceAll("&nbsp;", " ");
-		Matcher matcher = whitespaces_only.matcher(s);
+		Matcher matcher = WHITESPACES_ONLY.matcher(s);
 
 		if (matcher.find())
 			return null;
@@ -487,7 +499,9 @@ public class GshisHTMLParser {
 		
 		boolean found = false;
 		GradeSemester selG = null;
+		
 		SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
+		fmt.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
 		
 		Elements semesterSelectors = doc.getElementsByAttributeValue("id",
 				"ctl00_body_drdTerms");
@@ -535,6 +549,8 @@ public class GshisHTMLParser {
 
 	public static void getGrades(Document doc, Schedule sch, GradeSemester s)
 			throws ParseException {
+		
+		mNewMarks = new ArrayList<MarkRec> ();
 		
 		Elements tableCells = doc.getElementsByAttributeValue("class",
 				"table rating");
@@ -645,7 +661,6 @@ public class GshisHTMLParser {
 								MarkRec mr = rec.getMarkRecByComment(span.attr("title"));
 								if (mr != null) {
 
-									// TODO: compare marks, new event if differ
 									mr.setMarks(span.text());
 									
 									@SuppressWarnings("unused")
@@ -655,8 +670,11 @@ public class GshisHTMLParser {
 //										Log.d("GshisHTMLParser", TS.get() + " MarkRec.update() = " + u
 //												+ " rec = " + rec);
 								} else {
+									
 
 									mr = new MarkRec(span.text(), span.attr("title"));
+									
+									mNewMarks.add(mr);
 									rec.addMarcRec(mr);
 
 //									if (BuildConfig.DEBUG)

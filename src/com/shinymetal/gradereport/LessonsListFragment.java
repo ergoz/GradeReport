@@ -51,7 +51,8 @@ public class LessonsListFragment extends Fragment implements UpdateableFragment 
 				R.layout.lessons_header, null);
 		listView.addHeaderView(header);
 
-		Date day = GshisLoader.getInstance().getCurrWeekStart();
+		Date day = GshisLoader.getInstance(
+				getActivity().getApplicationContext()).getCurrWeekStart();
 		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
 
 		if (BuildConfig.DEBUG)

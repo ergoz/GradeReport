@@ -195,7 +195,7 @@ public class DiaryActivity extends AbstractActivity{
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			// Use the current date as the default date in the picker
 			Calendar c = Calendar.getInstance();
-			c.setTime(mGshisLoader.getCurrWeekStart());
+			c.setTime(instance.mGshisLoader.getCurrWeekStart());
 			
 			int year = c.get(Calendar.YEAR);
 			int month = c.get(Calendar.MONTH);
@@ -223,7 +223,7 @@ public class DiaryActivity extends AbstractActivity{
 				item++;
 			}
 
-			GshisLoader.getInstance().setCurrWeekStart(weekStart);
+			GshisLoader.getInstance(instance.getApplicationContext()).setCurrWeekStart(weekStart);
 			instance.mViewPager.setCurrentItem(item, true);
 			
 			// this picker should not load again

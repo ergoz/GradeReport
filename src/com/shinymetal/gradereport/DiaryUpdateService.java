@@ -90,8 +90,9 @@ public class DiaryUpdateService extends IntentService {
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		GshisLoader.getInstance().setLogin(prefs.getString(getString(R.string.pref_login_key), ""));
-		GshisLoader.getInstance().setPassword(prefs.getString(getString(R.string.pref_password_key), ""));
+		GshisLoader loader = GshisLoader.getInstance(getApplicationContext());
+		loader.setLogin(prefs.getString(getString(R.string.pref_login_key), ""));
+		loader.setPassword(prefs.getString(getString(R.string.pref_password_key), ""));
 		
 		// this will only overwrite context if it's null
 		Database.setContext(getApplicationContext());
@@ -101,6 +102,8 @@ public class DiaryUpdateService extends IntentService {
 		Thread update = new Thread(new Runnable() {
 
 			public void run() {
+				
+				GshisLoader loader = GshisLoader.getInstance(getApplicationContext());
 
 				if (BuildConfig.DEBUG)
 					Log.d(this.toString(),
@@ -108,13 +111,13 @@ public class DiaryUpdateService extends IntentService {
 									+ " About to update current week for current pupil.");
 				
 				updateActivityWithStatus(MSG_TASK_STARTED);				
-				GshisLoader.getInstance().getAllPupilsLessons(GshisLoader.getInstance().getCurrWeekStart());
+				loader.getAllPupilsLessons(loader.getCurrWeekStart());
 				
 				if (BuildConfig.DEBUG)
 					Log.d (this.toString(), TS.get() + "getNonCachedLessonsByDate (): finished");
 				
 				mServiceBusy = false;
-				if (!GshisLoader.getInstance().isLastNetworkCallFailed()) {
+				if (!loader.isLastNetworkCallFailed()) {
 					
 					updateActivityWithStatus(MSG_TASK_COMPLETED);
 				} else {

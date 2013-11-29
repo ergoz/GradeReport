@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
@@ -21,19 +19,20 @@ import org.apache.http.auth.InvalidCredentialsException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
 import com.shinymetal.gradereport.BuildConfig;
-import com.shinymetal.gradereport.GradesActivity;
+import com.shinymetal.gradereport.NotificationUtils;
 import com.shinymetal.gradereport.R;
 import com.shinymetal.gradereport.objects.GradeSemester;
+import com.shinymetal.gradereport.objects.MarkRec;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 
-@SuppressWarnings("unused")
 public class GshisLoader {
 	
 	protected final static String SITE_NAME = "http://schoolinfo.educom.ru";
@@ -42,11 +41,6 @@ public class GshisLoader {
 	protected final static String LESSONS_PAGE = "/Pupil/Lessons.aspx";
 	protected final static String DIARY_PAGE = "/Pupil/Diary.aspx";
 	protected final static String GRADES_PAGE = "/Pupil/Grades.aspx";
-
-	// TODO: use getString(R.string.error_cannot_fetch) instead
-	protected final static String ERROR_CANNOT_LOAD_DATA = "Невозможно получить данные с сервера";
-	// TODO: use getString(R.string.error_cannot_login) instead
-	protected final static String ERROR_INV_CREDENTIALS = "Неверный логин или пароль";
 
 	protected String mCookieARRAffinity;
 	protected String mCookieASPXAUTH;
@@ -69,6 +63,7 @@ public class GshisLoader {
 	protected Date mCurrWeekStart = Week.getWeekStart(new Date ());
 	
 	protected String mCurrentPupilName;
+	private Context mContext;
 	
 	public Date getCurrWeekStart() {
 		return mCurrWeekStart;
@@ -96,7 +91,7 @@ public class GshisLoader {
 
 		Document doc = Jsoup.parse(page);
 
-		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		Pupil p = GshisHTMLParser.getSelectedPupil(mLogin, doc);
 		mCurrentPupilName = p.getFormText();
 		
 		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);		
@@ -111,7 +106,7 @@ public class GshisLoader {
 
 		Document doc = Jsoup.parse(page);
 
-		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		Pupil p = GshisHTMLParser.getSelectedPupil(mLogin, doc);
 		mCurrentPupilName = p.getFormText();
 		
 		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
@@ -124,7 +119,7 @@ public class GshisLoader {
 
 		Document doc = Jsoup.parse(page);
 
-		Pupil p = GshisHTMLParser.getSelectedPupil(doc);
+		Pupil p = GshisHTMLParser.getSelectedPupil(mLogin, doc);
 		mCurrentPupilName = p.getFormText();
 		
 		Schedule s = GshisHTMLParser.getSelectedSchedule(doc, p);
@@ -159,8 +154,7 @@ public class GshisLoader {
 	protected HttpURLConnection getHttpURLConnection(String url)
 			throws MalformedURLException, IOException {
 
-		return (HttpURLConnection) new URL(url).openConnection(/*new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				"192.168.112.14", 8080))*/);
+		return (HttpURLConnection) new URL(url).openConnection();
 	}
 	
 	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
@@ -466,12 +460,13 @@ public class GshisLoader {
 		return String.valueOf(tmp);
 	}
 
-	protected GshisLoader() {
+	protected GshisLoader(Context context) {
 
 		mIsLoggedIn = false;
+		mContext = context;
 	}
 	
-	public static GshisLoader getInstance() {
+	public static GshisLoader getInstance(Context context) {
 
 		GshisLoader localInstance = instance;
 
@@ -481,8 +476,9 @@ public class GshisLoader {
 
 				localInstance = instance;
 				if (localInstance == null) {
-					instance = localInstance = new GshisLoader();
-				}
+					instance = localInstance = new GshisLoader(context);
+				} else
+					instance.mContext = context;
 			}
 		}
 
@@ -494,7 +490,7 @@ public class GshisLoader {
 		
 		if (!loginGetAuthVIEWSTATE()) {
 			
-			throw new IllegalStateException (ERROR_CANNOT_LOAD_DATA);
+			throw new IllegalStateException (mContext.getString(R.string.error_cannot_fetch));
 		}
 
 		if (!loginGetASPXAUTH()) {
@@ -504,7 +500,7 @@ public class GshisLoader {
 
 		if (!loginGetSessionId()) {
 			
-			throw new IllegalStateException (ERROR_CANNOT_LOAD_DATA);
+			throw new IllegalStateException (mContext.getString(R.string.error_cannot_fetch));
 		}
 		
 		mIsLoggedIn = true;
@@ -541,7 +537,7 @@ public class GshisLoader {
 				+ "getCursorLessonsByDate () : pupil = " + uName);
 
 		try {
-			return Pupil.getByFormName(uName).getScheduleByDate(day)
+			return Pupil.getByFormName(mLogin, uName).getScheduleByDate(day)
 					.getCursorLessonsByDate(day);
 
 		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
@@ -559,7 +555,7 @@ public class GshisLoader {
 		if (uName == null)
 			return null;
 
-		Pupil p = Pupil.getByFormName(uName);
+		Pupil p = Pupil.getByFormName(mLogin, uName);
 		if (p == null)
 			return null;
 
@@ -597,7 +593,7 @@ public class GshisLoader {
 				
 				if (e instanceof InvalidCredentialsException) {
 					
-					mLastNetworkFailureReason = ERROR_INV_CREDENTIALS;
+					mLastNetworkFailureReason = mContext.getString(R.string.error_cannot_login);
 					return false; // else try one more time
 				}
 			}
@@ -612,7 +608,9 @@ public class GshisLoader {
 			parseLessonsPage(page);
 			
 			if (mLessonsVIEWSTATE == null || mLessonsVIEWSTATE.length() <= 0)
-				throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": LessonsVIEWSTATE is NULL");
+				throw new IllegalStateException(
+						mContext.getString(R.string.error_cannot_fetch)
+								+ ": LessonsVIEWSTATE is NULL");
 				
 			if ((page = getPageByURL(DIARY_PAGE)) == null) {
 				return false;
@@ -621,7 +619,9 @@ public class GshisLoader {
 			parseLessonsDetailsPage(page);
 
 			if (mDiaryVIEWSTATE == null || mDiaryVIEWSTATE.length() <= 0)
-				throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": DiaryVIEWSTATE is NULL");
+				throw new IllegalStateException(
+						mContext.getString(R.string.error_cannot_fetch)
+								+ ": DiaryVIEWSTATE is NULL");
 			
 
 			if ((page = getPageByURL(GRADES_PAGE)) == null) {
@@ -629,9 +629,14 @@ public class GshisLoader {
 			}
 
 			parseGradesPage(page);
+			ArrayList<MarkRec> newMarks = GshisHTMLParser.getNewMarks();
+			if (newMarks.size() > 0)
+				NotificationUtils.getInstance(mContext).createGradeNotification(newMarks);
 
 			if (mGradesVIEWSTATE == null || mGradesVIEWSTATE.length() <= 0)
-				throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": GradesVIEWSTATE is NULL");
+				throw new IllegalStateException(
+						mContext.getString(R.string.error_cannot_fetch)
+								+ ": GradesVIEWSTATE is NULL");
 
 			Date curWeek = Week.getWeekStart(new Date ());
 			
@@ -641,7 +646,7 @@ public class GshisLoader {
 			
 			Date pastNextWeek = cal.getTime();
 
-			Set<Pupil> set = Pupil.getSet();
+			Set<Pupil> set = Pupil.getSet(mLogin);
 			if ( set != null && set.size() > 0) {
 				for (Pupil p : set) {
 					
@@ -676,7 +681,9 @@ public class GshisLoader {
 									TS.get() + "getAllPupilsLessons () call getLessons () done ");
 						
 						if (page == null) {
-							throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": getLessons () returned NULL");
+							throw new IllegalStateException(
+									mContext.getString(R.string.error_cannot_fetch)
+											+ ": getLessons () returned NULL");
 						}
 
 						parseLessonsPage(page);						
@@ -688,7 +695,9 @@ public class GshisLoader {
 											+ "parseLessonsByDate () call getLessonsDetails () done");
 						
 						if (page == null) {
-							throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": getLessonsDetails () returned NULL");
+							throw new IllegalStateException(
+									mContext.getString(R.string.error_cannot_fetch)
+											+ ": getLessonsDetails () returned NULL");
 						}
 						
 						if (BuildConfig.DEBUG)
@@ -719,7 +728,9 @@ public class GshisLoader {
 						
 						page = getGrades(p, s, sem);
 						if (page == null) {
-							throw new IllegalStateException(ERROR_CANNOT_LOAD_DATA + ": getGrades () returned NULL");
+							throw new IllegalStateException(
+									mContext.getString(R.string.error_cannot_fetch)
+											+ ": getGrades () returned NULL");
 						}
 						
 						parseGradesPage(page);
@@ -752,7 +763,7 @@ public class GshisLoader {
 
 	public String getPupilIdByName(String name) {
 		
-		for (Pupil p : Pupil.getSet()) {
+		for (Pupil p : Pupil.getSet(mLogin)) {
 			
 			if (p.getFormText().equals(name)) {
 				return p.getFormId();
@@ -768,7 +779,7 @@ public class GshisLoader {
 		
 		ArrayList<String> res = new ArrayList<String> (); 
 
-		for (Pupil p : Pupil.getSet()) {
+		for (Pupil p : Pupil.getSet(mLogin)) {
 			res.add(p.getFormText());
 		}
 		

@@ -70,7 +70,8 @@ public class LessonsExpListFragment extends Fragment implements
 				R.layout.lessons_header, null);
 		mExpListView.addHeaderView(header);
 
-		Date day = GshisLoader.getInstance().getCurrWeekStart();
+		Date day = GshisLoader.getInstance(
+				getActivity().getApplicationContext()).getCurrWeekStart();
 		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
 		
 		if (BuildConfig.DEBUG)

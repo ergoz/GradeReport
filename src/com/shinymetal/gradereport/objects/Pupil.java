@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.shinymetal.gradereport.db.Database;
-import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -48,24 +47,24 @@ public class Pupil extends FormSelectableField {
 	
 	public long getRowId () { return mRowId; }
 	
-	public long insert() {
+	public long insert(String login) {
 		
         ContentValues values = new ContentValues();
         
         values.put(FORMID_NAME, getFormId());
         values.put(FORMTEXT_NAME, getFormText());
-        values.put(USERNAME_NAME, GshisLoader.getInstance().getLogin());
+        values.put(USERNAME_NAME, login);
 
         return mRowId = Database.getWritable().insert(TABLE_NAME, null, values);		
 	}
 	
-	public static synchronized Pupil getByFormId(String fId) {
+	public static synchronized Pupil getByFormId(String login, String fId) {
 		
 		// Elementary caching
 		if (mLastPupil != null && mLastPupil.getFormId().equals(fId))
 			return mLastPupil;
 		
-        String[] args = new String[] { fId, GshisLoader.getInstance().getLogin() };
+        String[] args = new String[] { fId, login };
 
 		Cursor c = Database.getReadable().query(TABLE_NAME,
 				COLUMNS_GET_BY_FORM_ID, SELECTION_GET_BY_FORM_ID, args, null,
@@ -84,7 +83,7 @@ public class Pupil extends FormSelectableField {
         return mLastPupil = p; 
 	}
 	
-	public static synchronized Pupil getByFormName(String name) {
+	public static synchronized Pupil getByFormName(String login, String name) {
 		
 		if (name == null)
 			return null;
@@ -93,7 +92,7 @@ public class Pupil extends FormSelectableField {
 		if (mLastPupil != null && mLastPupil.getFormText().equals(name))
 			return mLastPupil;
 		
-        String[] args = new String[] { name, GshisLoader.getInstance().getLogin() };
+        String[] args = new String[] { name, login };
 
 		Cursor c = Database.getReadable().query(TABLE_NAME,
 				COLUMNS_GET_BY_FORM_NAME, SELECTION_GET_BY_FORM_NAME, args,
@@ -112,11 +111,9 @@ public class Pupil extends FormSelectableField {
         return mLastPupil = p; 
 	}
 	
-	public static final Set<Pupil> getSet() {
+	public static final Set<Pupil> getSet(String login) {
 		
 		Set<Pupil> set = new HashSet<Pupil> ();
-		String login = GshisLoader.getInstance().getLogin();
-		
 		if (login == null) return set;
 		
         String[] args = new String[] { login };

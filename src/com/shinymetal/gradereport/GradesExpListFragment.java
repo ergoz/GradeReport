@@ -74,12 +74,12 @@ public class GradesExpListFragment extends Fragment implements
 	        }
 	    });
 		
-
-		
 		mAdapter = new GradesExpListAdapter((GradesActivity) getActivity(), wantSem - 1);
 		mExpListView.setAdapter(mAdapter);
 		
-		Pupil p = Pupil.getByFormName(((GradesActivity) getActivity()).getPupilName());
+		GshisLoader loader = GshisLoader.getInstance(
+				getActivity().getApplicationContext());
+		Pupil p = Pupil.getByFormName(loader.getLogin(), ((GradesActivity) getActivity()).getPupilName());
 		GradeSemester sem = null;
 		if (p != null) {
 			
@@ -87,7 +87,7 @@ public class GradesExpListFragment extends Fragment implements
 //				Log.d(this.toString(),
 //						TS.get() + " onCreateView (): p = " + p );
 			
-			Schedule s = p.getScheduleByDate(GshisLoader.getInstance().getCurrWeekStart());
+			Schedule s = p.getScheduleByDate(loader.getCurrWeekStart());
 			if (s != null ) {
 				sem = s.getSemesterByNumber(wantSem - 1);
 				

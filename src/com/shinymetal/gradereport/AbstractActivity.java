@@ -28,9 +28,9 @@ import android.view.Window;
 
 public class AbstractActivity extends FragmentActivity {
 	
-	protected static volatile AbstractActivity instance;	
-	protected static final GshisLoader mGshisLoader = GshisLoader.getInstance();
+	protected static volatile AbstractActivity instance;
 	
+	protected final GshisLoader mGshisLoader = GshisLoader.getInstance(getApplicationContext());	
 	private LicenseValidatorHelper mLicValidator = null;
 		
 	protected static class IncomingHandler extends Handler {
@@ -61,7 +61,7 @@ public class AbstractActivity extends FragmentActivity {
 
 				case DiaryUpdateService.MSG_TASK_FAILED:
 					instance.setProgressBarIndeterminateVisibility(false);
-					instance.showAlertDialog(mGshisLoader.getLastNetworkFailureReason());
+					instance.showAlertDialog(instance.mGshisLoader.getLastNetworkFailureReason());
 					break;
 				}
 

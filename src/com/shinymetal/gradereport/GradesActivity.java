@@ -7,7 +7,6 @@ import java.util.Locale;
 
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
-import com.shinymetal.gradereport.utils.GshisLoader;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -171,7 +170,7 @@ public class GradesActivity extends AbstractActivity {
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			// Use the current date as the default date in the picker
 			Calendar c = Calendar.getInstance();
-			c.setTime(mGshisLoader.getCurrWeekStart());
+			c.setTime(instance.mGshisLoader.getCurrWeekStart());
 
 			int year = c.get(Calendar.YEAR);
 			int month = c.get(Calendar.MONTH);
@@ -191,7 +190,7 @@ public class GradesActivity extends AbstractActivity {
 			c.set(Calendar.DAY_OF_MONTH, day);
 			
 			Date weekStart = Week.getWeekStart(c.getTime());
-			GshisLoader.getInstance().setCurrWeekStart(weekStart);
+			instance.mGshisLoader.setCurrWeekStart(weekStart);
 			
 			// TODO: get correct semester
 			

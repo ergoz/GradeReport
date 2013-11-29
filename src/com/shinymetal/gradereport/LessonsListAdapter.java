@@ -34,7 +34,8 @@ public class LessonsListAdapter extends
 		mActivity = activity;
 		mDay = day;
 		
-		mCursor = GshisLoader.getInstance().getCursorLessonsByDate(mDay, mActivity.getPupilName());
+		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 	}
 	
 	public void setSelectedPosition(int pos) {
@@ -54,7 +55,8 @@ public class LessonsListAdapter extends
 		if (mCursor != null && !mCursor.isClosed())
 			mCursor.close();
 
-		mCursor = GshisLoader.getInstance().getCursorLessonsByDate(mDay, mActivity.getPupilName());
+		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 		notifyDataSetChanged();
 	}
 
