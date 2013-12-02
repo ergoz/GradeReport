@@ -48,7 +48,7 @@ public class NotificationUtils {
 		for (MarkRec rec : marks) {
 			
 			if (count <= MARKS_MAX_COUNT)
-				message += (count > 0 ? "; " : "") + rec.getComment() + ": " + rec.getMarks();
+				message += (count > 0 ? "; " : " ") + rec.getComment() + ": " + rec.getMarks();
 			else {
 				message += "; ...";
 				break;
@@ -63,7 +63,7 @@ public class NotificationUtils {
 		NotificationCompat.Builder nb = new NotificationCompat.Builder(context)
 				// NotificationCompat.Builder nb = new
 				// NotificationBuilder(context) //для версии Android > 3.0
-				.setSmallIcon(R.drawable.ic_5_content_event)
+				.setSmallIcon(R.drawable.ic_launcher)
 				.setAutoCancel(true)
 				.setTicker(message)
 				.setContentText(message)

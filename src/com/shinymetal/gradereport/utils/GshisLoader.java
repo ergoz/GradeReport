@@ -58,6 +58,8 @@ public class GshisLoader {
 	
 	protected boolean mIsLoggedIn;
 	protected volatile boolean mIsLastNetworkCallFailed = false;
+	protected volatile boolean mIsLastNetworkCallRetriable = true;
+	
 	protected volatile String mLastNetworkFailureReason;
 	
 	protected Date mCurrWeekStart = Week.getWeekStart(new Date ());
@@ -578,6 +580,7 @@ public class GshisLoader {
 		String page;
 		
 		mIsLastNetworkCallFailed = false;
+		mIsLastNetworkCallRetriable = true;
 		mLastNetworkFailureReason = "";
 		
 		for (int i=0; i<2; i++) {
@@ -594,6 +597,7 @@ public class GshisLoader {
 				if (e instanceof InvalidCredentialsException) {
 					
 					mLastNetworkFailureReason = mContext.getString(R.string.error_cannot_login);
+					mIsLastNetworkCallRetriable = false;
 					return false; // else try one more time
 				}
 			}
@@ -755,6 +759,10 @@ public class GshisLoader {
 	
 	public boolean isLastNetworkCallFailed() {
 		return mIsLastNetworkCallFailed;
+	}
+
+	public boolean isLastNetworkCallRetriable() {
+		return mIsLastNetworkCallRetriable;
 	}
 
 	public String getLastNetworkFailureReason() {

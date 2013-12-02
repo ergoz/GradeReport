@@ -30,7 +30,7 @@ public class AbstractActivity extends FragmentActivity {
 	
 	protected static volatile AbstractActivity instance;
 	
-	protected final GshisLoader mGshisLoader = GshisLoader.getInstance(getApplicationContext());	
+	protected GshisLoader mGshisLoader;
 	private LicenseValidatorHelper mLicValidator = null;
 		
 	protected static class IncomingHandler extends Handler {
@@ -61,7 +61,9 @@ public class AbstractActivity extends FragmentActivity {
 
 				case DiaryUpdateService.MSG_TASK_FAILED:
 					instance.setProgressBarIndeterminateVisibility(false);
-					instance.showAlertDialog(instance.mGshisLoader.getLastNetworkFailureReason());
+					
+					if (!instance.mGshisLoader.isLastNetworkCallRetriable())
+						instance.showAlertDialog(instance.mGshisLoader.getLastNetworkFailureReason());
 					break;
 				}
 
@@ -202,6 +204,7 @@ public class AbstractActivity extends FragmentActivity {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		instance = this;
 
+		mGshisLoader = GshisLoader.getInstance(getApplicationContext());
 		Database.setContext(this.getApplicationContext());
 		
 		// this is required to get proper list of pupils in fragments

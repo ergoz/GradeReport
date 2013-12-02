@@ -270,7 +270,7 @@ public class GshisHTMLParser {
 					}
 
 					Date start = format.parse(date + " " + time.substring(0, time.indexOf("-") - 1));
-					if ((l = s.getLessonByStart(start)) == null) {
+					if ((l = s.getLessonByNumber(start, number)) == null) {
 						
 						if (BuildConfig.DEBUG)
 							Log.d("GshisHTMLParser", TS.get()
