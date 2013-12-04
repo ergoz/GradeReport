@@ -5,6 +5,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import com.shinymetal.gradereport.objects.GradeSemester;
+import com.shinymetal.gradereport.objects.Pupil;
+import com.shinymetal.gradereport.objects.Schedule;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
 
@@ -192,7 +195,24 @@ public class GradesActivity extends AbstractActivity {
 			Date weekStart = Week.getWeekStart(c.getTime());
 			instance.mGshisLoader.setCurrWeekStart(weekStart);
 			
-			// TODO: get correct semester
+			Pupil p = Pupil.getByFormName(instance.mGshisLoader.getLogin(), instance.getPupilName());
+			if (p != null) {
+				
+				Schedule s = p.getScheduleByDate(weekStart);
+				
+				for (int index = 0; index < 4; index++) {
+					
+					GradeSemester sem  = s.getSemesterByNumber(index);
+					
+					if (sem != null
+							&& sem.getStart().getTime() <= weekStart.getTime()
+							&& sem.getStop().getTime() >= weekStart.getTime()) {
+						
+						instance.mViewPager.setCurrentItem(index, true);
+						break;
+					}
+				}
+			}
 			
 			// this picker should not load again
 			instance.getHandler().postDelayed(new Runnable() {
