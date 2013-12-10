@@ -84,12 +84,15 @@ com.shinymetal.gradereport.DiaryUpdateService: DiaryUpdateService()
 com.shinymetal.gradereport.GradesActivity
 com.shinymetal.gradereport.GradesActivity: GradesActivity()
 com.shinymetal.gradereport.GradesActivity: boolean onOptionsItemSelected(android.view.MenuItem)
+com.shinymetal.gradereport.LogActivity
+com.shinymetal.gradereport.LogActivity: LogActivity()
 com.shinymetal.gradereport.PreferencesActivity
 com.shinymetal.gradereport.PreferencesActivity: PreferencesActivity()
 com.shinymetal.gradereport.R$array: int syncArray
 com.shinymetal.gradereport.R$array: int syncValues
 com.shinymetal.gradereport.R$dimen: int activity_horizontal_margin
 com.shinymetal.gradereport.R$dimen: int activity_vertical_margin
+com.shinymetal.gradereport.R$drawable: int ic_11_alerts_and_states_warning
 com.shinymetal.gradereport.R$drawable: int ic_4_collections_view_as_list
 com.shinymetal.gradereport.R$drawable: int ic_5_content_event
 com.shinymetal.gradereport.R$drawable: int ic_action_go_to_today
@@ -103,6 +106,7 @@ com.shinymetal.gradereport.R$drawable: int splash
 com.shinymetal.gradereport.R$id: int ScrollViewDetail
 com.shinymetal.gradereport.R$id: int action_diary
 com.shinymetal.gradereport.R$id: int action_grades
+com.shinymetal.gradereport.R$id: int action_logs
 com.shinymetal.gradereport.R$id: int action_next_week
 com.shinymetal.gradereport.R$id: int action_previous_week
 com.shinymetal.gradereport.R$id: int action_reload
@@ -124,11 +128,15 @@ com.shinymetal.gradereport.R$id: int itemReleased
 com.shinymetal.gradereport.R$id: int itemSick
 com.shinymetal.gradereport.R$id: int itemTheme
 com.shinymetal.gradereport.R$id: int itemTotal
+com.shinymetal.gradereport.R$id: int logDate
+com.shinymetal.gradereport.R$id: int logText
+com.shinymetal.gradereport.R$id: int lvData
 com.shinymetal.gradereport.R$id: int pager
 com.shinymetal.gradereport.R$id: int pager_title_strip
 com.shinymetal.gradereport.R$id: int pupilSpinner
 com.shinymetal.gradereport.R$id: int section_label
 com.shinymetal.gradereport.R$layout: int activity_diary
+com.shinymetal.gradereport.R$layout: int activity_log
 com.shinymetal.gradereport.R$layout: int activity_preferences
 com.shinymetal.gradereport.R$layout: int activity_splash
 com.shinymetal.gradereport.R$layout: int fragment_exp_list
@@ -139,11 +147,13 @@ com.shinymetal.gradereport.R$layout: int grades_list
 com.shinymetal.gradereport.R$layout: int lessons_detail
 com.shinymetal.gradereport.R$layout: int lessons_header
 com.shinymetal.gradereport.R$layout: int lessons_list
+com.shinymetal.gradereport.R$layout: int log_list_item
 com.shinymetal.gradereport.R$layout: int pupil_dialog
 com.shinymetal.gradereport.R$menu: int grades
 com.shinymetal.gradereport.R$menu: int main
 com.shinymetal.gradereport.R$string: int action_diary
 com.shinymetal.gradereport.R$string: int action_grades
+com.shinymetal.gradereport.R$string: int action_logs
 com.shinymetal.gradereport.R$string: int action_next_week
 com.shinymetal.gradereport.R$string: int action_previous_week
 com.shinymetal.gradereport.R$string: int action_reload
@@ -163,6 +173,7 @@ com.shinymetal.gradereport.R$string: int label_comment
 com.shinymetal.gradereport.R$string: int label_homework
 com.shinymetal.gradereport.R$string: int label_loading_data
 com.shinymetal.gradereport.R$string: int label_marks
+com.shinymetal.gradereport.R$string: int label_new_marks
 com.shinymetal.gradereport.R$string: int label_ok
 com.shinymetal.gradereport.R$string: int label_quit
 com.shinymetal.gradereport.R$string: int label_released
@@ -171,6 +182,7 @@ com.shinymetal.gradereport.R$string: int label_sick
 com.shinymetal.gradereport.R$string: int label_submit
 com.shinymetal.gradereport.R$string: int label_theme
 com.shinymetal.gradereport.R$string: int label_total
+com.shinymetal.gradereport.R$string: int log_name
 com.shinymetal.gradereport.R$string: int pref_login_key
 com.shinymetal.gradereport.R$string: int pref_name
 com.shinymetal.gradereport.R$string: int pref_password_key
