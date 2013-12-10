@@ -41,6 +41,10 @@
             android:name="com.shinymetal.gradereport.PreferencesActivity"
             android:label="@string/pref_name" >
         </activity>
+        <activity
+            android:name="com.shinymetal.gradereport.LogActivity"
+            android:label="@string/log_name" >
+        </activity>
 
         <service android:name="com.shinymetal.gradereport.DiaryUpdateService" >
         </service>
