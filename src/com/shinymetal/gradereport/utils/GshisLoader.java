@@ -643,8 +643,8 @@ public class GshisLoader {
 
 			parseGradesPage(page);
 			ArrayList<MarkRec> newMarks = GshisHTMLParser.getNewMarks();
-			if (newMarks.size() > 0)
-				NotificationUtils.getInstance(mContext).createGradeNotification(newMarks);
+//			if (newMarks.size() > 0)	// this will create notifications each time
+//				NotificationUtils.getInstance(mContext).createGradeNotification(newMarks);
 
 			if (mGradesVIEWSTATE == null || mGradesVIEWSTATE.length() <= 0)
 				throw new IllegalStateException(

@@ -40,45 +40,45 @@ public class NotificationUtils {
 		return instance;
 	}
 	
-	public int createGradeNotification(ArrayList<MarkRec> marks) {
-		
-		String message = context.getString(R.string.label_new_marks);
-		int count = 0;
-		
-		for (MarkRec rec : marks) {
-			
-			if (count <= MARKS_MAX_COUNT)
-				message += (count > 0 ? "; " : " ") + rec.getComment() + ": " + rec.getMarks();
-			else {
-				message += "; ...";
-				break;
-			}
-			
-			count++;
-		}
-
-		// TODO: we shall determine which activity to use
-		Intent notificationIntent = new Intent(context, DiaryActivity.class);
-
-		NotificationCompat.Builder nb = new NotificationCompat.Builder(context)
-				// NotificationCompat.Builder nb = new
-				// NotificationBuilder(context) //для версии Android > 3.0
-				.setSmallIcon(R.drawable.ic_launcher)
-				.setAutoCancel(true)
-				.setTicker(message)
-				.setContentText(message)
-				.setContentIntent(
-						PendingIntent.getActivity(context, 0,
-								notificationIntent,
-								PendingIntent.FLAG_CANCEL_CURRENT))
-				.setWhen(System.currentTimeMillis())
-				.setContentTitle(context.getString(R.string.app_name))
-				.setDefaults(Notification.DEFAULT_ALL);
-
-		Notification notification = nb.getNotification();
-		manager.notify(mLastId, notification);
-		notifications.put(mLastId, notification);
-
-		return mLastId++;
-	}
+//	public int createGradeNotification(ArrayList<MarkRec> marks) {
+//		
+//		String message = context.getString(R.string.label_new_marks);
+//		int count = 0;
+//		
+//		for (MarkRec rec : marks) {
+//			
+//			if (count <= MARKS_MAX_COUNT)
+//				message += (count > 0 ? "; " : " ") + rec.getComment() + ": " + rec.getMarks();
+//			else {
+//				message += "; ...";
+//				break;
+//			}
+//			
+//			count++;
+//		}
+//
+//		// TODO: we shall determine which activity to use
+//		Intent notificationIntent = new Intent(context, DiaryActivity.class);
+//
+//		NotificationCompat.Builder nb = new NotificationCompat.Builder(context)
+//				// NotificationCompat.Builder nb = new
+//				// NotificationBuilder(context) //для версии Android > 3.0
+//				.setSmallIcon(R.drawable.ic_launcher)
+//				.setAutoCancel(true)
+//				.setTicker(message)
+//				.setContentText(message)
+//				.setContentIntent(
+//						PendingIntent.getActivity(context, 0,
+//								notificationIntent,
+//								PendingIntent.FLAG_CANCEL_CURRENT))
+//				.setWhen(System.currentTimeMillis())
+//				.setContentTitle(context.getString(R.string.app_name))
+//				.setDefaults(Notification.DEFAULT_ALL);
+//
+//		Notification notification = nb.getNotification();
+//		manager.notify(mLastId, notification);
+//		notifications.put(mLastId, notification);
+//
+//		return mLastId++;
+//	}
 }
