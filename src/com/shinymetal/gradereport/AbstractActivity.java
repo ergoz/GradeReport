@@ -7,6 +7,8 @@ import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.GshisLoader;
 
+import com.bugsense.trace.BugSenseHandler;
+
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -200,6 +202,8 @@ public class AbstractActivity extends FragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		BugSenseHandler.initAndStartSession(AbstractActivity.this, getString(R.string.bugsense_id));
 		
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		instance = this;

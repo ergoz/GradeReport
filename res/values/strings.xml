@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Дневник ГШИС</string>
+    <string name="app_name">Дневник</string>
+    <string name="bugsense_id">2b7b0f16</string>
     <string name="diary_name">Дневник</string>
     <string name="grades_name">Оценки</string>
     <string name="pref_name">Настройки</string>
