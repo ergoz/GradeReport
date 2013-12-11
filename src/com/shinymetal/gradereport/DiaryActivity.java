@@ -8,7 +8,7 @@ import java.util.Locale;
 import com.shinymetal.gradereport.R;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.objects.Week;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -227,7 +227,7 @@ public class DiaryActivity extends AbstractActivity{
 				item++;
 			}
 
-			GshisLoader.getInstance(instance.getApplicationContext()).setCurrWeekStart(weekStart);
+			DataLoader.getInstance(instance.getApplicationContext()).setCurrWeekStart(weekStart);
 			instance.mViewPager.setCurrentItem(item, true);
 			
 			// this picker should not load again

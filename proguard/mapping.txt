@@ -1886,7 +1886,7 @@ com.google.android.vending.licensing.util.Base64 -> com.a.a.a.a.a.a:
 com.google.android.vending.licensing.util.Base64DecoderException -> com.a.a.a.a.a.b:
 com.shinymetal.gradereport.AbstractActivity -> com.shinymetal.gradereport.a:
     com.shinymetal.gradereport.AbstractActivity instance -> n
-    com.shinymetal.gradereport.utils.GshisLoader mGshisLoader -> o
+    com.shinymetal.gradereport.utils.DataLoader mGshisLoader -> o
     com.shinymetal.gradereport.LicenseValidatorHelper mLicValidator -> q
     com.shinymetal.gradereport.AbstractActivity$IncomingHandler mHandler -> r
     com.shinymetal.gradereport.DiaryUpdateService mUpdateService -> s
@@ -2307,7 +2307,7 @@ com.shinymetal.gradereport.objects.Week -> com.shinymetal.gradereport.b.j:
     long insert(com.shinymetal.gradereport.objects.Schedule) -> a
     com.shinymetal.gradereport.objects.Week getByFormId(com.shinymetal.gradereport.objects.Schedule,java.lang.String) -> a
     java.util.Set getSet(com.shinymetal.gradereport.objects.Schedule) -> b
-com.shinymetal.gradereport.utils.GshisHTMLParser -> com.shinymetal.gradereport.c.a:
+com.shinymetal.gradereport.utils.GshisParser -> com.shinymetal.gradereport.c.a:
     java.util.regex.Pattern WHITESPACES_ONLY -> a
     java.util.regex.Pattern SUBJECT_NAME -> b
     java.util.ArrayList mNewMarks -> c
@@ -2324,7 +2324,7 @@ com.shinymetal.gradereport.utils.GshisHTMLParser -> com.shinymetal.gradereport.c
     void getGrades(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester) -> a
     java.lang.String fixDuplicateString(java.lang.String,java.lang.String,int) -> a
     java.lang.String getVIEWSTATE(org.jsoup.nodes.Document) -> a
-com.shinymetal.gradereport.utils.GshisLoader -> com.shinymetal.gradereport.c.b:
+com.shinymetal.gradereport.utils.DataLoader -> com.shinymetal.gradereport.c.b:
     java.lang.String mCookieARRAffinity -> a
     java.lang.String mCookieASPXAUTH -> b
     java.lang.String mCookieASPNET_SessionId -> c
@@ -2334,7 +2334,7 @@ com.shinymetal.gradereport.utils.GshisLoader -> com.shinymetal.gradereport.c.b:
     java.lang.String mGradesVIEWSTATE -> g
     java.lang.String mLogin -> h
     java.lang.String mPassword -> i
-    com.shinymetal.gradereport.utils.GshisLoader instance -> p
+    com.shinymetal.gradereport.utils.DataLoader instance -> p
     boolean mIsLoggedIn -> j
     boolean mIsLastNetworkCallFailed -> k
     boolean mIsLastNetworkCallRetriable -> l
@@ -2360,7 +2360,7 @@ com.shinymetal.gradereport.utils.GshisLoader -> com.shinymetal.gradereport.c.b:
     java.lang.String getLessons(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.Week) -> a
     java.lang.String getLessonDetails(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.Week) -> b
     java.lang.String getGrades(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester) -> a
-    com.shinymetal.gradereport.utils.GshisLoader getInstance(android.content.Context) -> a
+    com.shinymetal.gradereport.utils.DataLoader getInstance(android.content.Context) -> a
     boolean loginSequence() -> f
     android.database.Cursor getCursorLessonsByDate(java.util.Date,java.lang.String) -> a
     android.database.Cursor getCursorGradesBySemester(java.lang.String,int) -> a

@@ -10,7 +10,7 @@ import com.google.android.vending.licensing.LicenseCheckerCallback;
 import com.google.android.vending.licensing.Policy;
 import com.google.android.vending.licensing.ServerManagedPolicy;
 import com.shinymetal.gradereport.objects.TS;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 public class LicenseValidatorHelper implements LicenseCheckerCallback {
 
@@ -46,7 +46,7 @@ public class LicenseValidatorHelper implements LicenseCheckerCallback {
 
 		if (localInstance == null) {
 
-			synchronized (GshisLoader.class) {
+			synchronized (DataLoader.class) {
 
 				localInstance = instance;
 				if (localInstance == null) {

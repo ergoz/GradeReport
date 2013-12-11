@@ -1587,12 +1587,12 @@ com.shinymetal.gradereport.objects.Week:
     private static final java.lang.String SELECTION_GET_BY_FORM_ID
     private static final java.lang.String SELECTION_GET_SET
     151:188:public static synchronized com.shinymetal.gradereport.objects.Week getByDate(com.shinymetal.gradereport.objects.Schedule,java.util.Date)
-com.shinymetal.gradereport.utils.GshisHTMLParser:
+com.shinymetal.gradereport.utils.GshisParser:
     private static final java.lang.String WHITESCPACE_CHARS
     private static final java.lang.String WHITESPACE_CHARCLASS
     private static final java.lang.String NOT_WHITESPACE_CHARCLASS
     28:28:public GshisHTMLParser()
-com.shinymetal.gradereport.utils.GshisLoader:
+com.shinymetal.gradereport.utils.DataLoader:
     protected static final java.lang.String SITE_NAME
     protected static final java.lang.String LOGIN_STEP_1
     protected static final java.lang.String LOGIN_STEP_2

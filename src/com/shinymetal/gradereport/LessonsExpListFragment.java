@@ -19,7 +19,7 @@ import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.TextView;
 
 import com.shinymetal.gradereport.objects.TS;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 public class LessonsExpListFragment extends Fragment implements
 		UpdateableFragment {
@@ -70,7 +70,7 @@ public class LessonsExpListFragment extends Fragment implements
 				R.layout.lessons_header, null);
 		mExpListView.addHeaderView(header);
 
-		Date day = GshisLoader.getInstance(
+		Date day = DataLoader.getInstance(
 				getActivity().getApplicationContext()).getCurrWeekStart();
 		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
 		

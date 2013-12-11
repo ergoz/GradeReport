@@ -14,7 +14,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 import com.shinymetal.gradereport.objects.Lesson;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 public class LessonsExpListAdapter extends BaseExpandableListAdapter implements UpdateableAdapter {
 
@@ -34,7 +34,7 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		mActivity = activity;
 		mDay = day;
 		
-		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+		mCursor = DataLoader.getInstance(mActivity.getApplicationContext())
 				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 	}
 	
@@ -53,7 +53,7 @@ public class LessonsExpListAdapter extends BaseExpandableListAdapter implements 
 		if (mCursor != null && !mCursor.isClosed())
 			mCursor.close();
 
-		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+		mCursor = DataLoader.getInstance(mActivity.getApplicationContext())
 				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 		notifyDataSetChanged();
 	}

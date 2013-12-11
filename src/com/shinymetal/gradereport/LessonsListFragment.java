@@ -7,7 +7,7 @@ import java.util.Locale;
 
 import com.shinymetal.gradereport.objects.Lesson;
 import com.shinymetal.gradereport.objects.TS;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -51,7 +51,7 @@ public class LessonsListFragment extends Fragment implements UpdateableFragment 
 				R.layout.lessons_header, null);
 		listView.addHeaderView(header);
 
-		Date day = GshisLoader.getInstance(
+		Date day = DataLoader.getInstance(
 				getActivity().getApplicationContext()).getCurrWeekStart();
 		int wantDoW = getArguments().getInt(ARG_SECTION_NUMBER);
 

@@ -6,7 +6,7 @@ import java.util.TreeMap;
 
 import com.shinymetal.gradereport.objects.GradeRec;
 import com.shinymetal.gradereport.objects.MarkRec;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -32,7 +32,7 @@ public class GradesExpListAdapter extends BaseExpandableListAdapter implements U
 		mActivity = activity;
 		mSemester = sem;
 		
-		mGradesCursor = GshisLoader.getInstance(
+		mGradesCursor = DataLoader.getInstance(
 				mActivity.getApplicationContext()).getCursorGradesBySemester(
 				mActivity.getPupilName(), mSemester);
 		mMarksCursors = new TreeMap<Integer, Cursor> ();
@@ -51,7 +51,7 @@ public class GradesExpListAdapter extends BaseExpandableListAdapter implements U
 				mMarksCursors.remove(e.getKey());
 			}
 		
-		mGradesCursor = GshisLoader.getInstance(
+		mGradesCursor = DataLoader.getInstance(
 				mActivity.getApplicationContext()).getCursorGradesBySemester(
 				mActivity.getPupilName(), mSemester);
 	}

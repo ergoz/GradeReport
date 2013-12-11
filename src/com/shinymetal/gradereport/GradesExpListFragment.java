@@ -3,7 +3,7 @@ package com.shinymetal.gradereport;
 import com.shinymetal.gradereport.objects.GradeSemester;
 import com.shinymetal.gradereport.objects.Pupil;
 import com.shinymetal.gradereport.objects.Schedule;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -77,7 +77,7 @@ public class GradesExpListFragment extends Fragment implements
 		mAdapter = new GradesExpListAdapter((GradesActivity) getActivity(), wantSem - 1);
 		mExpListView.setAdapter(mAdapter);
 		
-		GshisLoader loader = GshisLoader.getInstance(
+		DataLoader loader = DataLoader.getInstance(
 				getActivity().getApplicationContext());
 		Pupil p = Pupil.getByFormName(loader.getLogin(), ((GradesActivity) getActivity()).getPupilName());
 		GradeSemester sem = null;

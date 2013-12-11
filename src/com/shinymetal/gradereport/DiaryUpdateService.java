@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.bugsense.trace.BugSenseHandler;
 import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -92,7 +92,7 @@ public class DiaryUpdateService extends IntentService {
 		BugSenseHandler.initAndStartSession(DiaryUpdateService.this, getString(R.string.bugsense_id));
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		GshisLoader loader = GshisLoader.getInstance(getApplicationContext());
+		DataLoader loader = DataLoader.getInstance(getApplicationContext());
 		loader.setLogin(prefs.getString(getString(R.string.pref_login_key), ""));
 		loader.setPassword(prefs.getString(getString(R.string.pref_password_key), ""));
 		
@@ -105,7 +105,7 @@ public class DiaryUpdateService extends IntentService {
 
 			public void run() {
 				
-				GshisLoader loader = GshisLoader.getInstance(getApplicationContext());
+				DataLoader loader = DataLoader.getInstance(getApplicationContext());
 
 				if (BuildConfig.DEBUG)
 					Log.d(this.toString(),

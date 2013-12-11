@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import com.shinymetal.gradereport.objects.Lesson;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -34,7 +34,7 @@ public class LessonsListAdapter extends
 		mActivity = activity;
 		mDay = day;
 		
-		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+		mCursor = DataLoader.getInstance(mActivity.getApplicationContext())
 				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 	}
 	
@@ -55,7 +55,7 @@ public class LessonsListAdapter extends
 		if (mCursor != null && !mCursor.isClosed())
 			mCursor.close();
 
-		mCursor = GshisLoader.getInstance(mActivity.getApplicationContext())
+		mCursor = DataLoader.getInstance(mActivity.getApplicationContext())
 				.getCursorLessonsByDate(mDay, mActivity.getPupilName());
 		notifyDataSetChanged();
 	}

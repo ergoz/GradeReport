@@ -5,7 +5,7 @@ import java.util.Date;
 import com.google.android.vending.licensing.Policy;
 import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
-import com.shinymetal.gradereport.utils.GshisLoader;
+import com.shinymetal.gradereport.utils.DataLoader;
 
 import com.bugsense.trace.BugSenseHandler;
 
@@ -32,7 +32,7 @@ public class AbstractActivity extends FragmentActivity {
 	
 	protected static volatile AbstractActivity instance;
 	
-	protected GshisLoader mGshisLoader;
+	protected DataLoader mGshisLoader;
 	private LicenseValidatorHelper mLicValidator = null;
 		
 	protected static class IncomingHandler extends Handler {
@@ -208,7 +208,7 @@ public class AbstractActivity extends FragmentActivity {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		instance = this;
 
-		mGshisLoader = GshisLoader.getInstance(getApplicationContext());
+		mGshisLoader = DataLoader.getInstance(getApplicationContext());
 		Database.setContext(this.getApplicationContext());
 		
 		// this is required to get proper list of pupils in fragments
