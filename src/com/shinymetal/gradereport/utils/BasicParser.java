@@ -1,8 +1,11 @@
 package com.shinymetal.gradereport.utils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,6 +96,22 @@ public class BasicParser {
 
 	public void setPassword(String password) {
 		this.mPassword = password;
+	}
+	
+	public String getPassword() {
+		
+		return mPassword;
+	}
+	
+	protected HttpURLConnection getHttpURLConnection(String url)
+			throws MalformedURLException, IOException {
+
+		return (HttpURLConnection) new URL(url).openConnection();
+	}
+
+	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
+		
+		return URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8") + "&"; 
 	}
 
 	public boolean containsPrintableChars (String str) {

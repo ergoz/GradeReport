@@ -4,11 +4,8 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -716,17 +713,6 @@ public class GshisParser extends BasicParser {
 		return viewstate.val();
 	}
 	
-	protected HttpURLConnection getHttpURLConnection(String url)
-			throws MalformedURLException, IOException {
-
-		return (HttpURLConnection) new URL(url).openConnection();
-	}
-	
-	protected String encodePOSTVar(String name, String value) throws UnsupportedEncodingException	{
-		
-		return URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8") + "&"; 
-	}
-
 	protected boolean loginGetAuthVIEWSTATE() throws MalformedURLException, IOException {
 
 		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + LOGIN_STEP_1);
