@@ -49,7 +49,7 @@ public class DataLoader {
 	protected DataLoader(Context context) {
 
 		mContext = context;
-		mParser = new GshisParser();
+		mParser = new MRCOParser();
 	}
 	
 	public static DataLoader getInstance(Context context) {
