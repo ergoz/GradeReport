@@ -32,7 +32,11 @@ public class DataLoader {
 	protected Date mCurrWeekStart = Week.getWeekStart(new Date ());
 	
 	protected Context mContext;
-	protected BasicParser mParser;
+//	protected BasicParser mParser;
+	
+	protected volatile String mLogin;
+	protected volatile String mPassword;
+	protected volatile ParserType mParserType;
 	
 	public Date getCurrWeekStart() {
 		return mCurrWeekStart;
@@ -41,15 +45,19 @@ public class DataLoader {
 	public void setCurrWeekStart(Date currWeekStart) {
 		this.mCurrWeekStart = currWeekStart;
 	}
+	
+	public enum ParserType {
+		GSHIS_PARSER, MRCO_PARSER;
+	};
 
-	public void setLogin(String login) { mParser.setLogin(login); }	
-	public String getLogin() { return mParser.getLogin(); }
-	public void setPassword(String password) { mParser.setPassword(password); }
-
+	public void setLogin(String login) { mLogin = login; }
+	public String getLogin() { return mLogin; }
+	public void setPassword(String password) { mPassword = password; }
+	public void setParserType(ParserType type) { mParserType = type; }
+	
 	protected DataLoader(Context context) {
 
 		mContext = context;
-		mParser = new MRCOParser();
 	}
 	
 	public static DataLoader getInstance(Context context) {
@@ -91,7 +99,7 @@ public class DataLoader {
 				+ "getCursorLessonsByDate () : pupil = " + uName);
 
 		try {
-			return Pupil.getByFormName(mParser.getLogin(), uName).getScheduleByDate(day)
+			return Pupil.getByFormName(mLogin, uName).getScheduleByDate(day)
 					.getCursorLessonsByDate(day);
 
 		} catch (Exception e) { // either NullPointerException or IllegalArgumentException
@@ -109,7 +117,7 @@ public class DataLoader {
 		if (uName == null)
 			return null;
 
-		Pupil p = Pupil.getByFormName(mParser.getLogin(), uName);
+		Pupil p = Pupil.getByFormName(mLogin, uName);
 		if (p == null)
 			return null;
 
@@ -131,11 +139,19 @@ public class DataLoader {
 		
 		NetLogger.add("Update started");
 		
-		String page;
-		
 		mIsLastNetworkCallFailed = false;
 		mIsLastNetworkCallRetriable = true;
 		mLastNetworkFailureReason = "";
+		
+		BasicParser mParser;
+		
+		if (mParserType == ParserType.GSHIS_PARSER)
+			mParser = new GshisParser();
+		else
+			mParser = new MRCOParser();
+		
+		mParser.setLogin(mLogin);
+		mParser.setPassword(mPassword);
 		
 		for (int i = 0; i < 2; i++) {
 
@@ -289,7 +305,7 @@ public class DataLoader {
 
 	public String getPupilIdByName(String name) {
 		
-		for (Pupil p : Pupil.getSet(mParser.getLogin())) {
+		for (Pupil p : Pupil.getSet(mLogin)) {
 			
 			if (p.getFormText().equals(name)) {
 				return p.getFormId();
@@ -305,7 +321,7 @@ public class DataLoader {
 		
 		ArrayList<String> res = new ArrayList<String> (); 
 
-		for (Pupil p : Pupil.getSet(mParser.getLogin())) {
+		for (Pupil p : Pupil.getSet(mLogin)) {
 			res.add(p.getFormText());
 		}
 		

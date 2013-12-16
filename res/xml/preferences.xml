@@ -2,6 +2,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory android:title="Информация о пользователе" >
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/logTypeArray"
+            android:entryValues="@array/logTypeValues"
+            android:key="@string/pref_log_type"
+            android:summary="Поддерживаются системы ГШИС и МРКО"
+            android:title="Тип логина" />
+
         <EditTextPreference
             android:key="@string/pref_login_key"
             android:summary="Пожалуйста, введите ваш логин"
@@ -22,7 +30,6 @@
             android:key="@string/pref_sync_key"
             android:summary="Интервал синхронизации данных дневника"
             android:title="Интервал" />
-
     </PreferenceCategory>
 
 </PreferenceScreen>

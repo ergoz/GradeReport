@@ -6,6 +6,7 @@ import com.bugsense.trace.BugSenseHandler;
 import com.shinymetal.gradereport.db.Database;
 import com.shinymetal.gradereport.objects.TS;
 import com.shinymetal.gradereport.utils.DataLoader;
+import com.shinymetal.gradereport.utils.DataLoader.ParserType;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -95,6 +96,11 @@ public class DiaryUpdateService extends IntentService {
 		DataLoader loader = DataLoader.getInstance(getApplicationContext());
 		loader.setLogin(prefs.getString(getString(R.string.pref_login_key), ""));
 		loader.setPassword(prefs.getString(getString(R.string.pref_password_key), ""));
+		
+		if(prefs.getString(getString(R.string.pref_log_type), "1").equals("1"))
+			loader.setParserType(ParserType.GSHIS_PARSER);
+		else
+			loader.setParserType(ParserType.MRCO_PARSER);
 		
 		// this will only overwrite context if it's null
 		Database.setContext(getApplicationContext());

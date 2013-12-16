@@ -8,6 +8,7 @@
     <string name="pref_name">Настройки</string>
     <string name="log_name">Лог ошибок</string>
     <string name="pref_login_key">login</string>
+    <string name="pref_log_type">loginType</string>
     <string name="pref_password_key">password</string>
     <string name="pref_sync_key">syncInterval</string>
     <string name="shiny_metal">ShinyMetal</string>
