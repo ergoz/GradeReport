@@ -242,6 +242,58 @@ public class MRCOParser extends BasicParser {
 		return String.valueOf(tmp);
 	}
 
+	protected String getGradesPage(Pupil p, Schedule s, GradeSemester sem) throws MalformedURLException, IOException {
+
+		if (cookieSESSION_NAME == null || cookieSESSION_NAME.length() <= 0
+				|| cookieSessionINT == null || cookieSessionINT.length() <= 0) {
+			return null;
+		}
+
+		HttpURLConnection uc = getHttpURLConnection(SITE_NAME + GRADES_PAGE);
+
+		String urlParameters = "";
+
+//		urlParameters += encodePOSTVar("tod", "" + mTod);
+//		urlParameters += encodePOSTVar("date", "" + w.getStart().getTime() * 1000);
+		
+//		sample post request:
+//			date1=1&mounth1=9&year1=2013&date2=31&mounth2=12&year2=2013&date=&c=dnevnik&d=usp&klass=8734&stud=108730
+
+		uc.setRequestMethod("POST");
+		String cookie = "SESSION_NAME="
+				+ cookieSESSION_NAME
+				+ (cookieSessionINT != null && cookieSessionINT.length() > 0 ? "; sessionINT="
+						+ cookieSessionINT
+						: "");
+		uc.setRequestProperty("Cookie", cookie);
+		uc.setRequestProperty("Origin", SITE_NAME);
+		uc.setRequestProperty("Referer", SITE_NAME + LESSONS_PAGE);
+		uc.setRequestProperty("Content-Type",
+				"application/x-www-form-urlencoded; charset=utf-8");
+
+		uc.setRequestProperty("Content-Length",
+				"" + Integer.toString(urlParameters.getBytes().length));
+
+		uc.setUseCaches(false);
+		uc.setDoInput(true);
+		uc.setDoOutput(true);
+
+		// Send request
+		DataOutputStream wr = new DataOutputStream(uc.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		String line = null;
+		StringBuffer tmp = new StringBuffer();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				uc.getInputStream(), "windows-1251"));
+		while ((line = in.readLine()) != null) {
+			tmp.append(line + "\n");
+		}
+
+		return String.valueOf(tmp);
+	}
 	
 	public Pupil getSelectedPupil(String login, Document doc) {
 		
@@ -432,6 +484,19 @@ public class MRCOParser extends BasicParser {
 		}	
 	}
 	
+	public GradeSemester getActiveGradeSemester(Document doc, Schedule sch)
+			throws ParseException {
+		
+		// TODO: stub
+		return null;
+	}
+	
+	protected void getGrades(Document doc, Schedule sch, GradeSemester s)
+			throws ParseException {
+		
+		// TODO: stub		
+	}
+	
 	protected String fetchLongCellString(Element e) {
 
 		for (Element div : e.getElementsByTag("div")) {
@@ -524,10 +589,6 @@ public class MRCOParser extends BasicParser {
 			}
 		}	
 	}
-	
-	protected void fetchGrades(Document doc) {
-		
-	}
 
 	public Week parseLessonsPage(String page) throws ParseException {
 
@@ -552,6 +613,18 @@ public class MRCOParser extends BasicParser {
 		
 		Schedule s = getSelectedSchedule(doc, p);
 		getLessonsDetails(doc, s);		
+	}
+	
+	public void parseGradesPage(String page) throws ParseException {
+
+		Document doc = Jsoup.parse(page);
+
+		Pupil p = getSelectedPupil(mLogin, doc);
+		mCurrentPupilName = p.getFormText();
+		
+		Schedule s = getSelectedSchedule(doc, p);
+		GradeSemester g = getActiveGradeSemester(doc, s);
+		getGrades(doc, s, g);
 	}
 
 	public void getLessons() throws ParseException, MalformedURLException,
@@ -599,11 +672,22 @@ public class MRCOParser extends BasicParser {
 
 	public void getGrades() throws ParseException, MalformedURLException,
 			IOException {
+		
+		String page;
+		
+		if ((page = getPageByURL(GRADES_PAGE)) == null)
+			return;
 
+		parseGradesPage(page);
 	}
 
 	public void getGrades(Pupil p, Schedule s, GradeSemester sem)
 			throws ParseException, MalformedURLException, IOException {
-
+		
+		String page = getGradesPage(p, s, sem);
+		if (page == null)
+			return;
+		
+		parseGradesPage(page);
 	}
 }
