@@ -114,7 +114,35 @@ public class GshisParser extends BasicParser {
 			}
 		}
 
-		if (!found)
+		if (!found) {
+			
+			if (BuildConfig.DEBUG)
+				Log.d("GshisParser", TS.get() + " Alternative fields found!");
+			
+			Element userName = doc.getElementsByClass("user-name").first();
+			Element userId = doc.getElementsByAttributeValue("id",
+					"ctl00_topMenu_tbUserId").first();
+
+			String name = userName.text();
+			String id = userId.attr("value");
+			
+			if (BuildConfig.DEBUG)
+				Log.d("GshisParser", TS.get() + " name=" + name + " id=" + id);
+
+			if ((p = Pupil.getByFormId(login, id)) == null) {
+
+				p = new Pupil(name, id);
+				long rowId = p.insert(login);
+
+				if (BuildConfig.DEBUG)
+					Log.d("GshisParser", TS.get() + " Pupil.insert() = "
+							+ rowId);
+			}
+			
+			selectedP = p;
+		}
+
+		if (selectedP == null)
 			throw new ParseException("Pupils not found", 0);
 		
 		return selectedP;

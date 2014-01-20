@@ -2923,14 +2923,18 @@ com.shinymetal.gradereport.utils.MRCOParser -> com.shinymetal.gradereport.c.e:
     boolean loginSequence() -> c
     java.lang.String getPageByURL(java.lang.String) -> e
     java.lang.String getLessonsPage(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.Week,java.lang.String) -> a
+    java.lang.String getGradesPage(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester) -> b
     com.shinymetal.gradereport.objects.Pupil getSelectedPupil(java.lang.String,org.jsoup.nodes.Document) -> a
     com.shinymetal.gradereport.objects.Schedule getSelectedSchedule(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Pupil) -> a
     com.shinymetal.gradereport.objects.Week getSelectedWeek(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> a
     void getLessons(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> b
+    com.shinymetal.gradereport.objects.GradeSemester getActiveGradeSemester(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> c
+    void getGrades(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.GradeSemester) -> a
     java.lang.String fetchLongCellString(org.jsoup.nodes.Element) -> a
-    void getLessonsDetails(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> c
+    void getLessonsDetails(org.jsoup.nodes.Document,com.shinymetal.gradereport.objects.Schedule) -> d
     com.shinymetal.gradereport.objects.Week parseLessonsPage(java.lang.String) -> f
     void parseLessonsDetailsPage(java.lang.String) -> g
+    void parseGradesPage(java.lang.String) -> h
     void getLessons() -> d
     void getLessons(com.shinymetal.gradereport.objects.Pupil,com.shinymetal.gradereport.objects.Schedule,com.shinymetal.gradereport.objects.Week) -> a
     void getLessonsDetails() -> e

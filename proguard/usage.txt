@@ -1499,7 +1499,6 @@ com.shinymetal.gradereport.utils.MRCOParser:
     private static final java.lang.String LESSONS_PAGE
     private static final java.lang.String DIARY_PAGE
     private static final java.lang.String GRADES_PAGE
-    530:530:protected void fetchGrades(org.jsoup.nodes.Document)
 com.shinymetal.gradereport.utils.NetLogger:
     public static final java.lang.String ID_NAME
     public static final java.lang.String EVENTTIME_NAME
